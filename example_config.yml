@@ -1,0 +1,25 @@
+# Contains all config options for Dolores
+DISCORD:
+  bot_api_key: Bot API Key Here
+  general_chat_id: ID of General Chat Channel (or whichever text channel you want to send messages to
+  general_voice_id: ID of Voice Chat Channel you want Dolores to play music in
+  admin_users: [List of Discord usernames you want to have admin access]
+  inv_admin_users: [List of Discord usernames you want to have inventory edit access]
+CHARACTERS:
+  elder: [Jo'Nir, DM, Tunn-jeel, null, null, null, Rult-kath, Aversa DuFont, Xander Cruz]
+  fallout: [Grognak, The (Dungeon) Master, null, Jack Indigo, Rudy, Cosmo, null, null, null]
+USERS: ['User 1', 'DM User', 'User 3', 'User 4', 'User 5', 'User 6', 'User 7', 'User 8', 'User 9']
+DATABASE:
+  log_rolls: False
+YTDL:
+  format: bestaudio/best
+  outtmpl: '%(extractor)s-%(id)s-%(title)s.%(ext)s'
+  restrictfilenames: True
+  noplaylist: True
+  nocheckcertificate: True
+  ignoreerrors: False
+  logtostderr: False
+  quiet: True
+  no_warnings: True
+  default_search: auto
+  source_address: '0.0.0.0'

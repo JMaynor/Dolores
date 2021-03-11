@@ -1,11 +1,4 @@
-random
-asyncio
-sqlite3
 pandas
-sys
-json
-yaml
-datetime
 youtube_dl
 discord
 
