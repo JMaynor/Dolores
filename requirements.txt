@@ -1,0 +1,12 @@
+random
+asyncio
+sqlite3
+pandas
+sys
+json
+yaml
+datetime
+youtube_dl
+discord
+
+chatterbot == 1.0.4
