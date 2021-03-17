@@ -144,7 +144,7 @@ async def send_result(ctx, message):
 		await ctx.send('{}:    {}'.format(str(ctx.author.nick).split('#')[0], message))
 
 
-@bot.command
+@bot.command(description='Sets nickname of everyone to whichever campaign is now active.')
 async def setcamp(ctx, campaign: str):
 	'''
 	setcamp sets everyone's nicknames to the character
@@ -164,7 +164,7 @@ async def setcamp(ctx, campaign: str):
 	else: await send_result(ctx, 'You ain\'t got the authority to do that, sir or madam.')
 
 
-@bot.command
+@bot.command(description='Command for transferring DM power to a user.')
 async def dm(ctx, member: discord.Member):
 	'''
 	dm transfers DM powers to a given user.
