@@ -24,12 +24,6 @@ from discord.ext import commands
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 
-youtube_dl.utils.bug_reports_message = lambda: ''
-ffmpeg_options = {'options': '-vn'}
-ytdl = youtube_dl.YoutubeDL(config['YTDL'])
-
-# In-container location, use volume for local file storage
-db_loc = 'file:/home/dolores/database/roll_history.db?mode=rw'
 list_of_phrases = ['These violent delights have violent ends.',
 				   'Some people choose to see the ugliness in this world, the disarray. I choose to see the beauty. To believe there is an order to our days, a purpose.',
 				   'I\'m in a dream.',
@@ -64,9 +58,6 @@ sarcastic_names = ['my lovely',
 				   'honey',
 				   'foxy mama']
 
-# Contains everyone's names for each campaign that has been run
-chars = pandas.DataFrame(data=config['CHARACTERS'], index=config['USERS'])
-
 bot = commands.Bot(command_prefix='-', case_insensitive=True)
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
@@ -78,6 +69,16 @@ general_voice_id = config['DISCORD']['general_voice_id']
 log_rolls = config['DATABASE']['log_rolls']
 admins = config['DISCORD']['admin_users']
 inv_admins = config['DISCORD']['inv_admin_users']
+
+# In-container location, use volume for local file storage
+db_loc = 'file:/home/dolores/database/roll_history.db?mode=rw'
+
+# Contains everyone's names for each campaign that has been run
+chars = pandas.DataFrame(data=config['CHARACTERS'], index=config['USERS'])
+
+youtube_dl.utils.bug_reports_message = lambda: ''
+ffmpeg_options = {'options': '-vn'}
+ytdl = youtube_dl.YoutubeDL(config['YTDL'])
 
 chatbot = ChatBot('Dolores')
 trainer = ChatterBotCorpusTrainer(chatbot)
@@ -110,7 +111,8 @@ async def on_command_error(ctx, error):
 			'Not a command, sweetie.',
 			'Must I hold your hand for this?',
 			'Oh, y\'all still can\'t type?',
-			'Girl, go hit up Mavis Beacon, cuz you cannot type.']
+			'Girl, go hit up Mavis Beacon, cuz you cannot type.',
+			'Close.']
 		await ctx.send(random.choice(snarky_comments))
 	else:
 		print(error, file=sys.stderr)
