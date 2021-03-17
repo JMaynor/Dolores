@@ -61,7 +61,7 @@ sarcastic_names = ['my lovely',
 bot = commands.Bot(command_prefix='-', case_insensitive=True)
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
-with open('config.yml') as c:
+with open('/home/dolores/config/config.yml') as c:
 	config = yaml.load(c)
 bot_api_key = config['DISCORD']['bot_api_key']
 general_chat_id = config['DISCORD']['general_chat_id']
@@ -71,7 +71,7 @@ admins = config['DISCORD']['admin_users']
 inv_admins = config['DISCORD']['inv_admin_users']
 
 # In-container location, use volume for local file storage
-db_loc = 'file:/home/dolores/database/roll_history.db?mode=rw'
+db_loc = 'file:/home/dolores/config/roll_history.db?mode=rw'
 
 # Contains everyone's names for each campaign that has been run
 chars = pandas.DataFrame(data=config['CHARACTERS'], index=config['USERS'])

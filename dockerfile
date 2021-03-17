@@ -12,6 +12,5 @@ RUN pip list
 # RUN mkdir C:\home\dolores
 RUN mkdir /home/dolores
 COPY dolores.py /home/dolores/dolores.py
-COPY database /home/dolores/database
-COPY config.yml /home/dolores/config.yml
+COPY config /home/dolores/config
 CMD python /home/dolores/dolores.py
