@@ -61,7 +61,8 @@ sarcastic_names = ['my lovely',
 bot = commands.Bot(command_prefix='-', case_insensitive=True)
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
-with open('/home/dolores/config/config.yml') as c:
+config_file = '/home/dolores/config/config.yml'
+with open(config_file) as c:
 	config = yaml.load(c)
 bot_api_key = config['DISCORD']['bot_api_key']
 general_chat_id = config['DISCORD']['general_chat_id']
@@ -72,9 +73,6 @@ inv_admins = config['DISCORD']['inv_admin_users']
 
 # In-container location, use volume for local file storage
 db_loc = 'file:/home/dolores/config/roll_history.db?mode=rw'
-
-# Contains everyone's names for each campaign that has been run
-chars = pandas.DataFrame(data=config['CHARACTERS'], index=config['USERS'])
 
 youtube_dl.utils.bug_reports_message = lambda: ''
 ffmpeg_options = {'options': '-vn'}
@@ -154,14 +152,26 @@ async def setcamp(ctx, campaign: str):
 	Dolores would set everyone's names to whatever character they play in the "ternov" campaign
 	'''
 	if str(ctx.author).split('#')[0] in admins:
+		# Contains everyone's names for each campaign that has been run
+		chars = pandas.DataFrame(data=config['CHARACTERS'], index=config['USERS'])
 		for user in ctx.guild.members:
 			try:
 				newnick = chars.loc[user.name, campaign]
-				if newnick is not None: await user.edit(nick=newnick)
-			except KeyError: print('Something went wrong...sorry...')
-			except discord.Forbidden: print('Couldn\'t change nickname of that user.')
+				print('New nickname for {} is {} in campaign {}'.format(user.name, newnick, campaign) )
+				if newnick is not None:
+					await user.edit(nick=newnick)
+			except KeyError: print('No value found for user/camp combo: {} {}'.format(user, campaign))
+			except discord.Forbidden: print('Couldn\'t change the nickname of user: {}'.format(user))
 		await send_result(ctx, 'I have performed the ritual of renaming.')
 	else: await send_result(ctx, 'You ain\'t got the authority to do that, sir or madam.')
+
+@bot.command(description='Reloads config file so any changes to characters section can be used without restarting Dolores')
+async def reload_config(ctx):
+	if str(ctx.author).split('#')[0] in admins:
+		with open(config_file) as c:
+			global config
+			config = yaml.load(c)
+		await send_result(ctx, 'I have reloaded my configuration file.')
 
 
 @bot.command(description='Command for transferring DM power to a user.')
@@ -174,12 +184,12 @@ async def dm(ctx, member: discord.Member):
 	Dolores would remove DM role from all users, then would assign role to user Makamatin
 	'''
 	if str(ctx.author).split('#')[0] in admins:
-		if member in ctx.guild.members:
-			for user in ctx.guild.members:
-				await bot.remove_roles(user, 'DM')
-			await bot.add_roles(member, 'DM', reason='Campaign switch.')
-			await send_result(ctx, 'The Ritual has been performed.')
-		else: send_result(ctx, 'Invalid DM.')
+		dm_role = discord.utils.get(ctx.guild.roles, name='DM')
+		for user in ctx.guild.members:
+			await bot.remove_roles(user, dm_role)
+			if member in str(user.name):
+				await bot.add_roles(user, dm_role, reason='Campaign switch.')
+		await send_result(ctx, 'The Ritual has been performed.')
 	else: await send_result(ctx, 'Only the Old King of this land may wield such power.')
 
 
