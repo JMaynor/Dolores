@@ -192,6 +192,15 @@ async def dm(ctx, member: discord.Member):
 		await send_result(ctx, 'The Ritual has been performed.')
 	else: await send_result(ctx, 'Only the Old King of this land may wield such power.')
 
+@bot.command(description='Sets Dolores\' status in the Discord server sidebar.')
+async def set_status(ctx, game: str):
+	'''
+	set_status sets the Dolores is playing () status on the sidebar to whatever is specified.
+	Ex: -set_status "Destroying the Patriarchy"
+	The current activity on Dolores user would show as Dolores is playing Destroying the Patriarchy
+	'''
+	await bot.change_presence(status=discord.Status.online, activity=discord.Game(game))
+
 
 #---------------------------------------------------------------------------
 # Dice Rolling & Randomization
@@ -422,6 +431,16 @@ async def stop(ctx):
 	'''
 	if ctx.voice_client.is_playing(): ctx.voice_client.stop()
 
+@bot.command(description='Disconnects Dolores from voice channel.')
+async def leave(ctx):
+	'''
+	Disconnects Dolores from the general voice chat channel, if she is connected to it.
+	Also stops any curretnly playing music
+	Ex: -leave
+	Dolores will leave the general voice chat
+	'''
+	if ctx.voice_client.is_playing(): ctx.voice_client.stop()
+	await ctx.voice_client.disconnect()
 
 #---------------------------------------------------------------------------
 # Program Main
