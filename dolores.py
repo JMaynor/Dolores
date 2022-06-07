@@ -18,7 +18,7 @@ import sys
 import json
 import yaml
 import datetime
-import youtube_dl
+import yt_dlp
 import discord
 from discord.ext import commands
 from chatterbot import ChatBot
@@ -74,9 +74,9 @@ inv_admins = config['DISCORD']['inv_admin_users']
 # In-container location, use volume for local file storage
 db_loc = 'file:/home/dolores/config/roll_history.db?mode=rw'
 
-youtube_dl.utils.bug_reports_message = lambda: ''
+yt_dlp.utils.bug_reports_message = lambda: ''
 ffmpeg_options = {'options': '-vn'}
-ytdl = youtube_dl.YoutubeDL(config['YTDL'])
+ytdl = yt_dlp.YoutubeDL(config['YTDL'])
 
 chatbot = ChatBot('Dolores')
 trainer = ChatterBotCorpusTrainer(chatbot)
@@ -227,7 +227,8 @@ async def roll(ctx, *dice_batches):
 			for r in rolls_result: log_roll(ctx, limit, r)
 		formatted_rolls = ', '.join(rolls_result)
 		formatted_rolls = '(d' + str(limit) + ')  ' + formatted_rolls
-		if len(rolls_result) >= 3:
+		# if len(rolls_result) >= 3:
+		if limit != 20 and len(rolls_result) >= 1:
 			formatted_rolls = formatted_rolls + '    Sum: ' + \
 				str(sum([int(x) for x in rolls_result]))
 		await send_result(ctx, formatted_rolls)
@@ -435,7 +436,7 @@ async def stop(ctx):
 async def leave(ctx):
 	'''
 	Disconnects Dolores from the general voice chat channel, if she is connected to it.
-	Also stops any curretnly playing music
+	Also stops any currently playing music
 	Ex: -leave
 	Dolores will leave the general voice chat
 	'''

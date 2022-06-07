@@ -4,7 +4,7 @@ RUN python -m pip install --upgrade pip
 RUN pip install discord.py[voice]
 RUN pip install chatterbot==1.0.4
 RUN pip install chatterbot-corpus==1.2.0
-RUN pip install youtube-dl
+RUN pip install yt-dlp
 RUN pip install pytz
 RUN pip install requests
 RUN pip install pandas
