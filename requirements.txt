@@ -1,5 +1,7 @@
 pandas
 youtube_dl
 discord
+torch
+diffusers
 
 chatterbot == 1.0.4
