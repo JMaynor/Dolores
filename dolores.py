@@ -20,6 +20,8 @@ import yaml
 import datetime
 import yt_dlp
 import discord
+import torch
+from diffusers import StableDiffusionPipeline
 from discord.ext import commands
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
@@ -70,6 +72,7 @@ general_voice_id = config['DISCORD']['general_voice_id']
 log_rolls = config['DATABASE']['log_rolls']
 admins = config['DISCORD']['admin_users']
 inv_admins = config['DISCORD']['inv_admin_users']
+diffusion_access_token = config['DISCORD']['diffusion_key']
 
 # In-container location, use volume for local file storage
 db_loc = 'file:/home/dolores/config/roll_history.db?mode=rw'
@@ -81,6 +84,8 @@ ytdl = yt_dlp.YoutubeDL(config['YTDL'])
 chatbot = ChatBot('Dolores')
 trainer = ChatterBotCorpusTrainer(chatbot)
 trainer.train("chatterbot.corpus.english")
+
+pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", use_auth_token=diffusion_access_token)
 
 #---------------------------------------------------------------------------
 # Bot Events & Utility Functions
@@ -360,6 +365,13 @@ def get_character(user):
 	'''
 	return c.execute("SELECT character from user_character WHERE user=?", [user]).fetchone()[0]
 
+#---------------------------------------------------------------------------
+# Image Creation
+#---------------------------------------------------------------------------
+@bot.command(description='Creates an image from the word prompt.')
+async def create(ctx, *, prompt):
+	image = pipe(prompt)["sample"][0]
+	image.save("diffuse{0}.png".format(datetime.now().strftime("%Y-%m-%d %H%M%S")))
 
 #---------------------------------------------------------------------------
 # Audio/Music
