@@ -12,7 +12,6 @@ images using Stable Diffusion.
 # pylint: disable=line-too-long
 import random
 import asyncio
-import sqlite3
 import pandas
 import sys
 import json
@@ -111,7 +110,9 @@ async def on_command_error(ctx, error):
 			'Girl, go hit up Mavis Beacon, cuz you cannot type.',
 			'Close.',
 			'Slow.',
-			'Homeless.']
+			'Homeless.',
+			'Goon.',
+			'You goonga.']
 		await ctx.send(random.choice(snarky_comments))
 	else:
 		print(error, file=sys.stderr)
@@ -242,7 +243,10 @@ async def speak(ctx, message=None):
 	Ex: -speak
 	Dolores will randomly say a phrase from a predetermined list.
 	'''
-	await send_result(ctx, random.choice(list_of_phrases), tts=True)
+	if message is None:
+		await send_result(ctx, random.choice(list_of_phrases), tts=True)
+	else:
+		await send_result(ctx, message, tts=True)
 
 
 @bot.command(description='Use\'s youtube-dl to play an audio stream in the General voice channel.')
@@ -274,17 +278,15 @@ async def stop(ctx):
 	'''
 	Stops the currently playing song, if one is playing.
 	Ex: -stop
-	Dolores stops whatever current song is.
 	'''
 	if ctx.voice_client.is_playing(): ctx.voice_client.stop()
 
 @bot.command(description='Disconnects Dolores from voice channel.')
 async def leave(ctx):
 	'''
-	Disconnects Dolores from the general voice chat channel, if she is connected to it.
+	Disconnects Dolores from voice chat channel, if she is connected.
 	Also stops any currently playing music
 	Ex: -leave
-	Dolores will leave the general voice chat
 	'''
 	if ctx.voice_client.is_playing(): ctx.voice_client.stop()
 	await ctx.voice_client.disconnect()
