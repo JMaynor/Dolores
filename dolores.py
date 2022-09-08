@@ -84,9 +84,9 @@ chatbot = ChatBot('Dolores')
 trainer = ChatterBotCorpusTrainer(chatbot)
 trainer.train("chatterbot.corpus.english")
 
-print('Setting up Stable Diffusion Pipeline')
-pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", use_auth_token=diffusion_access_token)
-print('Finished setting up Stable Diffusion Pipeline')
+# print('Setting up Stable Diffusion Pipeline')
+# pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", use_auth_token=diffusion_access_token)
+# print('Finished setting up Stable Diffusion Pipeline')
 
 def to_thread(func: typing.Callable) -> typing.Coroutine:
     @functools.wraps(func)
@@ -208,22 +208,22 @@ async def d20(ctx):
 	await send_result(ctx, roll_result)
 
 
-#---------------------------------------------------------------------------
-# Image Creation
-#---------------------------------------------------------------------------
-@to_thread
-def nonblock_create_image(ctx, prompt):
-	image = pipe(prompt)["sample"][0]
-	image_name = "{0}{1}.png".format(str(ctx.author).split('#')[0], datetime.now().strftime("%Y-%m-%d %H%M%S"))
-	image.save(image_name)
-	image_file = discord.File(image_name)
-	return image_file
+# #---------------------------------------------------------------------------
+# # Image Creation
+# #---------------------------------------------------------------------------
+# @to_thread
+# def nonblock_create_image(ctx, prompt):
+# 	image = pipe(prompt)["sample"][0]
+# 	image_name = "{0}{1}.png".format(str(ctx.author).split('#')[0], datetime.now().strftime("%Y-%m-%d %H%M%S"))
+# 	image.save(image_name)
+# 	image_file = discord.File(image_name)
+# 	return image_file
 
-@bot.command(description='Creates an image from the word prompt.')
-async def create(ctx, *, prompt):
-	await ctx.send('Working on it.')
-	image_file = await nonblock_create_image(ctx, prompt)
-	await ctx.reply(file=image_file, content='This is my design.')
+# @bot.command(description='Creates an image from the word prompt.')
+# async def create(ctx, *, prompt):
+# 	await ctx.send('Working on it.')
+# 	image_file = await nonblock_create_image(ctx, prompt)
+# 	await ctx.reply(file=image_file, content='This is my design.')
 
 
 #---------------------------------------------------------------------------
@@ -282,14 +282,14 @@ async def play(ctx, *, url):
 	try:
 		channel = member.voice.channel
 		if channel:
-			await channel.connect()
+			voice = await channel.connect()
 	except AttributeError: await send_result(ctx, 'Must be connected to voice channel to play audio.')
 
 	if ctx.voice_client.is_playing(): ctx.voice_client.stop()
 
 	async with ctx.typing():
 		player = await YTDLSource.from_url(url, loop=bot.loop, stream=False)
-		channel.play(player, after=lambda e: print('Player error: {}'.format(e)) if e else None)
+		voice.play(player, after=lambda e: print('Player error: {}'.format(e)) if e else None)
 	await ctx.send('Now playing: {}'.format(player.title))
 
 @bot.command(description='Stops the currently playing audio in the General voice channel.')
