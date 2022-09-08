@@ -12,11 +12,13 @@ images using Stable Diffusion.
 # pylint: disable=line-too-long
 import random
 import asyncio
-import pandas
+# import pandas
 import sys
 import json
 import yaml
-import datetime
+from datetime import datetime
+import functools
+import typing
 import yt_dlp
 import discord
 import torch
@@ -61,10 +63,13 @@ sarcastic_names = ['my lovely',
 				   'loathsome dung eater',
 				   'baby girl']
 
-bot = commands.Bot(command_prefix='-', case_insensitive=True)
+intents = discord.Intents.all()
+intents.members = True
+bot = commands.Bot(command_prefix='-', case_insensitive=True, intents=intents)
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
-config_file = '/home/dolores/config/config.yml'
+# config_file = '/home/dolores/config/config.yml'
+config_file = 'config\\config.yml'
 with open(config_file) as c:
 	config = yaml.load(c)
 bot_api_key = config['DISCORD']['bot_api_key']
@@ -80,13 +85,20 @@ trainer.train("chatterbot.corpus.english")
 
 pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", use_auth_token=diffusion_access_token)
 
+
+def to_thread(func: typing.Callable) -> typing.Coroutine:
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        return await asyncio.to_thread(func, *args, **kwargs)
+    return wrapper
+
 #---------------------------------------------------------------------------
 # Bot Events & Utility Functions
 #---------------------------------------------------------------------------
 
 @bot.event
 async def on_ready():
-	print('Time is: ', datetime.datetime.now())
+	print('Time is: ', datetime.now())
 	print('Bring yourself online, ', bot.user.name)
 	print('-----------------------------')
 
@@ -197,14 +209,19 @@ async def d20(ctx):
 #---------------------------------------------------------------------------
 # Image Creation
 #---------------------------------------------------------------------------
-
-@bot.command(description='Creates an image from the word prompt.')
-async def create(ctx, *, prompt):
+@to_thread
+def nonblock_create_image(ctx, prompt):
 	image = pipe(prompt)["sample"][0]
 	image_name = "{0}{1}.png".format(str(ctx.author).split('#')[0], datetime.now().strftime("%Y-%m-%d %H%M%S"))
 	image.save(image_name)
 	image_file = discord.File(image_name)
-	ctx.reply(file=image_file, content='This is my design.')
+	return image_file
+
+@bot.command(description='Creates an image from the word prompt.')
+async def create(ctx, *, prompt):
+	await send_result(ctx, 'Working on it.')
+	image_file = await nonblock_create_image(ctx, prompt)
+	await ctx.reply(file=image_file, content='This is my design.')
 
 
 #---------------------------------------------------------------------------
