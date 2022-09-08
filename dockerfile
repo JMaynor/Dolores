@@ -10,6 +10,7 @@ RUN pip install yt-dlp
 RUN pip install pytz
 RUN pip install requests
 RUN pip install pandas
+RUN pip install nltk
 RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
 RUN pip install diffusers
 RUN pip install transformers
@@ -19,4 +20,7 @@ RUN pip install ftfy
 RUN mkdir /home/dolores
 COPY dolores.py /home/dolores/dolores.py
 COPY config /home/dolores/config
+COPY sqlalchemy /home/dolores/sqlalchemy
+COPY chatterbot /home/dolores/chatterbot
+COPY chatterbot_corpus /home/dolores/chatterbot_corpus
 CMD python /home/dolores/dolores.py
