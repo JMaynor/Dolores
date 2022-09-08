@@ -84,8 +84,9 @@ chatbot = ChatBot('Dolores')
 trainer = ChatterBotCorpusTrainer(chatbot)
 trainer.train("chatterbot.corpus.english")
 
+print('Setting up Stable Diffusion Pipeline')
 pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", use_auth_token=diffusion_access_token)
-
+print('Finished setting up Stable Diffusion Pipeline')
 
 def to_thread(func: typing.Callable) -> typing.Coroutine:
     @functools.wraps(func)
