@@ -24,6 +24,7 @@ import discord
 import torch
 from diffusers import StableDiffusionPipeline
 from discord.ext import commands
+import sqlalchemy
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 
