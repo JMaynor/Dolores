@@ -69,8 +69,8 @@ intents.members = True
 bot = commands.Bot(command_prefix='-', case_insensitive=True, intents=intents)
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
-# config_file = '/home/dolores/config/config.yml'
-config_file = 'config\\config.yml'
+config_file = '/home/dolores/config/config.yml'
+# config_file = 'config\\config.yml'
 with open(config_file) as c:
 	config = yaml.load(c)
 bot_api_key = config['DISCORD']['bot_api_key']
