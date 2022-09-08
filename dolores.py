@@ -72,7 +72,7 @@ bot = commands.Bot(command_prefix='-', case_insensitive=True, intents=intents)
 config_file = '/home/dolores/config/config.yml'
 # config_file = 'config\\config.yml'
 with open(config_file) as c:
-	config = yaml.load(c)
+	config = yaml.safe_load(c)
 bot_api_key = config['DISCORD']['bot_api_key']
 diffusion_access_token = config['DISCORD']['diffusion_key']
 
