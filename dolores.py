@@ -219,7 +219,7 @@ def nonblock_create_image(ctx, prompt):
 
 @bot.command(description='Creates an image from the word prompt.')
 async def create(ctx, *, prompt):
-	await send_result(ctx, 'Working on it.')
+	await ctx.send('Working on it.')
 	image_file = await nonblock_create_image(ctx, prompt)
 	await ctx.reply(file=image_file, content='This is my design.')
 
