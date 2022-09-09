@@ -13,9 +13,9 @@ RUN pip install pandas
 RUN pip install nltk
 RUN pip install pint
 RUN pip install mathparse
-RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
-RUN pip install diffusers
-RUN pip install transformers
+# RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
+# RUN pip install diffusers
+# RUN pip install transformers
 RUN pip install ftfy
 # RUN pip list
 # RUN mkdir C:\home\dolores
