@@ -180,7 +180,7 @@ async def roll(ctx, *dice_batches):
 			await ctx.send(random.choice(['I ain\'t rollin all that for you...', 'Absolutely not.', 'No.']))
 			return
 		formatted_rolls = '(d' + str(limit) + ')  ' + ', '.join(rolls_result)
-		if limit != 20 and len(rolls_result) >= 1:
+		if limit != 20 and len(rolls_result) >= 3:
 			formatted_rolls = formatted_rolls + '    Sum: ' + \
 				str(sum([int(x) for x in rolls_result]))
 		await send_result(ctx, formatted_rolls)
