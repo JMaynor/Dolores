@@ -21,8 +21,8 @@ import functools
 import typing
 import yt_dlp
 import discord
-import torch
-from diffusers import StableDiffusionPipeline
+# import torch
+# from diffusers import StableDiffusionPipeline
 from discord.ext import commands
 import sqlalchemy
 from chatterbot import ChatBot
