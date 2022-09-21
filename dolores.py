@@ -126,7 +126,8 @@ async def on_command_error(ctx, error):
 			'Slow.',
 			'Homeless.',
 			'Goon.',
-			'You goonga.']
+			'You goonga.',
+			'Prison, honey.']
 		await ctx.send(random.choice(snarky_comments))
 	else:
 		print(error, file=sys.stderr)
