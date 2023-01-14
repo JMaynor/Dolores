@@ -281,7 +281,7 @@ async def play(ctx, *, url):
 	member_id = member.id
 	try:
 		channel = member.voice.channel
-		if channel:
+		if channel and ctx.voice_client is None:
 			voice = await channel.connect()
 	except AttributeError: await send_result(ctx, 'Must be connected to voice channel to play audio.')
 
