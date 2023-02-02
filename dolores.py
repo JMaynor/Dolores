@@ -156,7 +156,8 @@ async def send_result(ctx, message):
 	if isinstance(ctx.channel, discord.channel.DMChannel):
 		await ctx.send('{}:    {}'.format(str(ctx.author).split('#')[0], message))
 	else:
-		await ctx.send('{}:    {}'.format(str(ctx.author.nick).split('#')[0], message))
+		# await ctx.send('{}:    {}'.format(str(ctx.author.nick).split('#')[0], message))
+		await ctx.send('{}:    {}'.format(str(ctx.author).split('#')[0], message))
 
 
 #---------------------------------------------------------------------------
