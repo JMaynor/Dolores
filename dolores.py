@@ -153,12 +153,12 @@ async def send_result(ctx, message):
 	'''
 	async with ctx.typing():
 		await asyncio.sleep(1)
-	if isinstance(ctx.channel, discord.channel.DMChannel):
+
+	# if isinstance(ctx.channel, discord.channel.DMChannel):
+	if ctx.author.nick is None:
 		await ctx.send('{}:    {}'.format(str(ctx.author).split('#')[0], message))
 	else:
-		# await ctx.send('{}:    {}'.format(str(ctx.author.nick).split('#')[0], message))
-		await ctx.send('{}:    {}'.format(str(ctx.author).split('#')[0], message))
-
+		await ctx.send('{}:    {}'.format(str(ctx.author.nick).split('#')[0], message))
 
 #---------------------------------------------------------------------------
 # Dice Rolling & Randomization
