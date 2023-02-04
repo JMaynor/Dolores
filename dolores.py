@@ -89,10 +89,10 @@ trainer.train("chatterbot.corpus.english")
 # print('Finished setting up Stable Diffusion Pipeline')
 
 def to_thread(func: typing.Callable) -> typing.Coroutine:
-    @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
-        return await asyncio.to_thread(func, *args, **kwargs)
-    return wrapper
+	@functools.wraps(func)
+	async def wrapper(*args, **kwargs):
+		return await asyncio.to_thread(func, *args, **kwargs)
+	return wrapper
 
 #---------------------------------------------------------------------------
 # Bot Events & Utility Functions
@@ -155,10 +155,11 @@ async def send_result(ctx, message):
 		await asyncio.sleep(1)
 
 	# if isinstance(ctx.channel, discord.channel.DMChannel):
-	if ctx.author.nick is None:
-		await ctx.send('{}:    {}'.format(str(ctx.author).split('#')[0], message))
-	else:
+	if hasattr(ctx.author, 'nick'):
+	# if ctx.author.nick is None:
 		await ctx.send('{}:    {}'.format(str(ctx.author.nick).split('#')[0], message))
+	else:
+		await ctx.send('{}:    {}'.format(str(ctx.author).split('#')[0], message))
 
 #---------------------------------------------------------------------------
 # Dice Rolling & Randomization
