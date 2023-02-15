@@ -1,5 +1,6 @@
 import requests, yaml
 from pprint import pprint
+import discord
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
 # config_file = '/home/dolores/config/config.yml'
@@ -74,6 +75,10 @@ def query_database():
     if len(response.json()['results']) == 0:
         return 'No streams'
 
+    embed = discord.Embed(title="Stream Schedule", description="Streams within the next week")
+
+    embed.add_field()
+
     for elem in response.json()['results']:
         # Add try catches for each of these
         date = elem['properties']['Date']['date']['start']
@@ -87,3 +92,5 @@ def query_database():
 
 if __name__ == '__main__':
     query_database()
+
+    # send message https://stackoverflow.com/questions/44862112/how-can-i-send-an-embed-via-my-discord-bot-w-python
