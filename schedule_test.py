@@ -20,43 +20,43 @@ def retrieve_database():
     pprint(response.json())
 
 def query_database():
-    # json_data = {"filter": {
-	# 	            "property": "Date",
-	# 	            "date": {
-	# 		            "next_week": {}
-	# 	            }
-    #             },
-	#             "sorts": [
-	# 	            {
-	# 		            "property": "Date",
-	# 		            "direction": "ascending"
-	# 	            }
-	#             ]
-    #         }
-    json_data = {
-    "filter": {
-        "and": [
-            {
-                "property": "Date",
-                "date": {
-					"on_or_after": "2024-02-01"
-				}
-            },
-            {
-                "property": "Date",
-                "date": {
-					"on_or_before": "2024-02-28"
-				}
+    json_data = {"filter": {
+		            "property": "Date",
+		            "date": {
+			            "next_week": {}
+		            }
+                },
+	            "sorts": [
+		            {
+			            "property": "Date",
+			            "direction": "ascending"
+		            }
+	            ]
             }
-        ]
-    },
-	"sorts": [
-		{
-			"property": "Date",
-			"direction": "ascending"
-		}
-	]
-}
+#     json_data = {
+#     "filter": {
+#         "and": [
+#             {
+#                 "property": "Date",
+#                 "date": {
+# 					"on_or_after": "2024-02-01"
+# 				}
+#             },
+#             {
+#                 "property": "Date",
+#                 "date": {
+# 					"on_or_before": "2024-02-28"
+# 				}
+#             }
+#         ]
+#     },
+# 	"sorts": [
+# 		{
+# 			"property": "Date",
+# 			"direction": "ascending"
+# 		}
+# 	]
+# }
 
     response = requests.post(config['NOTION']['base_url']
                             + 'databases/'
@@ -68,15 +68,22 @@ def query_database():
     if response.status_code != 200:
         try: pprint(response.json())
         except: print(response.content)
+        return
 
     # Check for no streams
     if len(response.json()['results']) == 0:
-         print('No streams')
+        return 'No streams'
 
-    # for elem in response.json()['results']:
-    #     print(elem)
-    #     print()
-    #     print()
+    for elem in response.json()['results']:
+        # Add try catches for each of these
+        date = elem['properties']['Date']['date']['start']
+        title = elem['properties']['Name']['title'][0]['plain_text']
+        people = [person['name'] for person in elem['properties']['Tags']['multi_select']]
+
+        print('Date: ' + str(date))
+        print('Title: ' + title)
+        print('People: ' + str(people))
+        print()
 
 if __name__ == '__main__':
     query_database()
