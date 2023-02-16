@@ -234,6 +234,11 @@ async def d20(ctx):
 #---------------------------------------------------------------------------
 @bot.command(description='Returns the next couple streams on the schedule.')
 async def schedule(ctx):
+	'''
+	Returns any streams scheduled for the next week.
+	Ex: -schedule
+	Dolores will return an embed of stream dates, names, and people.
+	'''
 	json_data = {"filter": {
 		            "property": "Date",
 		            "date": {
