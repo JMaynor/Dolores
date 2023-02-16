@@ -260,29 +260,29 @@ async def schedule(ctx):
 			print(response.json())
 		except:
 			print(response.content)
-			return
-
-	# Check for no streams
-	if len(response.json()['results']) == 0:
-		return 'No streams'
+		await send_result(ctx, 'Notion\'s API is giving an error, so couldn\'t get that for you, ' + random.choice(sarcastic_names))
+		return
 
 	embed = discord.Embed(title="Stream Schedule", description="Streams within the next week")
+	# Check for no streams
+	if len(response.json()['results']) == 0:
+		embed.add_field(name='Nada', value='We ain\'t got shit, bud.')
+	else:
+		for elem in response.json()['results']:
+			try:
+				date = elem['properties']['Date']['date']['start']
+			except:
+				date = ''
+			try:
+				title = elem['properties']['Name']['title'][0]['plain_text']
+			except:
+				title = ''
+			try:
+				people = ', '.join([person['name'] for person in elem['properties']['Tags']['multi_select']])
+			except:
+				people = ''
 
-	for elem in response.json()['results']:
-		try:
-			date = elem['properties']['Date']['date']['start']
-		except:
-			date = ''
-		try:
-			title = elem['properties']['Name']['title'][0]['plain_text']
-		except:
-			title = ''
-		try:
-			people = ', '.join([person['name'] for person in elem['properties']['Tags']['multi_select']])
-		except:
-			people = ''
-
-		embed.add_field(name=str(date), value=title + '   (' + people + ')', inline=False)
+			embed.add_field(name=str(date), value=title + '   (' + people + ')', inline=False)
 
 	await ctx.send(embed=embed)
 
