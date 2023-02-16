@@ -1,12 +1,17 @@
 import requests, yaml
 from pprint import pprint
 import discord
+from discord.ext import commands
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
 # config_file = '/home/dolores/config/config.yml'
 config_file = 'config\\config.yml'
 with open(config_file) as c:
 	config = yaml.safe_load(c)
+
+intents = discord.Intents.all()
+intents.members = True
+bot = commands.Bot(command_prefix='-', case_insensitive=True, intents=intents)
 
 headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
            'Notion-Version': config['NOTION']['notion_version']
@@ -20,7 +25,8 @@ def retrieve_database():
 
     pprint(response.json())
 
-def query_database():
+@bot.command(description='A catch-all command for rolling any number of any-sided dice.')
+async def query(ctx):
     json_data = {"filter": {
 		            "property": "Date",
 		            "date": {
@@ -34,30 +40,6 @@ def query_database():
 		            }
 	            ]
             }
-#     json_data = {
-#     "filter": {
-#         "and": [
-#             {
-#                 "property": "Date",
-#                 "date": {
-# 					"on_or_after": "2024-02-01"
-# 				}
-#             },
-#             {
-#                 "property": "Date",
-#                 "date": {
-# 					"on_or_before": "2024-02-28"
-# 				}
-#             }
-#         ]
-#     },
-# 	"sorts": [
-# 		{
-# 			"property": "Date",
-# 			"direction": "ascending"
-# 		}
-# 	]
-# }
 
     response = requests.post(config['NOTION']['base_url']
                             + 'databases/'
@@ -77,20 +59,15 @@ def query_database():
 
     embed = discord.Embed(title="Stream Schedule", description="Streams within the next week")
 
-    embed.add_field()
-
     for elem in response.json()['results']:
         # Add try catches for each of these
         date = elem['properties']['Date']['date']['start']
         title = elem['properties']['Name']['title'][0]['plain_text']
-        people = [person['name'] for person in elem['properties']['Tags']['multi_select']]
 
-        print('Date: ' + str(date))
-        print('Title: ' + title)
-        print('People: ' + str(people))
-        print()
+        people = ', '.join([person['name'] for person in elem['properties']['Tags']['multi_select']])
+        embed.add_field(name=str(date), value=title + '   (' + people + ')', inline=False)
+
+    await ctx.send(embed=embed)
 
 if __name__ == '__main__':
-    query_database()
-
-    # send message https://stackoverflow.com/questions/44862112/how-can-i-send-an-embed-via-my-discord-bot-w-python
+    bot.run(config['DISCORD']['test_bot_api_key'])
