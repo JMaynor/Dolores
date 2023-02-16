@@ -74,7 +74,6 @@ config_file = '/home/dolores/config/config.yml'
 # config_file = 'config\\config.yml'
 with open(config_file) as c:
 	config = yaml.safe_load(c)
-bot_api_key = config['DISCORD']['bot_api_key']
 diffusion_access_token = config['DISCORD']['diffusion_key']
 
 yt_dlp.utils.bug_reports_message = lambda: ''
@@ -85,9 +84,9 @@ chatbot = ChatBot('Dolores')
 trainer = ChatterBotCorpusTrainer(chatbot)
 trainer.train("chatterbot.corpus.english")
 
-# print('Setting up Stable Diffusion Pipeline')
-# pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", use_auth_token=diffusion_access_token)
-# print('Finished setting up Stable Diffusion Pipeline')
+notion_headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
+				'Notion-Version': config['NOTION']['notion_version']
+}
 
 def to_thread(func: typing.Callable) -> typing.Coroutine:
 	@functools.wraps(func)
@@ -235,7 +234,57 @@ async def d20(ctx):
 #---------------------------------------------------------------------------
 @bot.command(description='Returns the next couple streams on the schedule.')
 async def schedule(ctx):
-	print()
+	json_data = {"filter": {
+		            "property": "Date",
+		            "date": {
+			            "next_week": {}
+		            }
+                },
+	            "sorts": [
+		            {
+			            "property": "Date",
+			            "direction": "ascending"
+		            }
+	            ]
+            }
+
+	response = requests.post(config['NOTION']['base_url']
+                            + 'databases/'
+                            + config['NOTION']['database_id']
+                            + '/query'
+                            , headers=notion_headers
+                            , json = json_data)
+
+	if response.status_code != 200:
+		try:
+			print(response.json())
+		except:
+			print(response.content)
+			return
+
+	# Check for no streams
+	if len(response.json()['results']) == 0:
+		return 'No streams'
+
+	embed = discord.Embed(title="Stream Schedule", description="Streams within the next week")
+
+	for elem in response.json()['results']:
+		try:
+			date = elem['properties']['Date']['date']['start']
+		except:
+			date = ''
+		try:
+			title = elem['properties']['Name']['title'][0]['plain_text']
+		except:
+			title = ''
+		try:
+			people = ', '.join([person['name'] for person in elem['properties']['Tags']['multi_select']])
+		except:
+			people = ''
+
+		embed.add_field(name=str(date), value=title + '   (' + people + ')', inline=False)
+
+	await ctx.send(embed=embed)
 
 #---------------------------------------------------------------------------
 # Audio/Music
@@ -326,4 +375,4 @@ async def leave(ctx):
 #---------------------------------------------------------------------------
 if __name__ == '__main__':
 	print('Starting main program...')
-	bot.run(bot_api_key)
+	bot.run(config['DISCORD']['bot_api_key'])

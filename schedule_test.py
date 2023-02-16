@@ -13,9 +13,9 @@ intents = discord.Intents.all()
 intents.members = True
 bot = commands.Bot(command_prefix='-', case_insensitive=True, intents=intents)
 
-headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
+notion_headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
            'Notion-Version': config['NOTION']['notion_version']
-        }
+}
 
 def retrieve_database():
     response = requests.get(config['NOTION']['base_url']
