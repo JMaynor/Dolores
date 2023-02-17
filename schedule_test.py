@@ -101,7 +101,6 @@ if __name__ == '__main__':
         print('No streams')
 
     for elem in response.json()['results']:
-        # Add try catches for each of these
         date = elem['properties']['Date']['date']['start']
         date_weekday = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%A')
         print(date_weekday)

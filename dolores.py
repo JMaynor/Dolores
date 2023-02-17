@@ -63,7 +63,12 @@ sarcastic_names = ['my lovely',
 				   'honey',
 				   'foxy mama',
 				   'loathsome dung eater',
-				   'baby girl']
+				   'baby girl',
+				   'Felicia',
+				   'mamacita',
+				   'diva',
+				   'hunty',
+				   'Queen']
 
 intents = discord.Intents.all()
 intents.members = True
@@ -268,10 +273,10 @@ async def schedule(ctx):
 		await send_result(ctx, 'Notion\'s API is giving an error, so couldn\'t get that for you, ' + random.choice(sarcastic_names))
 		return
 
-	embed = discord.Embed(title="Stream Schedule", description="Streams within the next week")
+	embed = discord.Embed(title="Stream Schedule", description="Streams within the next week.")
 	# Check for no streams
 	if len(response.json()['results']) == 0:
-		embed.add_field(name='Nada', value='We ain\'t got shit, bud.')
+		embed.add_field(name='Nada', value='We ain\'t got shit scheduled, ' + random.choice(sarcastic_names))
 	else:
 		for elem in response.json()['results']:
 			try:
