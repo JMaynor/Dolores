@@ -1,4 +1,4 @@
-import requests, yaml
+import requests, yaml, datetime
 from pprint import pprint
 import discord
 from discord.ext import commands
@@ -70,4 +70,41 @@ async def query(ctx):
     await ctx.send(embed=embed)
 
 if __name__ == '__main__':
-    bot.run(config['DISCORD']['test_bot_api_key'])
+    # bot.run(config['DISCORD']['test_bot_api_key'])
+    json_data = {"filter": {
+                "property": "Date",
+                "date": {
+                    "next_week": {}
+                }
+            },
+            "sorts": [
+                {
+                    "property": "Date",
+                    "direction": "ascending"
+                }
+            ]
+        }
+
+    response = requests.post(config['NOTION']['base_url']
+                            + 'databases/'
+                            + config['NOTION']['database_id']
+                            + '/query'
+                            , headers=notion_headers
+                            , json = json_data)
+
+    if response.status_code != 200:
+        try: pprint(response.json())
+        except: print(response.content)
+
+    # Check for no streams
+    if len(response.json()['results']) == 0:
+        print('No streams')
+
+    for elem in response.json()['results']:
+        # Add try catches for each of these
+        date = elem['properties']['Date']['date']['start']
+        date_weekday = datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%A')
+        print(date_weekday)
+        title = elem['properties']['Name']['title'][0]['plain_text']
+
+        people = ', '.join([person['name'] for person in elem['properties']['Tags']['multi_select']])

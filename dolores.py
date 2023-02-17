@@ -276,8 +276,10 @@ async def schedule(ctx):
 		for elem in response.json()['results']:
 			try:
 				date = elem['properties']['Date']['date']['start']
+				date_weekday = datetime.strptime(date, '%Y-%m-%d').strftime('%A')
 			except:
 				date = ''
+				date_weekday = ''
 			try:
 				title = elem['properties']['Name']['title'][0]['plain_text']
 			except:
@@ -287,7 +289,9 @@ async def schedule(ctx):
 			except:
 				people = ''
 
-			embed.add_field(name=str(date), value=title + '   (' + people + ')', inline=False)
+			embed.add_field(name=date +  ' ' + date_weekday
+		   					, value=title + '   (' + people + ')'
+							, inline=False)
 
 	await ctx.send(embed=embed)
 
