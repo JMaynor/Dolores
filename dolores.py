@@ -132,7 +132,8 @@ async def on_command_error(ctx, error):
 			'Homeless.',
 			'Goon.',
 			'You goonga.',
-			'Prison, honey.']
+			'Prison, honey.',
+			'No.']
 		await ctx.send(random.choice(snarky_comments))
 	else:
 		print(error, file=sys.stderr)
@@ -145,6 +146,8 @@ async def on_message(message):
 	Any message that contains a mention of Dolores will be handled using the chatbot
 	functionality. Otherwise, the text is sent to the default process_commands discord.py function.
 	'''
+	# Perhaps start saving all messages locally here. Turn it on for a given amount of time
+	# and see how much data you get.
 	if bot.user.mentioned_in(message):
 		await message.channel.send(chatbot.get_response(message.clean_content.replace('@Dolores', '')))
 	await bot.process_commands(message)

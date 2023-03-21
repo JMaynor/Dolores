@@ -1,4 +1,4 @@
-import requests, yaml, datetime
+import requests, yaml, datetime, os, threading
 from pprint import pprint
 import discord
 from discord.ext import commands
@@ -9,68 +9,26 @@ config_file = 'config\\config.yml'
 with open(config_file) as c:
 	config = yaml.safe_load(c)
 
-intents = discord.Intents.all()
-intents.members = True
-bot = commands.Bot(command_prefix='-', case_insensitive=True, intents=intents)
+# intents = discord.Intents.all()
+# intents.members = True
+# bot = commands.Bot(command_prefix='-', case_insensitive=True, intents=intents)
 
 notion_headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
            'Notion-Version': config['NOTION']['notion_version']
 }
 
+# twitch_headers = {'Auhtorization': 'Bearer ' + config['TWITCH']['api_key']}
+twitch_headers = {'Auhtorization': '',
+                  'Client-ID': config['TWITCH']['client_id'],}
+
 def retrieve_database():
     response = requests.get(config['NOTION']['base_url']
                             + 'databases/'
                             + config['NOTION']['database_id']
-                            , headers=headers)
-
+                            , headers=notion_headers)
     pprint(response.json())
 
-@bot.command(description='A catch-all command for rolling any number of any-sided dice.')
-async def query(ctx):
-    json_data = {"filter": {
-		            "property": "Date",
-		            "date": {
-			            "next_week": {}
-		            }
-                },
-	            "sorts": [
-		            {
-			            "property": "Date",
-			            "direction": "ascending"
-		            }
-	            ]
-            }
-
-    response = requests.post(config['NOTION']['base_url']
-                            + 'databases/'
-                            + config['NOTION']['database_id']
-                            + '/query'
-                            , headers=headers
-                            , json = json_data)
-
-    if response.status_code != 200:
-        try: pprint(response.json())
-        except: print(response.content)
-        return
-
-    # Check for no streams
-    if len(response.json()['results']) == 0:
-        return 'No streams'
-
-    embed = discord.Embed(title="Stream Schedule", description="Streams within the next week")
-
-    for elem in response.json()['results']:
-        # Add try catches for each of these
-        date = elem['properties']['Date']['date']['start']
-        title = elem['properties']['Name']['title'][0]['plain_text']
-
-        people = ', '.join([person['name'] for person in elem['properties']['Tags']['multi_select']])
-        embed.add_field(name=str(date), value=title + '   (' + people + ')', inline=False)
-
-    await ctx.send(embed=embed)
-
-if __name__ == '__main__':
-    # bot.run(config['DISCORD']['test_bot_api_key'])
+def query():
     json_data = {"filter": {
                 "property": "Date",
                 "date": {
@@ -107,3 +65,61 @@ if __name__ == '__main__':
         title = elem['properties']['Name']['title'][0]['plain_text']
 
         people = ', '.join([person['name'] for person in elem['properties']['Tags']['multi_select']])
+        print('Title: ' + title)
+        print('People: ' + people)
+
+def sync_schedules_job():
+    '''
+    This function is called every week on Sunday to sync the Twitch schedule with the Notion schedule
+    '''
+
+# Function to get a bearer token for Twitch API calls
+def get_twitch_token():
+    # Get token first
+    json_data = {"client_id": config['TWITCH']['client_id'],
+                "client_secret": config['TWITCH']['client_secret'],
+                "grant_type": "client_credentials"
+                }
+
+    response = requests.post('https://id.twitch.tv/oauth2/token'
+                            , headers=twitch_headers
+                            , json = json_data)
+
+    if response.status_code != 200:
+        try: pprint(response.json())
+        except: print(response.content)
+
+    print(response.json())
+
+# Function to get the schedule from Twitch
+def get_twitch_sched():
+    # Get token first
+    json_data = {"client_id": config['TWITCH']['client_id'],
+                "client_secret": config['TWITCH']['client_secret'],
+                "grant_type": "client_credentials"
+                }
+
+    response = requests.post('https://id.twitch.tv/oauth2/token'
+                            , headers=twitch_headers
+                            , json = json_data)
+
+    if response.status_code != 200:
+        try: pprint(response.json())
+        except: print(response.content)
+
+    # pprint(response.json())
+    twitch_token = response.json()['access_token']
+
+    # Get the schedule
+    twitch_headers['Authorization'] = 'Bearer ' + twitch_token
+    json_data = {"broadcaster_id": config['TWITCH']['broadcaster_id']}
+    response = requests.get('https://api.twitch.tv/helix/schedule'
+                            , headers=twitch_headers
+                            , params = json_data)
+
+    if response.status_code != 200:
+        try: pprint(response.json())
+        except: print(response.content)
+
+if __name__ == '__main__':
+    get_twitch_sched()
