@@ -1,12 +1,19 @@
-import requests, yaml, datetime, os, threading
+'''
+schedule_test.py
+This script is used to test the Twitch API schedule endpoint as well as the Notion API
+'''
+# pylint: disable=line-too-long, bad-indentation, bare-except, multiple-statements
+import datetime
+import os
+import threading
 from pprint import pprint
-import discord
-from discord.ext import commands
+import yaml
+import requests
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
-# config_file = '/home/dolores/config/config.yml'
-config_file = 'config\\config.yml'
-with open(config_file) as c:
+# CONFIG_FILE = '/home/dolores/config/config.yml'
+CONFIG_FILE = 'config\\config.yml'
+with open(CONFIG_FILE, 'r', encoding='UTF-8') as c:
 	config = yaml.safe_load(c)
 
 # intents = discord.Intents.all()
@@ -22,13 +29,20 @@ twitch_headers = {'Auhtorization': '',
                   'Client-ID': config['TWITCH']['client_id'],}
 
 def retrieve_database():
+    '''
+    Retrieve the Notion database details
+    '''
     response = requests.get(config['NOTION']['base_url']
                             + 'databases/'
                             + config['NOTION']['database_id']
-                            , headers=notion_headers)
+                            , headers=notion_headers
+                            , timeout=30)
     pprint(response.json())
 
 def query():
+    '''
+    Query the Notion database for the next week's streams
+    '''
     json_data = {"filter": {
                 "property": "Date",
                 "date": {
@@ -48,7 +62,8 @@ def query():
                             + config['NOTION']['database_id']
                             + '/query'
                             , headers=notion_headers
-                            , json = json_data)
+                            , json = json_data
+                            , timeout=30)
 
     if response.status_code != 200:
         try: pprint(response.json())
@@ -75,6 +90,9 @@ def sync_schedules_job():
 
 # Function to get a bearer token for Twitch API calls
 def get_twitch_token():
+    '''
+    Get access token from Twitch API
+    '''
     # Get token first
     json_data = {"client_id": config['TWITCH']['client_id'],
                 "client_secret": config['TWITCH']['client_secret'],
@@ -83,7 +101,8 @@ def get_twitch_token():
 
     response = requests.post('https://id.twitch.tv/oauth2/token'
                             , headers=twitch_headers
-                            , json = json_data)
+                            , json = json_data
+                            , timeout=30)
 
     if response.status_code != 200:
         try: pprint(response.json())
@@ -91,8 +110,10 @@ def get_twitch_token():
 
     print(response.json())
 
-# Function to get the schedule from Twitch
 def get_twitch_sched():
+    '''
+    Function to get the schedule from Twitch API
+    '''
     # Get token first
     json_data = {"client_id": config['TWITCH']['client_id'],
                 "client_secret": config['TWITCH']['client_secret'],
@@ -101,8 +122,10 @@ def get_twitch_sched():
 
     response = requests.post('https://id.twitch.tv/oauth2/token'
                             , headers=twitch_headers
-                            , json = json_data)
+                            , json = json_data
+                            , timeout=30)
 
+    # If response isn't 200, print the error
     if response.status_code != 200:
         try: pprint(response.json())
         except: print(response.content)
@@ -115,11 +138,14 @@ def get_twitch_sched():
     json_data = {"broadcaster_id": config['TWITCH']['broadcaster_id']}
     response = requests.get('https://api.twitch.tv/helix/schedule'
                             , headers=twitch_headers
-                            , params = json_data)
+                            , params = json_data
+                            , timeout=30)
 
     if response.status_code != 200:
         try: pprint(response.json())
         except: print(response.content)
+
+    pprint(response.json())
 
 if __name__ == '__main__':
     get_twitch_sched()

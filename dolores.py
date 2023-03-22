@@ -9,7 +9,7 @@ but she is also capable of doing some basic audio things as well as creating
 images using Stable Diffusion.
 '''
 
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, bad-indentation, bare-except
 import random
 import asyncio
 # import pandas
@@ -105,6 +105,9 @@ def to_thread(func: typing.Callable) -> typing.Coroutine:
 
 @bot.event
 async def on_ready():
+	'''
+	on_ready gets called when the bot starts up. It prints some basic info to the console.
+	'''
 	print('Time is: ', datetime.now())
 	print('Bring yourself online, ', bot.user.name)
 	print('-----------------------------')
@@ -184,7 +187,7 @@ async def roll(ctx, *dice_batches):
 		try:
 			rolls, limit = map(int, dice_batch.split('d'))
 		except ValueError:
-			await ctx.send('Format has to be in NdN, {}.'.format(random.choice(sarcastic_names)))
+			await ctx.send(f'Format has to be in NdN, {random.choice(sarcastic_names)}.')
 			return
 		rolls_result = [str(random.randint(1, limit)) for r in range(rolls)]
 		if len(rolls_result) > 500:
@@ -266,7 +269,8 @@ async def schedule(ctx):
                             + config['NOTION']['database_id']
                             + '/query'
                             , headers=notion_headers
-                            , json = json_data)
+                            , json = json_data
+							, timeout=30)
 
 	if response.status_code != 200:
 		try:
@@ -355,7 +359,7 @@ async def play(ctx, *, url):
 	Note: Due to drama with yt-dlp, may or may mot be working at this point
 	'''
 	member = ctx.message.author
-	member_id = member.id
+	# member_id = member.id
 	try:
 		channel = member.voice.channel
 		if channel and ctx.voice_client is None:
