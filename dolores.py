@@ -67,7 +67,8 @@ sarcastic_names = ['my lovely',
 				   'mamacita',
 				   'diva',
 				   'hunty',
-				   'Queen']
+				   'Queen',
+				   'Jan']
 
 intents = discord.Intents.all()
 intents.members = True
