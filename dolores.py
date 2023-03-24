@@ -14,12 +14,11 @@ import random
 import asyncio
 # import pandas
 import sys
-import requests
-import json
-import yaml
 from datetime import datetime
 import functools
 import typing
+import yaml
+import requests
 import yt_dlp
 import discord
 # import torch
@@ -75,9 +74,9 @@ intents.members = True
 bot = commands.Bot(command_prefix='-', case_insensitive=True, intents=intents)
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
-config_file = '/home/dolores/config/config.yml'
-# config_file = 'config\\config.yml'
-with open(config_file) as c:
+CONFIG_FILE = '/home/dolores/config/config.yml'
+# CONFIG_FILE = 'config\\config.yml'
+with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
 	config = yaml.safe_load(c)
 diffusion_access_token = config['DISCORD']['diffusion_key']
 
@@ -94,6 +93,10 @@ notion_headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
 }
 
 def to_thread(func: typing.Callable) -> typing.Coroutine:
+	'''
+	to_thread is a decorator that allows a function to be run in a separate thread.
+	This is useful for functions that are CPU intensive or that are blocking.
+	'''
 	@functools.wraps(func)
 	async def wrapper(*args, **kwargs):
 		return await asyncio.to_thread(func, *args, **kwargs)
@@ -344,9 +347,9 @@ async def speak(ctx, message=None):
 	Dolores will randomly say a phrase from a predetermined list.
 	'''
 	if message is None:
-		await send_result(ctx, random.choice(list_of_phrases), tts=True)
+		await send_result(ctx, random.choice(list_of_phrases))
 	else:
-		await send_result(ctx, message, tts=True)
+		await send_result(ctx, message)
 
 
 @bot.command(description='Use\'s youtube-dl to play an audio stream in the General voice channel.')
@@ -364,9 +367,11 @@ async def play(ctx, *, url):
 		channel = member.voice.channel
 		if channel and ctx.voice_client is None:
 			voice = await channel.connect()
-	except AttributeError: await send_result(ctx, 'Must be connected to voice channel to play audio.')
+	except AttributeError:
+		await send_result(ctx, 'Must be connected to voice channel to play audio.')
 
-	if ctx.voice_client.is_playing(): ctx.voice_client.stop()
+	if ctx.voice_client.is_playing():
+		ctx.voice_client.stop()
 
 	async with ctx.typing():
 		player = await YTDLSource.from_url(url, loop=bot.loop, stream=False)
@@ -379,7 +384,8 @@ async def stop(ctx):
 	Stops the currently playing song, if one is playing.
 	Ex: -stop
 	'''
-	if ctx.voice_client.is_playing(): ctx.voice_client.stop()
+	if ctx.voice_client.is_playing():
+		ctx.voice_client.stop()
 
 @bot.command(description='Disconnects Dolores from voice channel.')
 async def leave(ctx):
@@ -388,7 +394,8 @@ async def leave(ctx):
 	Also stops any currently playing music
 	Ex: -leave
 	'''
-	if ctx.voice_client.is_playing(): ctx.voice_client.stop()
+	if ctx.voice_client.is_playing():
+		ctx.voice_client.stop()
 	await ctx.voice_client.disconnect()
 
 #---------------------------------------------------------------------------
