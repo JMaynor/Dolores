@@ -5,8 +5,10 @@ Date: Apr 2020
 
 Dolores is a chatbot that connects to a Discord server. Her primary use
 is in being able to roll dice for players of a tabletop roleplaying game
-but she is also capable of doing some basic audio things as well as creating
-images using Stable Diffusion.
+but she is also capable of doing some basic audio things.
+
+TODO: Use llama.cpp to add proper LLM-based chat functionality
+TODO: Use stable diffusion to generate images
 '''
 
 # pylint: disable=line-too-long, bad-indentation, bare-except
@@ -343,7 +345,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 @bot.command(description='Uses Discord\'s text-to-speech capability to have Dolores say something.')
 async def speak(ctx, message=None):
 	'''
-	Picks a random phrase and has Dolores say it out loud.
+	Picks a random phrase for Dolores to say.
 	Ex: -speak
 	Dolores will randomly say a phrase from a predetermined list.
 	'''
@@ -353,14 +355,13 @@ async def speak(ctx, message=None):
 		await send_result(ctx, message)
 
 
-@bot.command(description='Use\'s youtube-dl to play an audio stream in the General voice channel.')
+@bot.command(description='Use\'s yt-dlp to play an audio stream in the user\'s voice channel.')
 async def play(ctx, *, url):
 	'''
 	Plays a song from a given URL in the user's current voice channel.
 	Valid URLS are Youtube and Soundcloud
 	Ex: -play https://www.youtube.com/watch?v=O1OTWCd40bc
 	Dolores will play Wicked Games by The Weeknd
-	Note: Due to drama with yt-dlp, may or may mot be working at this point
 	'''
 	member = ctx.message.author
 	# member_id = member.id
@@ -379,7 +380,7 @@ async def play(ctx, *, url):
 		voice.play(player, after=lambda e: print('Player error: {}'.format(e)) if e else None)
 	await ctx.send('Now playing: {}'.format(player.title))
 
-@bot.command(description='Stops the currently playing audio in the General voice channel.')
+@bot.command(description='Stops the currently playing audio.')
 async def stop(ctx):
 	'''
 	Stops the currently playing song, if one is playing.

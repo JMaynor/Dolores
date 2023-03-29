@@ -1,7 +1,7 @@
 # Contains all config options for Dolores
 DISCORD:
-  bot_api_key: Bot API Key Here
-  diffusion_key: Stable Diffusion Key Here
+  bot_api_key: BOT_API_KEY_HERE
+  diffusion_key: STABLE_DIFFUSION_KEY_HERE_CURRENTLY_UNUSED
 YTDL:
   format: bestaudio/best
   outtmpl: '%(extractor)s-%(id)s-%(title)s.%(ext)s'
@@ -14,3 +14,13 @@ YTDL:
   no_warnings: True
   default_search: auto
   source_address: '0.0.0.0'
+NOTION:
+  base_url: https://api.notion.com/v1/
+  api_key: NOTION_API_KEY_HERE
+  notion_version: '2022-06-28'
+  database_id: NOTION_DATABASEID_WITH_STREAM_CALENDAR_HERE
+TWITCH:
+  client_id: TWITCH_CLIENT_ID
+  client_secret: TWITCH_CLIENT_SECRET
+  broadcaster_name: BRAODCASTER_NAME
+  broadcaster_id: 123
