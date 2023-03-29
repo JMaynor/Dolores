@@ -241,6 +241,10 @@ async def d20(ctx):
 
 # @bot.command(description='Creates an image from the word prompt.')
 # async def create(ctx, *, prompt):
+# 	'''
+# 	TODO: Create a function that creates an image from the word prompt.
+# 	Creates an image from the word prompt.
+#	'''
 # 	await ctx.send('Working on it.')
 # 	image_file = await nonblock_create_image(ctx, prompt)
 # 	await ctx.reply(file=image_file, content='This is my design.')
