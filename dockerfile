@@ -1,7 +1,7 @@
 FROM python
 RUN apt-get -y update && apt-get install -y ffmpeg
 RUN python -m pip install --upgrade pip
-RUN pip install discord.py[voice]
+RUN pip install py-cord[voice]
 # RUN pip install sqlalchemy
 # RUN pip install chatterbot==1.0.4
 RUN pip install pyyaml
