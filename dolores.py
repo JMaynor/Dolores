@@ -6,9 +6,6 @@ Date: Apr 2020
 Dolores is a chatbot that connects to a Discord server. Her primary use
 is in being able to roll dice for players of a tabletop roleplaying game
 but she is also capable of doing some basic audio things.
-
-TODO: Use llama.cpp to add proper LLM-based chat functionality
-TODO: Use stable diffusion to generate images
 '''
 
 # pylint: disable=line-too-long, bad-indentation, bare-except
@@ -25,7 +22,7 @@ import yt_dlp
 import discord
 # import torch
 # from diffusers import StableDiffusionPipeline
-from discord.ext import commands
+from discord.ext import commands, bridge
 import sqlalchemy
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
@@ -74,7 +71,7 @@ sarcastic_names = ['my lovely',
 
 intents = discord.Intents.all()
 intents.members = True
-bot = commands.Bot(command_prefix='-', case_insensitive=True, intents=intents)
+bot = bridge.Bot(command_prefix='-', case_insensitive=True, intents=intents)
 
 # Pull keys and various config info from config.yml file in same directory as dolores.py
 CONFIG_FILE = '/home/dolores/config/config.yml'
@@ -94,16 +91,6 @@ trainer.train("chatterbot.corpus.english")
 notion_headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
 				'Notion-Version': config['NOTION']['notion_version']
 }
-
-def to_thread(func: typing.Callable) -> typing.Coroutine:
-	'''
-	to_thread is a decorator that allows a function to be run in a separate thread.
-	This is useful for functions that are CPU intensive or that are blocking.
-	'''
-	@functools.wraps(func)
-	async def wrapper(*args, **kwargs):
-		return await asyncio.to_thread(func, *args, **kwargs)
-	return wrapper
 
 #---------------------------------------------------------------------------
 # Bot Events & Utility Functions
@@ -182,7 +169,7 @@ async def send_result(ctx, message):
 # Dice Rolling & Randomization
 #---------------------------------------------------------------------------
 
-@bot.command(description='A catch-all command for rolling any number of any-sided dice.')
+@bot.bridge_command(description='A catch-all command for rolling any number of any-sided dice.')
 async def roll(ctx, *dice_batches):
 	'''
 	Rolls a dice in NdN format.
@@ -206,7 +193,7 @@ async def roll(ctx, *dice_batches):
 		await send_result(ctx, formatted_rolls)
 
 
-@bot.command(description='For when you can\'t make a simple decision to save your life.')
+@bot.bridge_command(description='For when you can\'t make a simple decision to save your life.')
 async def choose(ctx, *choices: str):
 	'''
 	Chooses between multiple choices.
@@ -216,7 +203,7 @@ async def choose(ctx, *choices: str):
 	await send_result(ctx, random.choice(choices))
 
 
-@bot.command(description='Modified dice-roll command to roll a single d20. Short and sweet.')
+@bot.bridge_command(description='Modified dice-roll command to roll a single d20. Short and sweet.')
 async def d20(ctx):
 	'''
 	Rolls a single d20
@@ -228,32 +215,28 @@ async def d20(ctx):
 	await send_result(ctx, roll_result)
 
 
-# #---------------------------------------------------------------------------
-# # Image Creation
-# #---------------------------------------------------------------------------
-# @to_thread
-# def nonblock_create_image(ctx, prompt):
-# 	image = pipe(prompt)["sample"][0]
-# 	image_name = "{0}{1}.png".format(str(ctx.author).split('#')[0], datetime.now().strftime("%Y-%m-%d %H%M%S"))
-# 	image.save(image_name)
-# 	image_file = discord.File(image_name)
-# 	return image_file
-
-# @bot.command(description='Creates an image from the word prompt.')
-# async def create(ctx, *, prompt):
-# 	'''
-# 	TODO: Create a function that creates an image from the word prompt.
-# 	Creates an image from the word prompt.
-#	'''
-# 	await ctx.send('Working on it.')
-# 	image_file = await nonblock_create_image(ctx, prompt)
-# 	await ctx.reply(file=image_file, content='This is my design.')
-
-
 #---------------------------------------------------------------------------
 # Schedule
 #---------------------------------------------------------------------------
-@bot.command(description='Returns the next couple streams on the schedule.')
+def get_notion_schedule():
+	'''
+	Returns the next couple streams on the schedule.
+	'''
+	print()
+
+def clear_twitch_schedule():
+	'''
+	Clears the Twitch schedule of all recurring segments
+	'''
+	print()
+
+def add_twitch_segment():
+	'''
+	Adds a recurring segment to the Twitch schedule
+	'''
+	print()
+
+@bot.bridge_command(description='Returns the next couple streams on the schedule.')
 async def schedule(ctx):
 	'''
 	Returns any streams scheduled for the next week.
@@ -346,7 +329,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 		return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
-@bot.command(description='Uses Discord\'s text-to-speech capability to have Dolores say something.')
+@bot.bridge_command(description='Uses Discord\'s text-to-speech capability to have Dolores say something.')
 async def speak(ctx, message=None):
 	'''
 	Picks a random phrase for Dolores to say.
@@ -359,7 +342,7 @@ async def speak(ctx, message=None):
 		await send_result(ctx, message)
 
 
-@bot.command(description='Use\'s yt-dlp to play an audio stream in the user\'s voice channel.')
+@bot.bridge_command(description='Use\'s yt-dlp to play an audio stream in the user\'s voice channel.')
 async def play(ctx, *, url):
 	'''
 	Plays a song from a given URL in the user's current voice channel.
@@ -384,7 +367,7 @@ async def play(ctx, *, url):
 		voice.play(player, after=lambda e: print('Player error: {}'.format(e)) if e else None)
 	await ctx.send('Now playing: {}'.format(player.title))
 
-@bot.command(description='Stops the currently playing audio.')
+@bot.bridge_command(description='Stops the currently playing audio.')
 async def stop(ctx):
 	'''
 	Stops the currently playing song, if one is playing.
@@ -393,7 +376,7 @@ async def stop(ctx):
 	if ctx.voice_client.is_playing():
 		ctx.voice_client.stop()
 
-@bot.command(description='Disconnects Dolores from voice channel.')
+@bot.bridge_command(description='Disconnects Dolores from voice channel.')
 async def leave(ctx):
 	'''
 	Disconnects Dolores from voice chat channel, if she is connected.

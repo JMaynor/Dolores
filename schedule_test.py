@@ -86,7 +86,25 @@ def query():
 def sync_schedules_job():
     '''
     This function is called every week on Sunday to sync the Twitch schedule with the Notion schedule
+    First, clear twitch schedule
+    Then, query Notion for the next week's streams
+    Then, add each stream to Twitch schedule
     '''
+    # Clear Twitch schedule first
+    clear_twitch_sched()
+    query()
+    set_twitch_sched()
+
+def clear_twitch_sched():
+    '''
+    Function to clear the Twitch schedule
+    '''
+    # Get token first
+    json_data = {"client_id": config['TWITCH']['client_id'],
+                "client_secret": config['TWITCH']['client_secret'],
+                "grant_type": "client_credentials"
+                }
+    
 
 # Function to get a bearer token for Twitch API calls
 def get_twitch_token():
@@ -148,4 +166,5 @@ def get_twitch_sched():
     pprint(response.json())
 
 if __name__ == '__main__':
-    get_twitch_sched()
+    # get_twitch_sched()
+    retrieve_database()

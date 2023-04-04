@@ -1,2 +1,4 @@
 config.yml
 *.png
+twitch_sched_exam.json
+notion_sched_exam.json
