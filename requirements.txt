@@ -1,6 +1,11 @@
+pytz
+requests
+nltk
+pint
+mathparse
+ftfy
+pyyaml
 pandas
-youtube_dl
+yt-dlp
 py-cord[voice]
-torch
-diffusers
 # chatterbot == 1.0.4
