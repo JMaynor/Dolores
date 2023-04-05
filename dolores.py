@@ -80,7 +80,7 @@ else:
 	CONFIG_FILE = '/home/dolores/config/config.yml'
 with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
 	config = yaml.safe_load(c)
-diffusion_access_token = config['DISCORD']['diffusion_key']
+diffusion_access_token = config['STABLEDIFFUSION']['diffusion_key']
 
 yt_dlp.utils.bug_reports_message = lambda: ''
 ffmpeg_options = {'options': '-vn'}
@@ -151,22 +151,6 @@ async def on_message(message):
 	await bot.process_commands(message)
 
 
-# async def send_result(ctx, message):
-# 	'''
-# 	Standard function for sending a message from the bot.
-# 	Formatted as Requester:  (Command Result)
-# 	Also displays a typing indicator for a second.
-# 	'''
-# 	async with ctx.typing():
-# 		await asyncio.sleep(1)
-
-# 	# if isinstance(ctx.channel, discord.channel.DMChannel):
-# 	if hasattr(ctx.author, 'nick'):
-# 	# if ctx.author.nick is None:
-# 		await ctx.respond('{}:    {}'.format(str(ctx.author.nick).split('#')[0], message))
-# 	else:
-# 		await ctx.respond('{}:    {}'.format(str(ctx.author).split('#')[0], message))
-
 #---------------------------------------------------------------------------
 # Dice Rolling & Randomization
 #---------------------------------------------------------------------------
@@ -184,10 +168,14 @@ async def roll(ctx, *dice_batches: str):
 		try:
 			rolls, limit = map(int, dice_batch.split('d'))
 		except ValueError:
+			async with ctx.typing():
+				await asyncio.sleep(1)
 			await ctx.respond(f'Format has to be in NdN, {random.choice(sarcastic_names)}.')
 			return
 		rolls_result = [str(random.randint(1, limit)) for r in range(rolls)]
 		if len(rolls_result) > 500:
+			async with ctx.typing():
+				await asyncio.sleep(1)
 			await ctx.respond(random.choice(['I ain\'t rollin all that for you...', 'Absolutely not.', 'No.']))
 			return
 		formatted_rolls = '(d' + str(limit) + ')  ' + ', '.join(rolls_result)
@@ -198,33 +186,6 @@ async def roll(ctx, *dice_batches: str):
 			await asyncio.sleep(1)
 		await ctx.respond(formatted_rolls)
 
-# @bot.bridge_command(description='A catch-all command for rolling any number of any-sided dice.')
-# async def dmroll(ctx, *dice_batches):
-# 	'''
-# 	Rolls a dice in NdN format.
-# 	Ex: -roll 5d10 3d8 2d4
-# 	Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
-# 	'''
-# 	print(dice_batches)
-# 	print(type(dice_batches))
-# 	for dice_batch in dice_batches:
-# 		try:
-# 			rolls, limit = map(int, dice_batch.split('d'))
-# 		except ValueError:
-# 			await ctx.respond(f'Format has to be in NdN, {random.choice(sarcastic_names)}.')
-# 			return
-# 		rolls_result = [str(random.randint(1, limit)) for r in range(rolls)]
-# 		if len(rolls_result) > 500:
-# 			await ctx.respond(random.choice(['I ain\'t rollin all that for you...', 'Absolutely not.', 'No.']))
-# 			return
-# 		formatted_rolls = '(d' + str(limit) + ')  ' + ', '.join(rolls_result)
-# 		if limit != 20 and len(rolls_result) >= 3:
-# 			formatted_rolls = formatted_rolls + '    Sum: ' + \
-# 				str(sum([int(x) for x in rolls_result]))
-# 		async with ctx.typing():
-# 			await asyncio.sleep(1)
-# 		await ctx.respond(formatted_rolls, ephemeral=True)
-
 
 @bot.bridge_command(description='For when you can\'t make a simple decision to save your life.')
 async def choose(ctx, *choices: str):
@@ -233,6 +194,8 @@ async def choose(ctx, *choices: str):
 	Ex: -choose "Kill the king" "Save the king" "Fuck the King"
 	Dolores would randomly choose one of the options you give her and return the result.
 	'''
+	async with ctx.typing():
+		await asyncio.sleep(1)
 	await ctx.respond(random.choice(choices))
 
 
@@ -243,9 +206,9 @@ async def d20(ctx):
 	Ex: -d20
 	Dolores rolls a single d20 and returns the result.
 	'''
-	roll_result = random.randint(1, 20)
-	roll_result = '(d20)  ' + str(roll_result)
-	await ctx.respond(roll_result)
+	async with ctx.typing():
+		await asyncio.sleep(1)
+	await ctx.respond('(d20)  ' + str(random.randint(1, 20)))
 
 
 #---------------------------------------------------------------------------
@@ -303,7 +266,9 @@ async def schedule(ctx):
 			print(response.json())
 		except:
 			print(response.content)
-		await ctx.respond('Notion\'s API is giving an error, so couldn\'t get that for you, ' + random.choice(sarcastic_names))
+		async with ctx.typing():
+			await asyncio.sleep(1)
+		await ctx.respond('Notion\'s API is giving an error, so I couldn\'t get that for you, ' + random.choice(sarcastic_names))
 		return
 
 	embed = discord.Embed(title="Stream Schedule", description="Streams within the next week.")
@@ -330,7 +295,8 @@ async def schedule(ctx):
 			embed.add_field(name=date +  ' ' + date_weekday
 		   					, value=title + '   (' + people + ')'
 							, inline=False)
-
+	async with ctx.typing():
+		await asyncio.sleep(1)
 	await ctx.respond(embed=embed)
 
 #---------------------------------------------------------------------------
@@ -370,8 +336,12 @@ async def speak(ctx, message=None):
 	Dolores will randomly say a phrase from a predetermined list.
 	'''
 	if message is None:
+		async with ctx.typing():
+			await asyncio.sleep(1)
 		await ctx.respond(random.choice(list_of_phrases))
 	else:
+		async with ctx.typing():
+			await asyncio.sleep(1)
 		await ctx.respond(message)
 
 
@@ -390,6 +360,8 @@ async def play(ctx, *, url):
 		if channel and ctx.voice_client is None:
 			voice = await channel.connect()
 	except AttributeError:
+		async with ctx.typing():
+			await asyncio.sleep(1)
 		await ctx.respond('Must be connected to voice channel to play audio.')
 
 	if ctx.voice_client.is_playing():
@@ -398,6 +370,8 @@ async def play(ctx, *, url):
 	async with ctx.typing():
 		player = await YTDLSource.from_url(url, loop=bot.loop, stream=True)
 		voice.play(player, after=lambda e: print('Player error: {}'.format(e)) if e else None)
+	async with ctx.typing():
+		await asyncio.sleep(1)
 	await ctx.respond('Now playing: {}'.format(player.title))
 
 @bot.bridge_command(description='Stops the currently playing audio.')
@@ -425,4 +399,5 @@ async def leave(ctx):
 #---------------------------------------------------------------------------
 if __name__ == '__main__':
 	print('Starting main program...')
-	bot.run(config['DISCORD']['bot_api_key'])
+	# bot.run(config['DISCORD']['bot_api_key'])
+	bot.run(config['DISCORD']['test_api_key'])
