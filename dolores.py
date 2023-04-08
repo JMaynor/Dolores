@@ -26,6 +26,24 @@ import sqlalchemy
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 
+snarky_comments = [
+	'How many sessions is it gonna take before you people understand how to use my commands?',
+	'Wrong.',
+	'I can\'t do that...',
+	'Nope.',
+	'Not a command, sweetie.',
+	'Must I hold your hand for this?',
+	'Oh, y\'all still can\'t type?',
+	'Girl, go hit up Mavis Beacon, cuz you cannot type.',
+	'Close.',
+	'Slow.',
+	'Homeless.',
+	'Goon.',
+	'You goonga.',
+	'Prison, honey.',
+	'No.',
+	'Big Dumb.']
+
 intents = discord.Intents.all()
 intents.members = True
 bot = bridge.Bot(command_prefix='-', case_insensitive=True, intents=intents)
@@ -73,23 +91,7 @@ async def on_command_error(ctx, error):
 	comeback. Any other error performs default behavior of logging to syserr.
 	'''
 	await ctx.defer()
-	if isinstance(error, commands.CommandNotFound):
-		snarky_comments = [
-			'How many sessions is it gonna take before you people understand how to use my commands?',
-			'Wrong.',
-			'I can\'t do that...',
-			'Nope.',
-			'Not a command, sweetie.',
-			'Must I hold your hand for this?',
-			'Oh, y\'all still can\'t type?',
-			'Girl, go hit up Mavis Beacon, cuz you cannot type.',
-			'Close.',
-			'Slow.',
-			'Homeless.',
-			'Goon.',
-			'You goonga.',
-			'Prison, honey.',
-			'No.']
+	if isinstance(error, (commands.CommandNotFound)):
 		await ctx.send(random.choice(snarky_comments))
 	else:
 		print(error, file=sys.stderr)
@@ -106,6 +108,10 @@ async def on_message(message):
 	# and see how much data you get.
 	if bot.user.mentioned_in(message):
 		await message.channel.send(chatbot.get_response(message.clean_content.replace('@Dolores', '')))
+	# Catches any mistypes when trying to use a slash command
+	if message.clean_content.startswith('/'):
+		ctx = await bot.get_context(message)
+		await ctx.respond(random.choice(snarky_comments))
 	await bot.process_commands(message)
 
 
@@ -126,8 +132,8 @@ async def roll(ctx, *, dice_batches: str):
 		try:
 			rolls, limit = map(int, dice_batch.split('d'))
 		except ValueError:
-			await ctx.respond(f'Format has to be in NdN, {random.choice(sarcastic_names)}.')
-			return
+			break
+			# return
 		rolls_result = [str(random.randint(1, limit)) for r in range(rolls)]
 		if len(rolls_result) > 500:
 			await ctx.respond(random.choice(['I ain\'t rollin all that for you...', 'Absolutely not.', 'No.']))
@@ -140,36 +146,37 @@ async def roll(ctx, *, dice_batches: str):
 	if len(final_formatted_rolls) > 0:
 		await ctx.respond('\n'.join(final_formatted_rolls))
 	else:
-		await ctx.respond('No dice rolled.')
+		await ctx.respond(f'Format has to be in NdN, {random.choice(sarcastic_names)}.')
+		return
 
-# @bot.bridge_command(description='A catch-all command for rolling any number of any-sided dice.')
-# async def sroll(ctx, *, dice_batches: str):
-# 	'''
-# 	Rolls a secret dice in NdN format. Ephemeral doesn't seem to be working at the moment
-# 	Ex: -roll 5d10 3d8 2d4
-# 	Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
-# 	'''
-# 	await ctx.defer()
-# 	final_formatted_rolls = []
-# 	for dice_batch in dice_batches.split():
-# 		try:
-# 			rolls, limit = map(int, dice_batch.split('d'))
-# 		except ValueError:
-# 			await ctx.respond(f'Format has to be in NdN, {random.choice(sarcastic_names)}.', ephemeral=True)
-# 			return
-# 		rolls_result = [str(random.randint(1, limit)) for r in range(rolls)]
-# 		if len(rolls_result) > 500:
-# 			await ctx.respond(random.choice(['I ain\'t rollin all that for you...', 'Absolutely not.', 'No.']), ephemeral=True)
-# 			return
-# 		formatted_rolls = '(d' + str(limit) + ')  ' + ', '.join(rolls_result)
-# 		if limit != 20 and len(rolls_result) >= 3:
-# 			formatted_rolls = formatted_rolls + '    Sum: ' + \
-# 				str(sum([int(x) for x in rolls_result]))
-# 		final_formatted_rolls.append(formatted_rolls)
-# 	if len(final_formatted_rolls) > 0:
-# 		await ctx.respond('\n'.join(final_formatted_rolls), ephemeral=True)
-# 	else:
-# 		await ctx.respond('No dice rolled.', ephemeral=True)
+@bot.bridge_command(description='A catch-all command for rolling any number of any-sided dice. This one for DMs.')
+async def sroll(ctx, *, dice_batches: str):
+	'''
+	Rolls a secret dice in NdN format. Ephemeral doesn't seem to be working at the moment
+	Ex: -sroll 5d10 3d8 2d4
+	Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
+	'''
+	await ctx.defer(ephemeral=True)
+	final_formatted_rolls = []
+	for dice_batch in dice_batches.split():
+		try:
+			rolls, limit = map(int, dice_batch.split('d'))
+		except ValueError:
+			break
+		rolls_result = [str(random.randint(1, limit)) for r in range(rolls)]
+		if len(rolls_result) > 500:
+			await ctx.respond(random.choice(['I ain\'t rollin all that for you...', 'Absolutely not.', 'No.']), ephemeral=True)
+			return
+		formatted_rolls = '(d' + str(limit) + ')  ' + ', '.join(rolls_result)
+		if limit != 20 and len(rolls_result) >= 3:
+			formatted_rolls = formatted_rolls + '    Sum: ' + \
+				str(sum([int(x) for x in rolls_result]))
+		final_formatted_rolls.append(formatted_rolls)
+	if len(final_formatted_rolls) > 0:
+		await ctx.respond('\n'.join(final_formatted_rolls), ephemeral=True)
+	else:
+		await ctx.respond(f'Format has to be in NdN, {random.choice(sarcastic_names)}.', ephemeral=True)
+		return
 
 
 @bot.bridge_command(description='For when you can\'t make a simple decision to save your life.')
