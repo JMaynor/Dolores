@@ -4,11 +4,23 @@ text.py module
 import sys
 sys.path.append('..')
 import random
+import os
+import yaml
 import sqlalchemy
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 import discord
 from discord.ext import commands, bridge
+import openai
+
+if os.name == 'nt':
+	CONFIG_FILE = 'config\\config.yml'
+else:
+	CONFIG_FILE = '/home/dolores/config/config.yml'
+with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
+	config = yaml.safe_load(c)
+
+openai.api_key = config['AI']['openai_key']
 
 snarky_comments = [
 	'How many sessions is it gonna take before you people understand how to use my commands?',
@@ -43,8 +55,28 @@ class text(commands.Cog):
 		'''
 		Generates a reply to a given message. Currently using chatterbot. Intent is to use a proper LLM in the future.
 		'''
-		reply = chatbot.get_response(message)
+		if config['AI']['reply_method'] == 'chatterbot':
+			reply = chatbot.get_response(message)
+		elif config['AI']['reply_method'] == 'openai':
+			# chat_completion = openai.Completion.create(
+			# 	model = config['AI']['openai_model']
+			# 	, messages=[{"role": "user", "content": message}]
+			# 	, max_tokens=100
+			# 	, temperature=0.9
+			# 	, top_p=1
+			# 	, frequency_penalty=0
+			# 	, presence_penalty=0.6)
+			# reply = chat_completion.choices[0].message.content
+			reply = ''
+		elif config['AI']['reply_method'] == 'self':
+			# Use a self-hosted LLM to generate reply
+			reply = ''
+		else:
+			reply = ''
 		return reply
 
 	def generate_snarky_comment(self):
+		'''
+		Generates a snarky comment to be used when a user tries to use a command that does not exist.
+		'''
 		random.choice(snarky_comments)

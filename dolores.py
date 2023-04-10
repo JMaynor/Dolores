@@ -84,7 +84,8 @@ async def on_message(message):
 		text_instance = text(bot)
 		clean_message = message.clean_content.replace('@Dolores', '')
 		reply = text_instance.generate_reply(clean_message)
-		await message.channel.send(reply)
+		ctx = await bot.get_context(message)
+		await ctx.respond(reply)
 
 	# Catches any mistypes when trying to use a slash command
 	if message.clean_content.startswith('/'):
