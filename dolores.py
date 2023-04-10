@@ -6,6 +6,13 @@ Date: Apr 2020
 Dolores is a chatbot that connects to a Discord server. Her primary use
 is in being able to roll dice for players of a tabletop roleplaying game
 but she is also capable of doing some basic audio things.
+
+Majority of functionality has been organized into separate modules.
+dolores.py - Main program file. Handles Discord-related functionality and events
+audio.py - Handles all audio/yt-dlp related functionality
+rolling.py - Handles all dice-rolling/randomization functionality
+scheduling.py - Handles all Notion/Twitch scheduling functionality
+text.py - Handles all text-related functionality
 '''
 
 # pylint: disable=line-too-long, bad-indentation, bare-except
@@ -17,9 +24,8 @@ from datetime import datetime
 import yaml
 import discord
 from discord.ext import commands, bridge
-import sqlalchemy
-from chatterbot import ChatBot
-from chatterbot.trainers import ChatterBotCorpusTrainer
+
+from modules import *
 
 intents = discord.Intents.all()
 intents.members = True
@@ -27,6 +33,9 @@ bot = bridge.Bot(command_prefix='-', case_insensitive=True, intents=intents)
 
 # Add all Cog modules
 bot.add_cog(rolling(bot))
+bot.add_cog(audio(bot))
+bot.add_cog(scheduling(bot))
+bot.add_cog(text(bot))
 
 if os.name == 'nt':
 	CONFIG_FILE = 'config\\config.yml'
@@ -34,16 +43,6 @@ else:
 	CONFIG_FILE = '/home/dolores/config/config.yml'
 with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
 	config = yaml.safe_load(c)
-
-sarcastic_names = config['DISCORD']['sarcastic_names']
-
-chatbot = ChatBot('Dolores')
-trainer = ChatterBotCorpusTrainer(chatbot)
-trainer.train("chatterbot.corpus.english")
-
-notion_headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
-				'Notion-Version': config['NOTION']['notion_version']
-}
 
 #---------------------------------------------------------------------------
 # Bot Events & Utility Functions
@@ -67,8 +66,9 @@ async def on_command_error(ctx, error):
 	comeback. Any other error performs default behavior of logging to syserr.
 	'''
 	await ctx.defer()
+	text_instance = text(bot)
 	if isinstance(error, (commands.CommandNotFound)):
-		await ctx.send(random.choice(snarky_comments))
+		await ctx.send(text_instance.generate_snarky_comment())
 	else:
 		print(error, file=sys.stderr)
 
@@ -80,14 +80,18 @@ async def on_message(message):
 	Any message that contains a mention of Dolores will be handled using the chatbot
 	functionality. Otherwise, the text is sent to the default process_commands discord.py function.
 	'''
-	# Perhaps start saving all messages locally here. Turn it on for a given amount of time
-	# and see how much data you get.
 	if bot.user.mentioned_in(message):
-		await message.channel.send(chatbot.get_response(message.clean_content.replace('@Dolores', '')))
+		text_instance = text(bot)
+		clean_message = message.clean_content.replace('@Dolores', '')
+		reply = text_instance.generate_reply(clean_message)
+		await message.channel.send(reply)
+
 	# Catches any mistypes when trying to use a slash command
 	if message.clean_content.startswith('/'):
+		text_instance = text(bot)
 		ctx = await bot.get_context(message)
-		await ctx.respond(random.choice(snarky_comments))
+		snark_reply = text_instance.generate_snarky_comment()
+		await ctx.respond(snark_reply)
 	await bot.process_commands(message)
 
 
@@ -96,5 +100,5 @@ async def on_message(message):
 #---------------------------------------------------------------------------
 if __name__ == '__main__':
 	print('Starting main program...')
-	# bot.run(config['DISCORD']['test_bot_api_key'])
-	bot.run(config['DISCORD']['bot_api_key'])
+	bot.run(config['DISCORD']['test_bot_api_key'])
+	# bot.run(config['DISCORD']['bot_api_key'])

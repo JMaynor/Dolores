@@ -4,7 +4,7 @@ rolling.py
 import random
 import yaml
 import os
-from discord.ext import commands, bridge, Cog
+from discord.ext import commands, bridge
 
 if os.name == 'nt':
 	CONFIG_FILE = 'config\\config.yml'
@@ -22,8 +22,8 @@ class rolling(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.bridge_command(description='A catch-all command for rolling any number of any-sided dice.')
-    async def roll(ctx, *, dice_batches: str):
+    @bridge.bridge_command(description='A catch-all command for rolling any number of any-sided dice.')
+    async def roll(self, ctx, *, dice_batches: str):
         '''
         Rolls a dice in NdN format.
         Ex: -roll 5d10 3d8 2d4
@@ -52,8 +52,8 @@ class rolling(commands.Cog):
             await ctx.respond(f'Format has to be in NdN, {random.choice(sarcastic_names)}.')
             return
 
-    @commands.bridge_command(description='A catch-all command for rolling any number of any-sided dice. This one for DMs.')
-    async def sroll(ctx, *, dice_batches: str):
+    @bridge.bridge_command(description='A catch-all command for rolling any number of any-sided dice. This one for DMs.')
+    async def sroll(self, ctx, *, dice_batches: str):
         '''
         Rolls a secret dice in NdN format. Ephemeral doesn't seem to be working at the moment
         Ex: -sroll 5d10 3d8 2d4
@@ -82,8 +82,8 @@ class rolling(commands.Cog):
             return
 
 
-    @commands.bridge_command(description='For when you can\'t make a simple decision to save your life.')
-    async def choose(ctx, *, choices: str):
+    @bridge.bridge_command(description='For when you can\'t make a simple decision to save your life.')
+    async def choose(self, ctx, *, choices: str):
         '''
         Chooses between multiple choices.
         Ex: -choose "Kill the king" "Save the king" "Fuck the King"
@@ -93,8 +93,8 @@ class rolling(commands.Cog):
         await ctx.respond(random.choice(choices.split()))
 
 
-    @commands.bridge_command(description='Modified dice-roll command to roll a single d20. Short and sweet.')
-    async def d20(ctx):
+    @bridge.bridge_command(description='Modified dice-roll command to roll a single d20. Short and sweet.')
+    async def d20(self, ctx):
         '''
         Rolls a single d20
         Ex: -d20

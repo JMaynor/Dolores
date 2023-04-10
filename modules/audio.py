@@ -6,7 +6,7 @@ import os
 import asyncio
 import yaml
 import discord
-from discord.ext import commands, bridge, Cog
+from discord.ext import commands, bridge
 import yt_dlp
 
 if os.name == 'nt':
@@ -53,8 +53,8 @@ class audio(commands.Cog):
         self.bot = bot
 
 
-    @commands.bridge_command(description='Use\'s yt-dlp to play an audio stream in the user\'s voice channel.')
-    async def play(ctx, *, url):
+    @bridge.bridge_command(description='Use\'s yt-dlp to play an audio stream in the user\'s voice channel.')
+    async def play(self, ctx, *, url):
         '''
         Plays a song from a given URL in the user's current voice channel.
         Valid URLS are Youtube and Soundcloud
@@ -82,8 +82,8 @@ class audio(commands.Cog):
                 await ctx.voice_client.disconnect()
                 break
 
-    @commands.bridge_command(description='Stops the currently playing audio.')
-    async def stop(ctx):
+    @bridge.bridge_command(description='Stops the currently playing audio.')
+    async def stop(self, ctx):
         '''
         Stops the currently playing song, if one is playing.
         Ex: -stop
@@ -92,8 +92,8 @@ class audio(commands.Cog):
             ctx.voice_client.stop()
         ctx.respond('Stopped playing.')
 
-    @commands.bridge_command(description='Disconnects Dolores from voice channel.')
-    async def leave(ctx):
+    @bridge.bridge_command(description='Disconnects Dolores from voice channel.')
+    async def leave(self, ctx):
         '''
         Disconnects Dolores from voice chat channel, if she is connected.
         Also stops any currently playing music
