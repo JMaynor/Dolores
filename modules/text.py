@@ -20,7 +20,8 @@ else:
 with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
 	config = yaml.safe_load(c)
 
-openai.api_key = config['AI']['openai_key']
+if config['DISCORD']['reply_method'] == 'openai':
+	openai.api_key = config['AI']['openai_key']
 
 snarky_comments = [
 	'How many sessions is it gonna take before you people understand how to use my commands?',
@@ -55,17 +56,18 @@ class text(commands.Cog):
 		'''
 		Generates a reply to a given message. Currently using chatterbot. Intent is to use a proper LLM in the future.
 		'''
-		if config['AI']['reply_method'] == 'chatterbot':
+		if config['DISCORD']['reply_method'] == 'chatterbot':
 			reply = chatbot.get_response(message)
-		elif config['AI']['reply_method'] == 'openai':
+		elif config['DISCORD']['reply_method'] == 'openai':
 			# chat_completion = openai.Completion.create(
-			# 	model = config['AI']['openai_model']
+			# 	model = config['OPENAI']['model']
 			# 	, messages=[{"role": "user", "content": message}]
-			# 	, max_tokens=100
-			# 	, temperature=0.9
-			# 	, top_p=1
-			# 	, frequency_penalty=0
-			# 	, presence_penalty=0.6)
+			# 	, max_tokens=config['OPENAI']['max_tokens']
+			# 	, temperature=config['OPENAI']['temperature']
+			# 	, top_p=config['OPENAI']['top_p']
+			# 	, frequency_penalty=config['OPENAI']['frequency_penalty']
+			# 	, presence_penalty=config['OPENAI']['presence_penalty']
+			# )
 			# reply = chat_completion.choices[0].message.content
 			reply = ''
 		elif config['AI']['reply_method'] == 'self':
