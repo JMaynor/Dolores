@@ -83,9 +83,11 @@ async def on_message(message):
 	if bot.user.mentioned_in(message):
 		text_instance = text(bot)
 		clean_message = message.clean_content.replace('@Dolores', '')
-		reply = text_instance.generate_reply(clean_message)
 		ctx = await bot.get_context(message)
-		await ctx.respond(reply)
+		await ctx.defer()
+		reply = text_instance.generate_reply(clean_message)
+		if reply != '':
+			await ctx.respond(reply)
 
 	# Catches any mistypes when trying to use a slash command
 	if message.clean_content.startswith('/'):
@@ -101,5 +103,5 @@ async def on_message(message):
 #---------------------------------------------------------------------------
 if __name__ == '__main__':
 	print('Starting main program...')
-	# bot.run(config['DISCORD']['test_bot_api_key'])
-	bot.run(config['DISCORD']['bot_api_key'])
+	bot.run(config['DISCORD']['test_bot_api_key'])
+	# bot.run(config['DISCORD']['bot_api_key'])

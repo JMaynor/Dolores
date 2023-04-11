@@ -36,7 +36,6 @@ class rolling(commands.Cog):
                 rolls, limit = map(int, dice_batch.split('d'))
             except ValueError:
                 break
-                # return
             rolls_result = [str(random.randint(1, limit)) for r in range(rolls)]
             if len(rolls_result) > 500:
                 await ctx.respond(random.choice(['I ain\'t rollin all that for you...', 'Absolutely not.', 'No.']))
@@ -86,7 +85,7 @@ class rolling(commands.Cog):
     async def choose(self, ctx, *, choices: str):
         '''
         Chooses between multiple choices.
-        Ex: -choose "Kill the king" "Save the king" "Fuck the King"
+        Ex: -choose "Kill the king" "Save the king" "Screw the King"
         Dolores would randomly choose one of the options you give her and return the result.
         '''
         await ctx.defer()
