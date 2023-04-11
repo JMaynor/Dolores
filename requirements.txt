@@ -1,11 +1,5 @@
-pytz
 requests
-nltk
-pint
-mathparse
-ftfy
 pyyaml
-pandas
 yt-dlp
 py-cord[voice]
 openai
