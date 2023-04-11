@@ -10,8 +10,10 @@ jobs:
             REPO: ${{ secrets.DOCKER_REPO }}
         steps:
             - name: Login to Docker Hub
-              run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
+              run: echo ${{ secrets.DOCKER_PASS }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
             - name: Build Docker image
               run: docker build -t $REPO:latest -t $REPO:${GITHUB_SHA::8} .
             - name: Publish Docker image
               run: docker push $REPO
+            - name: Logout from Docker Hub
+              run: docker logout

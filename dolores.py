@@ -45,7 +45,7 @@ with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
 	config = yaml.safe_load(c)
 
 #---------------------------------------------------------------------------
-# Bot Events & Utility Functions
+# Discord Events
 #---------------------------------------------------------------------------
 
 @bot.event
@@ -83,8 +83,11 @@ async def on_message(message):
 	if bot.user.mentioned_in(message):
 		text_instance = text(bot)
 		clean_message = message.clean_content.replace('@Dolores', '')
+		ctx = await bot.get_context(message)
+		await ctx.defer()
 		reply = text_instance.generate_reply(clean_message)
-		await message.channel.send(reply)
+		if reply != '':
+			await ctx.respond(reply)
 
 	# Catches any mistypes when trying to use a slash command
 	if message.clean_content.startswith('/'):

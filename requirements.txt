@@ -1,11 +1,5 @@
-pytz
 requests
-nltk
-pint
-mathparse
-ftfy
 pyyaml
-pandas
 yt-dlp
 py-cord[voice]
-# chatterbot == 1.0.4
+openai
