@@ -20,6 +20,7 @@ import random
 import asyncio
 import sys
 import os
+import re
 from datetime import datetime
 import yaml
 import discord
@@ -80,6 +81,7 @@ async def on_message(message):
 	Any message that contains a mention of Dolores will be handled using the chatbot
 	functionality. Otherwise, the text is sent to the default process_commands discord.py function.
 	'''
+	# If someone mentions Dolores, she will respond to them
 	if bot.user.mentioned_in(message):
 		text_instance = text(bot)
 		clean_message = message.clean_content.replace('@Dolores', '')
@@ -89,12 +91,28 @@ async def on_message(message):
 		if reply != '':
 			await ctx.respond(reply)
 
-	# Catches any mistypes when trying to use a slash command
+	# Catch mistypes when trying to use a slash command
 	if message.clean_content.startswith('/'):
 		text_instance = text(bot)
 		ctx = await bot.get_context(message)
 		snark_reply = text_instance.generate_snarky_comment()
 		await ctx.respond(snark_reply)
+
+	# Check for if message was posted in news channel and contains a URL
+	if message.channel.id == config['DISCORD']['news_channel_id'] and 'http' in message.clean_content:
+		# Try and extract URL from message
+		url = re.search(r'(https?://[^\s]+)', message.clean_content)
+		if url is not None:
+			ctx = await bot.get_context(message)
+			await ctx.defer()
+			text_instance = text(bot)
+			# If URL is found, get a summary of the article
+			summary = text_instance.summarize_url(url.group(0))
+			if summary is not None:
+				# If summary is found, post it to the news channel
+				await ctx.respond('Here is a summary of that article I\'ve written: \n\n' + summary)
+
+	# Normal command processing
 	await bot.process_commands(message)
 
 

@@ -2,7 +2,6 @@
 text.py module
 '''
 import sys
-sys.path.append('..')
 import random
 import requests
 import os
