@@ -2,7 +2,7 @@ name: Docker Hub Deployment
 on:
     push:
         branches:
-          - 'releases/**'
+          - 'main'
 jobs:
     push_to_registry:
         runs-on: ubuntu-latest
