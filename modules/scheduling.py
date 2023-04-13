@@ -20,6 +20,8 @@ notion_headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
 				'Notion-Version': config['NOTION']['notion_version']
 }
 
+twitch_headers = {}
+
 sarcastic_names = config['DISCORD']['sarcastic_names']
 
 class scheduling(commands.Cog):
@@ -29,6 +31,59 @@ class scheduling(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
+	def get_notion_schedule(self, filter: dict, sorts: list):
+		'''
+		Generic function that returns a given number of streams from the Notion schedule.
+		Parameters: filter, sorts
+		filters are a dict
+		sorts are a list of dicts
+		'''
+		json_data = {"filter": filter, "sorts": sorts}
+		response = requests.post(config['NOTION']['base_url']
+						+ 'databases/'
+						+ config['NOTION']['database_id']
+						+ '/query'
+						, headers=notion_headers
+						, json = json_data
+						, timeout = 30)
+		if response.status_code != 200:
+			try:
+				print(response.json())
+			except:
+				print(response.content)
+			return ''
+		else:
+			return response.json()
+
+
+	def get_twitch_schedule(self):
+		'''
+		Gets the schedule from Twitch.
+		'''
+		print()
+
+
+	def add_twitch_segment(self):
+		'''
+		Adds a single recurring segment to the Twitch schedule
+		'''
+		print()
+
+
+	def delete_twitch_segment(self):
+		'''
+		Removes a single segment to the Twitch schedule
+		'''
+		print()
+
+
+	def clear_twitch_schedule(self):
+		'''
+		Clears the Twitch schedule of all segments
+		'''
+		print()
+
+
 	@bridge.bridge_command(description='Returns the next couple streams on the schedule.')
 	async def schedule(self, ctx):
 		'''
@@ -37,42 +92,22 @@ class scheduling(commands.Cog):
 		Dolores will return an embed of stream dates, names, and people.
 		'''
 		await ctx.defer()
-		json_data = {"filter": {
-						"property": "Date",
-						"date": {
-							"next_week": {}
-						}
-					},
-					"sorts": [
-						{
-							"property": "Date",
-							"direction": "ascending"
-						}
-					]
-				}
 
-		response = requests.post(config['NOTION']['base_url']
-								+ 'databases/'
-								+ config['NOTION']['database_id']
-								+ '/query'
-								, headers=notion_headers
-								, json = json_data
-								, timeout=30)
+		filter = {"property": "Date", "date": {"next_week": {}}}
+		sorts = [{"property": "Date", "direction": "ascending"}]
 
-		if response.status_code != 200:
-			try:
-				print(response.json())
-			except:
-				print(response.content)
-			await ctx.respond('Notion\'s API is giving an error, so I couldn\'t get that for you, ' + random.choice(sarcastic_names))
+		response = self.get_notion_schedule(filter, sorts)
+
+		if response == '':
+			await ctx.respond('Notion\'s API is giving me an error, so I couldn\'t get that for you, ' + random.choice(sarcastic_names))
 			return
 
 		embed = discord.Embed(title="Stream Schedule", description="Streams within the next week.")
 		# Check for no streams
-		if len(response.json()['results']) == 0:
+		if len(response['results']) == 0:
 			embed.add_field(name='Nada', value='We ain\'t got shit scheduled, ' + random.choice(sarcastic_names))
 		else:
-			for elem in response.json()['results']:
+			for elem in response['results']:
 				try:
 					date = elem['properties']['Date']['date']['start']
 					date_weekday = datetime.strptime(date, '%Y-%m-%d').strftime('%A')
@@ -92,21 +127,3 @@ class scheduling(commands.Cog):
 								, value=title + '   (' + people + ')'
 								, inline=False)
 		await ctx.respond(embed=embed)
-
-# def get_notion_schedule():
-# 	'''
-# 	Returns the next couple streams on the schedule.
-# 	'''
-# 	print()
-
-# def clear_twitch_schedule():
-# 	'''
-# 	Clears the Twitch schedule of all recurring segments
-# 	'''
-# 	print()
-
-# def add_twitch_segment():
-# 	'''
-# 	Adds a recurring segment to the Twitch schedule
-# 	'''
-# 	print()
