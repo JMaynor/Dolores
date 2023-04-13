@@ -104,11 +104,11 @@ async def on_message(message):
 		url = re.search(r'(https?://[^\s]+)', message.clean_content)
 		if url is not None:
 			ctx = await bot.get_context(message)
-			await ctx.defer()
+			# await ctx.defer()
 			text_instance = text(bot)
 			# If URL is found, get a summary of the article
 			summary = text_instance.summarize_url(url.group(0))
-			if summary is not None:
+			if len(str(summary)) >20:
 				# If summary is found, post it to the news channel
 				await ctx.respond('Here is a summary of that article I\'ve written: \n\n' + summary)
 
