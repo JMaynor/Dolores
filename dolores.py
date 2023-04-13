@@ -98,19 +98,23 @@ async def on_message(message):
 		snark_reply = text_instance.generate_snarky_comment()
 		await ctx.respond(snark_reply)
 
-	# Check for if message was posted in news channel and contains a URL
-	if message.channel.id == config['DISCORD']['news_channel_id'] and 'http' in message.clean_content:
+	# Check for if message was posted in news channel and contains a non-media URL
+	if message.channel.id == config['DISCORD']['news_channel_id'] and 'https' in message.clean_content and 'tenor' not in message.clean_content and 'giphy' not in message.clean_content and 'imgur' not in message.clean_content and 'gfycat' not in message.clean_content and 'youtube' not in message.clean_content and 'youtu.be' not in message.clean_content:
 		# Try and extract URL from message
 		url = re.search(r'(https?://[^\s]+)', message.clean_content)
 		if url is not None:
 			ctx = await bot.get_context(message)
-			# await ctx.defer()
+
 			text_instance = text(bot)
 			# If URL is found, get a summary of the article
 			summary = text_instance.summarize_url(url.group(0))
-			if len(str(summary)) >20:
-				# If summary is found, post it to the news channel
-				await ctx.respond('Here is a summary of that article I\'ve written: \n\n' + summary)
+
+			# If the summary is too short, don't post it
+			if summary != '':
+				if 'sm_api_content_reduced' in summary:
+					reduced_amount = summary['sm_api_content_reduced'].replace('%', '')
+					if int(reduced_amount) > 70:
+						await ctx.respond('Here is a summary of that article I\'ve written: \n\n' + summary['sm_api_content'])
 
 	# Normal command processing
 	await bot.process_commands(message)

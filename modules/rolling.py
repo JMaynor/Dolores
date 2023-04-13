@@ -101,3 +101,14 @@ class rolling(commands.Cog):
         '''
         await ctx.defer()
         await ctx.respond('(d20)  ' + str(random.randint(1, 20)))
+
+
+    @bridge.bridge_command(description='Modified dice-roll command to roll a single d20. Short and sweet. Also secret.')
+    async def sd20(self, ctx):
+        '''
+        Rolls a single d20
+        Ex: -sd20
+        Dolores rolls a single d20 and returns the result secretly.
+        '''
+        await ctx.defer(ephemeral=True)
+        await ctx.respond('(d20)  ' + str(random.randint(1, 20)), ephemeral=True)

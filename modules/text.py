@@ -90,19 +90,16 @@ class text(commands.Cog):
 		if response.status_code != 200:
 			print(str(response.status_code), file=sys.stderr)
 			return ''
-
-		if 'sm_api_error' in response.json():
+		elif 'sm_api_error' in response.json():
 			print('Got error: ', response.json()['sm_api_error'], file=sys.stderr)
 			return ''
-
-		if 'sm_api_message' in response.json():
+		elif 'sm_api_message' in response.json():
 			print('Got message: ' + response.json()['sm_api_message'], file=sys.stderr)
 			return ''
+		else:
+			return response.json()
 
-		summary = response.json()['sm_api_content']
-		return summary
-
-	@bridge.bridge_command()
+	@bridge.bridge_command(description='Summarizes a given URL using the SMMRY API.')
 	async def summarize(self, ctx, *, url):
 		'''
 		Summarizes a given URL using the SMMRY API.
@@ -113,8 +110,8 @@ class text(commands.Cog):
 		# Sanitize URL first, get rid of any query parameters
 		url = url.split('?')[0]
 		print('Summarizing URL: ' + url)
-		summarized = self.summarize_url(url)
-		if summarized == '':
+		response = self.summarize_url(url)
+		if response == '':
 			await ctx.respond('Unable to summarize that URL.')
 			return
-		await ctx.respond(summarized)
+		await ctx.respond(response['sm_api_content'])
