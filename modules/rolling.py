@@ -54,7 +54,7 @@ class rolling(commands.Cog):
     @bridge.bridge_command(description='A catch-all command for rolling any number of any-sided dice. This one for DMs.')
     async def sroll(self, ctx, *, dice_batches: str):
         '''
-        Rolls a secret dice in NdN format. Ephemeral doesn't seem to be working at the moment
+        Rolls a secret dice in NdN format.
         Ex: -sroll 5d10 3d8 2d4
         Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
         '''
