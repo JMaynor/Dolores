@@ -20,9 +20,26 @@ notion_headers = {'Authorization': 'Bearer ' + config['NOTION']['api_key'],
 				'Notion-Version': config['NOTION']['notion_version']
 }
 
-twitch_headers = {}
+twitch_headers = {'Authorization': '',
+				'Clienti-ID': config['TWITCH']['client_id']}
 
 sarcastic_names = config['DISCORD']['sarcastic_names']
+
+class Decorators:
+	@staticmethod
+	def refresh_twitch_token(decorated):
+		'''
+		Decorator to refresh the Twitch token if it's expired.
+		'''
+		def wrapper(self, *args, **kwargs):
+			if 'TWITCH_TOKEN_EXPIRES_AT' not in os.environ:
+				print()
+			else:
+				print()
+			return decorated(self, *args, **kwargs)
+		wrapper.__name__ = decorated.__name__
+		return wrapper
+
 
 class scheduling(commands.Cog):
 	'''
@@ -30,6 +47,7 @@ class scheduling(commands.Cog):
 	'''
 	def __init__(self, bot):
 		self.bot = bot
+
 
 	def get_notion_schedule(self, filter: dict, sorts: list):
 		'''
@@ -56,20 +74,52 @@ class scheduling(commands.Cog):
 			return response.json()
 
 
-	def get_twitch_schedule(self):
+	@Decorators.refresh_twitch_token
+	def get_twitch_schedule(self, id=None, start_time=None, end_time=None, first=None, after=None):
 		'''
-		Gets the schedule from Twitch.
+		Gets schedule data from Twitch.
 		'''
-		print()
+		# Build the query string
+		if id:
+			id = '&id=' + id
+		if start_time:
+			start_time = '&start_time=' + start_time
+		if end_time:
+			end_time = '&end_time=' + end_time
+		if first:
+			first = '&first=' + first
+		if after:
+			after = '&after=' + after
+
+		response = requests.get(config['TWITCH']['base_url']
+			  					+ 'helix/schedule'
+								+ '?broadcaster_id=' + config['TWITCH']['broadcaster_id']
+								+ start_time
+								+ end_time
+								+ first
+								+ after
+								, headers=twitch_headers
+								, timeout=30)
+
+		if response.status_code != 200:
+			try:
+				print(response.json())
+			except:
+				print(response.content)
+			return ''
+
+		return response.json()
 
 
+	@Decorators.refresh_twitch_token
 	def add_twitch_segment(self):
 		'''
-		Adds a single recurring segment to the Twitch schedule
+		Adds a single segment to the Twitch schedule
 		'''
 		print()
 
 
+	@Decorators.refresh_twitch_token
 	def delete_twitch_segment(self):
 		'''
 		Removes a single segment to the Twitch schedule
@@ -77,6 +127,7 @@ class scheduling(commands.Cog):
 		print()
 
 
+	@Decorators.refresh_twitch_token
 	def clear_twitch_schedule(self):
 		'''
 		Clears the Twitch schedule of all segments
