@@ -73,7 +73,7 @@ class audio(commands.Cog):
         if ctx.voice_client.is_playing():
             ctx.voice_client.stop()
 
-        player = await YTDLSource.from_url(url, loop=bot.loop, stream=False)
+        player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
         voice.play(player, after=lambda e: print('Player error: {}'.format(e)) if e else None)
         await ctx.respond('Now playing: {}'.format(player.title))
         while True:
@@ -90,7 +90,7 @@ class audio(commands.Cog):
         '''
         if ctx.voice_client.is_playing():
             ctx.voice_client.stop()
-        ctx.respond('Stopped playing.')
+        await ctx.respond('Stopped playing.')
 
     @bridge.bridge_command(description='Disconnects Dolores from voice channel.')
     async def leave(self, ctx):
