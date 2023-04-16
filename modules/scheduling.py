@@ -5,6 +5,7 @@ import os
 import random
 from datetime import datetime
 import yaml
+import urllib.parse
 import requests
 import discord
 from discord.ext import commands, bridge
@@ -112,19 +113,53 @@ class scheduling(commands.Cog):
 
 
 	@Decorators.refresh_twitch_token
-	def add_twitch_segment(self):
+	def add_twitch_segment(self, start_time, is_recurring, category_id, title):
 		'''
 		Adds a single segment to the Twitch schedule
 		'''
-		print()
+		json_data = {"start_time": start_time,
+	       			"timezone": "America/Chicago",
+				    "duration": "240",
+	       			"is_recurring": is_recurring,
+					"category_id": category_id,
+					"title": title}
+
+		response = requests.post(config['TWITCH']['base_url']
+			     				+ 'helix/schedule/segment'
+							    + '?broadcaster_id=' + config['TWITCH']['broadcaster_id']
+								, json = json_data
+								, headers = twitch_headers)
+
+		if response.status_code != 200:
+			try:
+				print(response.json())
+			except:
+				print(response.content)
+			return ''
+
+		return response.json()
 
 
 	@Decorators.refresh_twitch_token
-	def delete_twitch_segment(self):
+	def delete_twitch_segment(self, id):
 		'''
 		Removes a single segment to the Twitch schedule
+		Requires the segment ID
 		'''
-		print()
+		response = requests.delete(config['TWITCH']['base_url']
+			     				+ 'helix/schedule/segment'
+							    + '?broadcaster_id=' + config['TWITCH']['broadcaster_id']
+								+ '?id=' + id
+								, headers=twitch_headers)
+
+		if response.status_code != 204:
+			try:
+				print(response.json())
+			except:
+				print(response.content)
+			return ''
+
+		return response.json()
 
 
 	@Decorators.refresh_twitch_token
@@ -133,6 +168,26 @@ class scheduling(commands.Cog):
 		Clears the Twitch schedule of all segments
 		'''
 		print()
+
+
+	@Decorators.refresh_twitch_token
+	def search_twitch_categories(self, query):
+		'''
+		Searches for Twitch categories
+		'''
+		response = requests.get(config['TWITCH']['base_url']
+			  					+ 'helix/search/categories'
+								+ '?query=' + urllib.parse.quote(query)
+								, headers=twitch_headers)
+
+		if response.status_code != 200:
+			try:
+				print(response.json())
+			except:
+				print(response.content)
+			return ''
+
+		return response.json()
 
 
 	@bridge.bridge_command(description='Returns the next couple streams on the schedule.')
