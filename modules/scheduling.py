@@ -167,8 +167,17 @@ class scheduling(commands.Cog):
 		'''
 		Clears the Twitch schedule of all segments
 		'''
-		print()
+		twitch_schedule = self.get_twitch_schedule()
+		if twitch_schedule == '':
+			return ''
 
+		segment_ids = []
+		for segment in twitch_schedule['data']['segments']:
+			if 'id' in segment:
+				segment_ids.append(segment['id'])
+
+		for segment_id in set(segment_ids):
+			self.delete_twitch_segment(segment_id)
 
 	@Decorators.refresh_twitch_token
 	def search_twitch_categories(self, query):
