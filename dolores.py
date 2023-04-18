@@ -107,7 +107,7 @@ async def on_message(message):
 
 			text_instance = text(bot)
 			# If URL is found, get a summary of the article
-			summary = text_instance.summarize_url(url.group(0))
+			summary = text_instance.summarize_url(url.group(0).split('?')[0])
 
 			# If the summary is too short, don't post it
 			if summary != '':
