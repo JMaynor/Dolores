@@ -16,17 +16,15 @@ text.py - Handles all text-related functionality
 '''
 
 # pylint: disable=line-too-long, bad-indentation, bare-except
-import random
 import asyncio
 import sys
-import os
 import re
 from datetime import datetime
-import yaml
 import discord
 from discord.ext import commands, bridge
 
 from modules import *
+from configload import config
 
 intents = discord.Intents.all()
 intents.members = True
@@ -37,13 +35,6 @@ bot.add_cog(rolling(bot))
 bot.add_cog(audio(bot))
 bot.add_cog(scheduling(bot))
 bot.add_cog(text(bot))
-
-if os.name == 'nt':
-	CONFIG_FILE = 'config\\config.yml'
-else:
-	CONFIG_FILE = '/home/dolores/config/config.yml'
-with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
-	config = yaml.safe_load(c)
 
 #---------------------------------------------------------------------------
 # Discord Events
