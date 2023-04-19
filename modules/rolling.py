@@ -2,16 +2,9 @@
 rolling.py
 '''
 import random
-import yaml
-import os
 from discord.ext import commands, bridge
 
-if os.name == 'nt':
-	CONFIG_FILE = 'config\\config.yml'
-else:
-	CONFIG_FILE = '/home/dolores/config/config.yml'
-with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
-	config = yaml.safe_load(c)
+from configload import config
 
 sarcastic_names = config['DISCORD']['sarcastic_names']
 

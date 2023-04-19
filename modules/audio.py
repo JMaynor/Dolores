@@ -2,19 +2,12 @@
 '''
 audio.py module
 '''
-import os
 import asyncio
-import yaml
 import discord
 from discord.ext import commands, bridge
 import yt_dlp
 
-if os.name == 'nt':
-	CONFIG_FILE = 'config\\config.yml'
-else:
-	CONFIG_FILE = '/home/dolores/config/config.yml'
-with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
-	config = yaml.safe_load(c)
+from configload import config
 
 yt_dlp.utils.bug_reports_message = lambda: ''
 ffmpeg_options = {'options': '-vn'}

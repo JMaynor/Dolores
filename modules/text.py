@@ -4,18 +4,11 @@ text.py module
 import sys
 import random
 import requests
-import os
-import yaml
 import discord
 from discord.ext import commands, bridge
 import openai
 
-if os.name == 'nt':
-	CONFIG_FILE = 'config\\config.yml'
-else:
-	CONFIG_FILE = '/home/dolores/config/config.yml'
-with open(CONFIG_FILE, 'r', encoding='utf-8') as c:
-	config = yaml.safe_load(c)
+from configload import config
 
 reply_method = config['DISCORD']['reply_method']
 
