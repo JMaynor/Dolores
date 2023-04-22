@@ -15,24 +15,6 @@ reply_method = config['DISCORD']['reply_method']
 if reply_method == 'openai':
 	openai.api_key = config['OPENAI']['api_key']
 
-snarky_comments = [
-	'How many sessions is it gonna take before you people understand how to use my commands?',
-	'Wrong.',
-	'I can\'t do that...',
-	'Nope.',
-	'Not a command, sweetie.',
-	'Must I hold your hand for this?',
-	'Oh, y\'all still can\'t type?',
-	'Girl, go hit up Mavis Beacon, cuz you cannot type.',
-	'Close.',
-	'Slow.',
-	'Homeless.',
-	'Goon.',
-	'You goonga.',
-	'Prison, honey.',
-	'No.',
-	'Big Dumb.']
-
 class text(commands.Cog):
 	'''
 	Commands for generating dialogue.
@@ -69,7 +51,7 @@ class text(commands.Cog):
 		'''
 		Generates a snarky comment to be used when a user tries to use a command that does not exist.
 		'''
-		random.choice(snarky_comments)
+		return random.choice(config['DISCORD']['snarky_comments'])
 
 	def summarize_url(self, url):
 		'''
