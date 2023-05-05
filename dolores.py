@@ -72,11 +72,11 @@ async def on_message(message):
 	Any message that contains a mention of Dolores will be handled using the chatbot
 	functionality. Otherwise, the text is sent to the default process_commands discord.py function.
 	'''
-	# If someone mentions Dolores, she will respond to them
-	if bot.user.mentioned_in(message):
+	# If someone mentions Dolores, she will respond to them, unless she is the one who sent the message
+	if (bot.user.mentioned_in(message)) and (message.author.id != bot.user.id):
+		ctx = await bot.get_context(message)
 		text_instance = text(bot)
 		clean_message = message.clean_content.replace('@Dolores', '')
-		ctx = await bot.get_context(message)
 		await ctx.defer()
 		reply = text_instance.generate_reply(clean_message)
 		if reply != '':
