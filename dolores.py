@@ -76,7 +76,8 @@ async def on_message(message):
 	if (bot.user.mentioned_in(message)) and (message.author.id != bot.user.id):
 		ctx = await bot.get_context(message)
 		text_instance = text(bot)
-		clean_message = message.clean_content.replace('@Dolores', '')
+		clean_message = message.clean_content.replace('@Dolores', 'Dolores')
+		clean_message = message.clean_content.replace('@everyone', 'everyone')
 		await ctx.defer()
 		reply = text_instance.generate_reply(clean_message)
 		if reply != '':
