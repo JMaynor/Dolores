@@ -25,3 +25,5 @@ The scheduling module is used for tasks related to Notion and Twitch. Pulling sc
 ### Text
 
 Module for text generation. Currently using chatGPT, but intent is to move to add ability to use self-hosted LLM. Should be able to choose between something the user is hosting or commercially available alternatives. Also handles simple randomized snarky replies.
+
+This project is licensed under the terms of the MIT license.
