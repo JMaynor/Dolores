@@ -123,5 +123,5 @@ async def on_message(message):
 #---------------------------------------------------------------------------
 if __name__ == '__main__':
 	print('Starting main program...')
-	# bot.run(config['DISCORD']['test_bot_api_key'])
-	bot.run(config['DISCORD']['bot_api_key'])
+	bot.run(config['DISCORD']['test_bot_api_key'])
+	# bot.run(config['DISCORD']['bot_api_key'])

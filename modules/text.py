@@ -3,6 +3,7 @@ text.py module
 '''
 import sys
 import random
+from collections import deque
 import requests
 import discord
 from discord.ext import commands, bridge
@@ -14,6 +15,9 @@ reply_method = config['DISCORD']['reply_method']
 
 if reply_method == 'openai':
 	openai.api_key = config['OPENAI']['api_key']
+
+message_history = deque(maxlen=10)
+system_messages = [{"role": "system", "content": x} for x in config['DISCORD']['system_messages']]
 
 class text(commands.Cog):
 	'''
@@ -27,11 +31,13 @@ class text(commands.Cog):
 		Generates a reply to a given message. Currently using chatterbot. Intent is to use a proper LLM in the future.
 		'''
 		if reply_method == 'openai':
-			system_messages = [{"role": "system", "content": x} for x in config['DISCORD']['system_messages']]
-			system_messages.append({"role": "user", "content": message})
+			# Add the user's message to the message history
+			message_history.append({"role": "user", "content": message})
+
+			# Generate a reply using the OpenAI API
 			response = openai.ChatCompletion.create(
 				model = config['OPENAI']['model']
-				, messages=system_messages
+				, messages=system_messages + list(message_history)
 				, max_tokens=config['OPENAI']['max_tokens']
 				, temperature=config['OPENAI']['temperature']
 				, top_p=config['OPENAI']['top_p']
@@ -39,12 +45,16 @@ class text(commands.Cog):
 				, presence_penalty=config['OPENAI']['presence_penalty']
 			)
 			reply = response['choices'][0]['message']['content']
+			# Add the reply to the message history
+			message_history.append({"role": "assistant", "content": reply})
+
 		# Use a self-hosted LLM to generate a reply
 		elif reply_method == 'self':
 			reply = ''
 		# If reply method not specified, return empty string
 		else:
 			reply = ''
+
 		return reply
 
 	def generate_snarky_comment(self):
