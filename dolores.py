@@ -106,7 +106,13 @@ async def on_message(message):
 				if 'sm_api_content_reduced' in summary:
 					reduced_amount = summary['sm_api_content_reduced'].replace('%', '')
 					if int(reduced_amount) > config['SMMRY']['min_reduced_amount']:
-						await ctx.respond('Here is a summary of that article I\'ve written: \n\n' + summary['sm_api_content'])
+						if 'sm_api_title' in summary:
+							embed_title = summary['sm_api_title']
+						else:
+							embed_title = 'Summary'
+						embed = discord.Embed(title=embed_title)
+						embed.add_field(name='Article Summary', value=summary['sm_api_content'])
+						await ctx.respond(embed=embed)
 
 	# Normal command processing
 	await bot.process_commands(message)

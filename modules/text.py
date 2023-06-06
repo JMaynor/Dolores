@@ -91,4 +91,10 @@ class text(commands.Cog):
 		if response == '':
 			await ctx.respond('Unable to summarize that URL.')
 			return
-		await ctx.respond(response['sm_api_content'])
+		if 'sm_api_title' in response:
+			embed_title = response['sm_api_title']
+		else:
+			embed_title = 'Summary'
+		embed = discord.Embed(title=embed_title)
+		embed.add_field(name='Article Summary', value=response['sm_api_content'])
+		await ctx.respond(embed=embed)
