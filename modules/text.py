@@ -69,8 +69,8 @@ class text(commands.Cog):
 		'''
 		response = requests.post(config['SMMRY']['base_url']
 			   					+ '?SM_API_KEY=' + config['SMMRY']['api_key']
-								+ '&SM_QUOTE_AVOID=true'
-								+ '&SM_LENGTH=5'
+								+ '&SM_QUOTE_AVOID=' + config['SMMRY']['quote_avoid']
+								+ '&SM_LENGTH=' + config['SMMRY']['length']
 								+ '&SM_URL=' + url
 		)
 
