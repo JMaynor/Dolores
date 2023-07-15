@@ -68,9 +68,9 @@ class text(commands.Cog):
 		Summarizes a given URL using the SMMRY API.
 		'''
 		response = requests.post(config['SMMRY']['base_url']
-			   					+ '?SM_API_KEY=' + config['SMMRY']['api_key']
-								+ '&SM_QUOTE_AVOID=' + config['SMMRY']['quote_avoid']
-								+ '&SM_LENGTH=' + config['SMMRY']['length']
+			   					+ '?SM_API_KEY=' + str(config['SMMRY']['api_key'])
+								+ '&SM_QUOTE_AVOID=' + str(config['SMMRY']['quote_avoid']).lower()
+								+ '&SM_LENGTH=' + str(config['SMMRY']['length'])
 								+ '&SM_URL=' + url
 		)
 
