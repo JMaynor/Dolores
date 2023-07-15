@@ -93,6 +93,8 @@ class rolling(commands.Cog):
         Dolores rolls a single d20 and returns the result.
         '''
         await ctx.defer()
+        if random.randint(1, 1000000) == 1:
+            await ctx.respond('Goon.')
         await ctx.respond('(d20)  ' + str(random.randint(1, 20)))
 
 
