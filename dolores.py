@@ -112,7 +112,8 @@ async def on_message(message):
 							embed_title = 'Summary'
 						embed = discord.Embed(title=embed_title)
 						embed.add_field(name='Article Summary', value=summary['sm_api_content'])
-						await ctx.respond(embed=embed)
+						if len(summary['sm_api_content']) <= 1024:
+							await ctx.respond(embed=embed)
 
 	# Normal command processing
 	await bot.process_commands(message)
