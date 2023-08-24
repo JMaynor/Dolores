@@ -83,12 +83,13 @@ async def on_message(message):
 		if reply != '':
 			await ctx.respond(reply)
 
-	# Catch mistypes when trying to use a slash command
-	if message.clean_content.startswith('/'):
-		text_instance = text(bot)
-		ctx = await bot.get_context(message)
-		snark_reply = text_instance.generate_snarky_comment()
-		await ctx.respond(snark_reply)
+	# TODO Fix this
+	# # Catch mistypes when trying to use a slash command
+	# if message.clean_content.startswith('/'):
+	# 	text_instance = text(bot)
+	# 	ctx = await bot.get_context(message)
+	# 	snark_reply = text_instance.generate_snarky_comment()
+	# 	await ctx.respond(snark_reply)
 
 	# Check for if message was posted in news channel and contains a non-media URL
 	if message.channel.id == config['DISCORD']['news_channel_id'] and 'https' in message.clean_content and 'tenor' not in message.clean_content and 'giphy' not in message.clean_content and 'imgur' not in message.clean_content and 'gfycat' not in message.clean_content and 'youtube' not in message.clean_content and 'youtu.be' not in message.clean_content:
