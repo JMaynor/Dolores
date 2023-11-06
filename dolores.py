@@ -17,14 +17,15 @@ text.py - Handles all text-related functionality
 
 # pylint: disable=line-too-long, bad-indentation, bare-except
 import asyncio
-import sys
 import re
+import sys
 from datetime import datetime
-import discord
-from discord.ext import commands, bridge
 
-from modules import *
+import discord
+from discord.ext import bridge, commands
+
 from configload import config
+from modules import *
 
 intents = discord.Intents.all()
 intents.members = True
@@ -83,6 +84,35 @@ async def on_message(message):
 		if reply != '':
 			await ctx.respond(reply)
 
+	# TODO Redo this, consider other APIs. Summary too frequently not useful
+	# # Check for if message was posted in news channel and contains a non-media URL
+	# if message.channel.id == config['DISCORD']['news_channel_id'] and 'https' in message.clean_content and not any(excluded in message.clean_content for excluded in config['SMMRY']['excluded_strings']):
+	# 	# Try and extract URL from message
+	# 	url = re.search(r'(https?://[^\s]+)', message.clean_content)
+	# 	if url is not None:
+	# 		ctx = await bot.get_context(message)
+
+	# 		text_instance = text(bot)
+	# 		# If URL is found, get a summary of the article
+	# 		summary = text_instance.summarize_url(url.group(0).split('?')[0])
+
+	# 		# If the summary is too short, don't post it
+	# 		if summary != '':
+	# 			if 'sm_api_content_reduced' in summary:
+	# 				reduced_amount = summary['sm_api_content_reduced'].replace('%', '')
+	# 				if int(reduced_amount) > config['SMMRY']['min_reduced_amount']:
+	# 					if 'sm_api_title' in summary:
+	# 						embed_title = summary['sm_api_title']
+	# 					else:
+	# 						embed_title = 'Summary'
+	# 					embed = discord.Embed(title=embed_title)
+	# 					embed.add_field(name='Article Summary', value=summary['sm_api_content'])
+	# 					if len(summary['sm_api_content']) <= 1024:
+	# 						await ctx.respond(embed=embed)
+
+	# Normal command processing
+	await bot.process_commands(message)
+
 	# TODO Fix this
 	# # Catch mistypes when trying to use a slash command
 	# if message.clean_content.startswith('/'):
@@ -90,35 +120,6 @@ async def on_message(message):
 	# 	ctx = await bot.get_context(message)
 	# 	snark_reply = text_instance.generate_snarky_comment()
 	# 	await ctx.respond(snark_reply)
-
-	# Check for if message was posted in news channel and contains a non-media URL
-	if message.channel.id == config['DISCORD']['news_channel_id'] and 'https' in message.clean_content and 'tenor' not in message.clean_content and 'giphy' not in message.clean_content and 'imgur' not in message.clean_content and 'gfycat' not in message.clean_content and 'youtube' not in message.clean_content and 'youtu.be' not in message.clean_content:
-		# Try and extract URL from message
-		url = re.search(r'(https?://[^\s]+)', message.clean_content)
-		if url is not None:
-			ctx = await bot.get_context(message)
-
-			text_instance = text(bot)
-			# If URL is found, get a summary of the article
-			summary = text_instance.summarize_url(url.group(0).split('?')[0])
-
-			# If the summary is too short, don't post it
-			if summary != '':
-				if 'sm_api_content_reduced' in summary:
-					reduced_amount = summary['sm_api_content_reduced'].replace('%', '')
-					if int(reduced_amount) > config['SMMRY']['min_reduced_amount']:
-						if 'sm_api_title' in summary:
-							embed_title = summary['sm_api_title']
-						else:
-							embed_title = 'Summary'
-						embed = discord.Embed(title=embed_title)
-						embed.add_field(name='Article Summary', value=summary['sm_api_content'])
-						if len(summary['sm_api_content']) <= 1024:
-							await ctx.respond(embed=embed)
-
-	# Normal command processing
-	await bot.process_commands(message)
-
 
 #---------------------------------------------------------------------------
 # Program Main
