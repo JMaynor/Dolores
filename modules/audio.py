@@ -3,29 +3,16 @@ audio.py module
 """
 
 import asyncio
-import queue
 
 import discord
 import yt_dlp
-from discord.ext import bridge, commands
+from discord.ext import bridge, commands, tasks
 
 from configload import config
 
 yt_dlp.utils.bug_reports_message = lambda: ""
 ffmpeg_options = {"options": "-vn"}
 ytdl = yt_dlp.YoutubeDL(config["YTDL"])
-
-
-class AudioPlayer:
-    def __init__(self) -> None:
-        self.queue = queue.Queue()
-
-    def add_to_queue(self, audio_file):
-        self.queue.put(audio_file)
-
-    def play(self):
-        while not self.queue.empty():
-            audio_file = self.queue.get()
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -80,6 +67,31 @@ class audio(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.queue = asyncio.Queue()
+        self.loop = asyncio.get_event_loop()
+        self.loop.create_task(self.play_audio())
+
+    async def play_audio(self):
+        while True:
+            if not self.queue.empty():
+                ctx, url = await self.queue.get()
+                audio = await self.queue.get()
+                # play audio here
+                print('Playing audio')
+            await asyncio.sleep(1)
+
+    async def add_to_queue(self, audio):
+        '''
+        Adds a given audio to the queue to be played.
+        '''
+        await self.queue.put(audio)
+
+    async def remove_from_queue(self, audio):
+        '''
+        Removes a given audio from the queue to be played.
+        '''
+        await self.queue.remove(audio)
+
 
     @bridge.bridge_command(
         description="Use's yt-dlp to play an audio stream in the user's voice channel."
@@ -98,6 +110,9 @@ class audio(commands.Cog):
             if channel and ctx.voice_client is None:
                 voice = await channel.connect()
         except AttributeError:
+            # TODO: If user not in a voice channel, instead
+            # why not have bot try to pull first voice channel it can find in server
+            # and join it?
             await ctx.respond("Must be connected to voice channel to play audio.")
 
         if ctx.voice_client.is_playing():
