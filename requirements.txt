@@ -1,5 +1,5 @@
 requests
 pyyaml
-yt-dlp
-py-cord[voice]
-openai
+yt-dlp==2023.12.30
+py-cord[voice]==2.5.0
+openai==1.13.3
