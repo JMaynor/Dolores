@@ -1,5 +1,5 @@
-requests
-pyyaml
-yt-dlp
-py-cord[voice]
-openai
+requests==2.31.0
+pyyaml==6.0.1
+yt-dlp==2024.3.10
+py-cord[voice]==2.5.0
+openai==1.13.3

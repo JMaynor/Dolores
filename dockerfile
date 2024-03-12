@@ -1,4 +1,4 @@
-FROM python
+FROM python:3.12
 RUN apt-get -y update && apt-get install -y ffmpeg
 RUN python -m pip install --upgrade pip
 RUN mkdir /home/dolores
