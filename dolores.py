@@ -31,6 +31,7 @@ intents = discord.Intents.all()
 intents.members = True
 bot = bridge.Bot(command_prefix="-", case_insensitive=True, intents=intents)
 
+# Add all Cog modules
 bot.add_cog(rolling(bot))
 bot.add_cog(audio(bot))
 bot.add_cog(scheduling(bot))
@@ -122,9 +123,9 @@ async def on_message(message):
     # 	await ctx.respond(snark_reply)
 
 
+# ---------------------------------------------------------------------------
+# Program Main
+# ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    """
-    Main program entry point. Starts the bot using the API key from the config file.
-    """
     print("Starting main program...")
     bot.run(config["DISCORD"]["bot_api_key"])

@@ -6,7 +6,7 @@ import asyncio
 
 import discord
 import yt_dlp
-from discord.ext import bridge, commands, tasks
+from discord.ext import bridge, commands
 
 from configload import config
 
@@ -36,28 +36,10 @@ class YTDLSource(discord.PCMVolumeTransformer):
             None, lambda: ytdl.extract_info(url, download=not stream)
         )
         if "entries" in data:
-            # take all items from a playlist
-            playlist = data["entries"]
-            sources = []
-            for entry in playlist:
-                try:
-                    source = cls(
-                        discord.FFmpegPCMAudio(
-                            ytdl.prepare_filename(entry), **ffmpeg_options
-                        ),
-                        data=entry,
-                    )
-                    sources.append(source)
-                except Exception as e:
-                    print(e)
-            return sources
-        else:
-            try:
-                filename = data["url"] if stream else ytdl.prepare_filename(data)
-            except Exception as e:
-                print(e)
-                filename = None
-            return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+            # take first item from a playlist
+            data = data["entries"][0]
+        filename = data["url"] if stream else ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
 class audio(commands.Cog):
@@ -67,31 +49,6 @@ class audio(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.queue = asyncio.Queue()
-        self.loop = asyncio.get_event_loop()
-        self.loop.create_task(self.play_audio())
-
-    async def play_audio(self):
-        while True:
-            if not self.queue.empty():
-                ctx, url = await self.queue.get()
-                audio = await self.queue.get()
-                # play audio here
-                print('Playing audio')
-            await asyncio.sleep(1)
-
-    async def add_to_queue(self, audio):
-        '''
-        Adds a given audio to the queue to be played.
-        '''
-        await self.queue.put(audio)
-
-    async def remove_from_queue(self, audio):
-        '''
-        Removes a given audio from the queue to be played.
-        '''
-        await self.queue.remove(audio)
-
 
     @bridge.bridge_command(
         description="Use's yt-dlp to play an audio stream in the user's voice channel."
@@ -110,9 +67,6 @@ class audio(commands.Cog):
             if channel and ctx.voice_client is None:
                 voice = await channel.connect()
         except AttributeError:
-            # TODO: If user not in a voice channel, instead
-            # why not have bot try to pull first voice channel it can find in server
-            # and join it?
             await ctx.respond("Must be connected to voice channel to play audio.")
 
         if ctx.voice_client.is_playing():

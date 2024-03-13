@@ -152,7 +152,10 @@ cython_debug/
 #.idea/
 
 config.json
-.vscode/
+launch.json
+*.xlsx
+*.DAT
+
 
 __pycache__
 *.pyc
