@@ -26,6 +26,7 @@ from discord.ext import bridge, commands
 
 from configload import config
 from modules import *
+from notify import notif
 
 intents = discord.Intents.all()
 intents.members = True
@@ -64,6 +65,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, (commands.CommandNotFound)):
         await ctx.send(text_instance.generate_snarky_comment())
     else:
+        notif.notify(f"Error: {error}")
         print(error, file=sys.stderr)
 
 
