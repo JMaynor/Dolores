@@ -19,4 +19,4 @@ class Notifier:
         )
 
 
-notif = Notifier(config["apprise_endpoints"])
+notif = Notifier(config["DISCORD"]["apprise_endpoints"])
