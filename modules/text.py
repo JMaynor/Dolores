@@ -41,7 +41,7 @@ class text(commands.Cog):
             message_history.append({"role": "user", "content": message})
 
             # Generate a reply using the OpenAI API
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model=config["OPENAI"]["model"],
                 messages=system_messages + list(message_history),
                 max_tokens=config["OPENAI"]["max_tokens"],
@@ -50,7 +50,7 @@ class text(commands.Cog):
                 frequency_penalty=config["OPENAI"]["frequency_penalty"],
                 presence_penalty=config["OPENAI"]["presence_penalty"],
             )
-            reply = response["choices"][0]["message"]["content"]
+            reply = response.choices[0].message.content
             # Add the reply to the message history
             message_history.append({"role": "assistant", "content": reply})
 
