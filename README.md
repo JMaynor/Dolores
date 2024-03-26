@@ -27,3 +27,6 @@ The scheduling module is used for tasks related to Notion and Twitch. Pulling sc
 Module for text generation. Currently using chatGPT, but intent is to move to add ability to use self-hosted LLM. Should be able to choose between something the user is hosting or commercially available alternatives. Also handles simple randomized snarky replies.
 
 This project is licensed under the terms of the MIT license.
+
+
+> Note: Dolores is largely a personal project created for a few small Discord servers. So there's a number of features or peculiarities that specifically deal with things unique to what we want her to do. Should still be useful in a broader more generalized context, but I will work over time to make her less specific. Or at least make her uses more configurable.

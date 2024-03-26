@@ -1,6 +1,6 @@
 requests==2.31.0
 pyyaml==6.0.1
-yt-dlp==2024.3.10
 py-cord[voice]==2.5.0
 openai==1.13.3
 apprise==1.7.4
+pomice==2.9.0

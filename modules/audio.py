@@ -5,14 +5,13 @@ audio.py module
 import asyncio
 
 import discord
-import yt_dlp
+import pomice
+from configload import config
 from discord.ext import bridge, commands
 
-from configload import config
-
-yt_dlp.utils.bug_reports_message = lambda: ""
-ffmpeg_options = {"options": "-vn"}
-ytdl = yt_dlp.YoutubeDL(config["YTDL"])
+# yt_dlp.utils.bug_reports_message = lambda: ""
+# ffmpeg_options = {"options": "-vn"}
+# ytdl = yt_dlp.YoutubeDL(config["YTDL"])
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
