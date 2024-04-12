@@ -2,12 +2,32 @@
 DISCORD:
   bot_api_key: BOT_API_KEY
   test_bot_api_key: TEST_BOT_API_KEY
-  sarcastic_names:  ['my lovely','darling','sweetie','sweetie-pie','my sugar lump princess','my big strong warrior','dearest','lover','honey','foxy mama','loathsome dung eater','baby girl','Felicia','mamacita','diva','hunty','Queen','Jan']
+  sarcastic_names:
+    [
+      "my lovely",
+      "darling",
+      "sweetie",
+      "sweetie-pie",
+      "my sugar lump princess",
+      "my big strong warrior",
+      "dearest",
+      "lover",
+      "honey",
+      "foxy mama",
+      "loathsome dung eater",
+      "baby girl",
+      "Felicia",
+      "mamacita",
+      "diva",
+      "hunty",
+      "Queen",
+      "Jan",
+    ]
   reply_method: openai
   news_channel_id: channel id you want Doloresto watch for summarization
 YTDL:
   format: bestaudio/best
-  outtmpl: '%(extractor)s-%(id)s-%(title)s.%(ext)s'
+  outtmpl: "%(extractor)s-%(id)s-%(title)s.%(ext)s"
   restrictfilenames: True
   noplaylist: True
   nocheckcertificate: True
@@ -16,11 +36,11 @@ YTDL:
   quiet: True
   no_warnings: True
   default_search: auto
-  source_address: '0.0.0.0'
+  source_address: "0.0.0.0"
 NOTION:
   base_url: https://api.notion.com/v1/
   api_key: API_KEY
-  notion_version: '2022-06-28'
+  notion_version: "2022-06-28"
   database_id: NOTION_DATABASE_ID_WITH_CALENDAR
 TWITCH:
   client_id: TWITCH_CLIENT_ID
@@ -42,3 +62,7 @@ SELFHOST:
 SMMRY:
   api_key: API_KEY
   base_url: https://api.smmry.com
+LAVALINK:
+  host: 0.0.0.0
+  port: 1234
+  password: password
