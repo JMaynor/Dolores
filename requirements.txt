@@ -3,4 +3,4 @@ pyyaml==6.0.1
 yt-dlp==2024.4.9
 py-cord[voice]==2.5.0
 openai==1.25.2
-apprise==1.7.6
+apprise==1.8.0
