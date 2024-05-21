@@ -1,4 +1,4 @@
-requests==2.31.0
+requests==2.32.0
 pyyaml==6.0.1
 yt-dlp==2024.4.9
 py-cord[voice]==2.5.0
