@@ -1,5 +1,7 @@
 """
 audio.py module
+
+Much has come from the pomice example bot
 """
 
 import asyncio
@@ -115,10 +117,15 @@ class audio(commands.Cog):
                     "without specifying the channel argument.",
                 )
         await ctx.author.voice.channel.connect(cls=pomice.Player)
+
+        player: Player = ctx.voice_client
+
+        # Set the player context so we can use it so send messages
+        await player.set_context(ctx=ctx)
         await ctx.send(f"Joined the voice channel `{channel}`")
 
     @bridge.bridge_command(description="Disconnects Dolores from voice channel.")
-    async def leave(self, ctx):
+    async def leave(self, ctx: commands.Context) -> None:
         """
         Disconnects Dolores from voice chat channel, if she is connected.
         Also stops any currently playing music
