@@ -5,13 +5,13 @@ Much has come from the pomice example bot
 """
 
 import asyncio
+import math
 from contextlib import suppress
 
 import discord
 import pomice
-from discord.ext import bridge, commands
-
 from configload import config
+from discord.ext import bridge, commands
 
 
 class Player(pomice.Player):
@@ -90,8 +90,12 @@ class audio(commands.Cog):
         self.bot = bot
         self.pomice = pomice.NodePool()
         self.queue = pomice.Queue()
+        bot.loop.create_task(self.start_nodes())
 
     async def start_nodes(self):
+        # Waiting for the bot to get ready before connecting to nodes.
+        await self.bot.wait_until_ready()
+
         await self.pomice.create_node(
             bot=self.bot,
             host=config["LAVALINK"]["host"],
@@ -99,6 +103,41 @@ class audio(commands.Cog):
             password=config["LAVALINK"]["password"],
             identifier="Dolores",
         )
+
+    def required(self, ctx: commands.Context):
+        """
+        Method which returns required votes based on amount of members in a channel.
+        """
+        player: Player = ctx.voice_client
+        channel = self.bot.get_channel(int(player.channel.id))
+        required = math.ceil((len(channel.members) - 1) / 2.5)
+
+        if ctx.command.name == "stop":
+            if len(channel.members) == 3:
+                required = 2
+
+        return required
+
+    def is_privileged(self, ctx: commands.Context):
+        """
+        Check whether the user is an Admin or DJ.
+        """
+        player: Player = ctx.voice_client
+
+        return player.dj == ctx.author or ctx.author.guild_permissions.kick_members
+
+    # Pomice event listeners
+    @commands.Cog.listener()
+    async def on_pomice_track_end(self, player: Player, track, _):
+        await player.do_next()
+
+    @commands.Cog.listener()
+    async def on_pomice_track_stuck(self, player: Player, track, _):
+        await player.do_next()
+
+    @commands.Cog.listener()
+    async def on_pomice_track_exception(self, player: Player, track, _):
+        await player.do_next()
 
     @bridge.bridge_command(
         description="Joins the voice channel of the user who called the command."
@@ -117,7 +156,6 @@ class audio(commands.Cog):
                     "without specifying the channel argument.",
                 )
         await ctx.author.voice.channel.connect(cls=pomice.Player)
-
         player: Player = ctx.voice_client
 
         # Set the player context so we can use it so send messages
@@ -125,16 +163,17 @@ class audio(commands.Cog):
         await ctx.send(f"Joined the voice channel `{channel}`")
 
     @bridge.bridge_command(description="Disconnects Dolores from voice channel.")
-    async def leave(self, ctx: commands.Context) -> None:
+    async def leave(self, ctx: commands.Context):
         """
         Disconnects Dolores from voice chat channel, if she is connected.
         Also stops any currently playing music
         Ex: -leave
         """
-        if not ctx.voice_client:
-            raise commands.CommandError("No player detected")
-
-        player: pomice.Player = ctx.voice_client
+        if not (player := ctx.voice_client):
+            return await ctx.send(
+                "You must have the bot in a channel in order to use this command",
+                delete_after=7,
+            )
 
         await player.destroy()
         await ctx.send("Dolores has left the building.")
@@ -175,6 +214,72 @@ class audio(commands.Cog):
 
         if not player.is_playing:
             await player.do_next()
+
+    @bridge.bridge_command(description="Pauses the currently playing audio.")
+    async def pause(self, ctx: commands.Context):
+        """
+        Pauses the currently playing audio
+        """
+        if not (player := ctx.voice_client):
+            return await ctx.send(
+                "You must have the bot in a channel in order to use this command",
+                delete_after=7,
+            )
+
+        if player.is_paused or not player.is_connected:
+            return
+
+        if self.is_privileged(ctx):
+            await ctx.send("An admin or DJ has paused the player.", delete_after=10)
+            player.pause_votes.clear()
+
+            return await player.set_pause(True)
+
+        required = self.required(ctx)
+        player.pause_votes.add(ctx.author)
+
+        if len(player.pause_votes) >= required:
+            await ctx.send("Vote to pause passed. Pausing player.", delete_after=10)
+            player.pause_votes.clear()
+            await player.set_pause(True)
+        else:
+            await ctx.send(
+                f"{ctx.author.mention} has voted to pause the player. Votes: {len(player.pause_votes)}/{required}",
+                delete_after=15,
+            )
+
+    @bridge.bridge_command(description="Resumes the currently paused audio.")
+    async def resume(self, ctx: commands.Context):
+        """
+        Resumes the currently paused audio
+        """
+        if not (player := ctx.voice_client):
+            return await ctx.send(
+                "You must have the bot in a channel in order to use this command",
+                delete_after=7,
+            )
+
+        if not player.is_paused or not player.is_connected:
+            return
+
+        if self.is_privileged(ctx):
+            await ctx.send("An admin or DJ has resumed the player.", delete_after=10)
+            player.resume_votes.clear()
+
+            return await player.set_pause(False)
+
+        required = self.required(ctx)
+        player.resume_votes.add(ctx.author)
+
+        if len(player.resume_votes) >= required:
+            await ctx.send("Vote to resume passed. Resuming player.", delete_after=10)
+            player.resume_votes.clear()
+            await player.set_pause(False)
+        else:
+            await ctx.send(
+                f"{ctx.author.mention} has voted to resume the player. Votes: {len(player.resume_votes)}/{required}",
+                delete_after=15,
+            )
 
     @bridge.bridge_command(aliases=["n", "nex", "next", "sk"])
     async def skip(self, ctx: commands.Context):
