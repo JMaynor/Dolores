@@ -18,7 +18,9 @@ jobs:
           uses: docker/metadata-action@v4
           with:
             images: ghcr.io/JMaynor/dolores
-            tags: type=sha
+            tags: |
+              type=sha
+              type=ref,event=branch,ref=main
         - name: Login to GHCR
           uses: docker/login-action@v3
           with:
@@ -30,4 +32,6 @@ jobs:
           with:
             context: .
             push: true
-            tags: ${{ steps.meta.outputs.tags }}
+            tags: |
+              ${{ steps.meta.outputs.tags }}
+              ghcr.io/JMaynor/dolores:latest

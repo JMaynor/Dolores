@@ -10,8 +10,9 @@ from contextlib import suppress
 
 import discord
 import pomice
+from discord.ext import commands
+
 from configload import config
-from discord.ext import bridge, commands
 
 
 class Player(pomice.Player):
@@ -139,7 +140,7 @@ class audio(commands.Cog):
     async def on_pomice_track_exception(self, player: Player, track, _):
         await player.do_next()
 
-    @bridge.bridge_command(
+    @commands.command(
         description="Joins the voice channel of the user who called the command."
     )
     async def join(
@@ -162,7 +163,7 @@ class audio(commands.Cog):
         await player.set_context(ctx=ctx)
         await ctx.send(f"Joined the voice channel `{channel}`")
 
-    @bridge.bridge_command(description="Disconnects Dolores from voice channel.")
+    @commands.command(description="Disconnects Dolores from voice channel.")
     async def leave(self, ctx: commands.Context):
         """
         Disconnects Dolores from voice chat channel, if she is connected.
@@ -178,13 +179,12 @@ class audio(commands.Cog):
         await player.destroy()
         await ctx.send("Dolores has left the building.")
 
-    @bridge.bridge_command(
+    @commands.command(
         description="Use's pomice/lavalink to play an audio stream in the user's voice channel."
     )
     async def play(self, ctx: commands.Context, *, search: str) -> None:
         """
-        Plays a song from a given URL in the user's current voice channel.
-        Valid URLS are Youtube and Soundcloud
+        Plays audio from a given search term.
         Ex: -play https://www.youtube.com/watch?v=O1OTWCd40bc
         Dolores will play Wicked Games by The Weeknd
         """
@@ -215,7 +215,7 @@ class audio(commands.Cog):
         if not player.is_playing:
             await player.do_next()
 
-    @bridge.bridge_command(description="Pauses the currently playing audio.")
+    @commands.command(description="Pauses the currently playing audio.")
     async def pause(self, ctx: commands.Context):
         """
         Pauses the currently playing audio
@@ -248,7 +248,7 @@ class audio(commands.Cog):
                 delete_after=15,
             )
 
-    @bridge.bridge_command(description="Resumes the currently paused audio.")
+    @commands.command(description="Resumes the currently paused audio.")
     async def resume(self, ctx: commands.Context):
         """
         Resumes the currently paused audio
@@ -281,7 +281,7 @@ class audio(commands.Cog):
                 delete_after=15,
             )
 
-    @bridge.bridge_command(aliases=["n", "nex", "next", "sk"])
+    @commands.command(description="Skips the currently playing song.")
     async def skip(self, ctx: commands.Context):
         """
         Skip the currently playing song.
@@ -320,7 +320,7 @@ class audio(commands.Cog):
                 delete_after=15,
             )
 
-    @bridge.bridge_command(description="Stops the currently playing audio.")
+    @commands.command(description="Stops the currently playing audio.")
     async def stop(self, ctx):
         """
         Stops the currently playing song, if one is playing.

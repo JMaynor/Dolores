@@ -130,8 +130,12 @@ async def on_message(message):
     """
 
     # If someone mentions Dolores, she will respond to them,
-    # unless she is the one who sent the message
-    if (bot.user.mentioned_in(message)) and (message.author.id != bot.user.id):
+    # unless she is the one who sent the message or it is an @everyone mention
+    if (
+        bot.user.mentioned_in(message)
+        and message.author.id != bot.user.id
+        and "@everyone" not in message.clean_content
+    ):
         await handle_mention(message)
 
     # Check for if message was posted in news channel and contains a non-media URL
