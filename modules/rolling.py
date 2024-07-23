@@ -1,12 +1,12 @@
 """
+The basic module of functionality. Rolls some dice.
+
 rolling.py
 """
 
 import random
 
-from discord.ext import bridge, commands
-
-from configload import config
+from discord.ext import commands
 
 sarcastic_names = config["DISCORD"]["sarcastic_names"]
 
@@ -19,7 +19,7 @@ class rolling(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @bridge.bridge_command(
+    @commands.slash_command(
         description="A catch-all command for rolling any number of any-sided dice."
     )
     async def roll(self, ctx, *, dice_batches: str):
@@ -59,7 +59,7 @@ class rolling(commands.Cog):
             )
             return
 
-    @bridge.bridge_command(
+    @commands.slash_command(
         description="A catch-all command for rolling any number of any-sided dice. This one for DMs."
     )
     async def sroll(self, ctx, *, dice_batches: str):
@@ -101,7 +101,7 @@ class rolling(commands.Cog):
             )
             return
 
-    @bridge.bridge_command(
+    @commands.slash_command(
         description="For when you can't make a simple decision to save your life."
     )
     async def choose(self, ctx, *, choices: str):
@@ -113,7 +113,7 @@ class rolling(commands.Cog):
         await ctx.defer()
         await ctx.respond(random.choice(choices.split()))
 
-    @bridge.bridge_command(
+    @commands.slash_command(
         description="Modified dice-roll command to roll a single d20. Short and sweet."
     )
     async def d20(self, ctx):
@@ -123,11 +123,12 @@ class rolling(commands.Cog):
         Dolores rolls a single d20 and returns the result.
         """
         await ctx.defer()
+        # 1 in million chance to roll a goon.
         if random.randint(1, 1000000) == 1:
             await ctx.respond("Goon.")
         await ctx.respond("(d20)  " + str(random.randint(1, 20)))
 
-    @bridge.bridge_command(
+    @commands.slash_command(
         description="Modified dice-roll command to roll a single d20. Short and sweet. Also secret."
     )
     async def sd20(self, ctx):

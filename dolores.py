@@ -6,16 +6,10 @@ Date: Apr 2020
 Dolores is a chatbot that connects to a Discord server. Her primary use
 is in being able to roll dice for players of a tabletop roleplaying game
 but she is also capable of doing some basic audio things.
-
-Majority of functionality has been organized into separate modules.
-dolores.py - Main program file. Handles Discord-related functionality and events
-audio.py - Handles all audio/yt-dlp related functionality
-rolling.py - Handles all dice-rolling/randomization functionality
-scheduling.py - Handles all Notion/Twitch scheduling functionality
-text.py - Handles all text-related functionality
 """
 
 import asyncio
+import os
 import re
 import sys
 from datetime import datetime
@@ -23,19 +17,24 @@ from datetime import datetime
 import discord
 from discord.ext import bridge, commands
 
-from configload import config
 from modules import *
 from notify import notif
 
 intents = discord.Intents.all()
 intents.members = True
-bot = bridge.Bot(command_prefix="-", case_insensitive=True, intents=intents)
+bot = commands.Bot(case_insensitive=True, intents=intents)
 
-# Add all Cog modules
+# Add main cog module
 bot.add_cog(rolling(bot))
-bot.add_cog(audio(bot))
-bot.add_cog(scheduling(bot))
-bot.add_cog(text(bot))
+
+# Add modules based on config
+# These rely on other dependencies and APIs so only add if enabled
+if os.environ["AUDIO_ENABLED"].lower() == "true":
+    bot.add_cog(audio(bot))
+if os.environ["SCHEDULING_ENABLED"].lower() == "true":
+    bot.add_cog(scheduling(bot))
+if os.environ["TEXT_ENABLED"].lower() == "true":
+    bot.add_cog(text(bot))
 
 
 async def handle_mention(message):
@@ -45,12 +44,15 @@ async def handle_mention(message):
     where the message was posted.
     """
     ctx = await bot.get_context(message)
-    text_instance = text(bot)
-    clean_message = message.clean_content.replace("@Dolores", "Dolores")
-    clean_message = clean_message.replace("@everyone", "everyone")
-    clean_message = clean_message.replace("@Testie", "Testie")
-    await ctx.defer()
-    reply = text_instance.generate_reply(clean_message)
+    if os.environ["TEXT_ENABLED"].lower() == "true":
+        text_instance = text(bot)
+        clean_message = message.clean_content.replace("@Dolores", "Dolores")
+        clean_message = clean_message.replace("@everyone", "everyone")
+        clean_message = clean_message.replace("@Testie", "Testie")
+        await ctx.defer()
+        reply = text_instance.generate_reply(clean_message)
+    else:
+        reply = "Hi"
     if reply != "":
         await ctx.respond(reply)
 
@@ -113,12 +115,15 @@ async def on_command_error(ctx, error):
     comeback. Any other error performs default behavior of logging to syserr.
     """
     await ctx.defer()
-    text_instance = text(bot)
-    if isinstance(error, (commands.CommandNotFound)):
-        await ctx.send(text_instance.generate_snarky_comment())
+    if os.environ["TEXT_ENABLED"].lower() == "true":
+        text_instance = text(bot)
+        if isinstance(error, (commands.CommandNotFound)):
+            await ctx.send(text_instance.generate_snarky_comment())
+        else:
+            notif.notify(f"Error: {error}")
+            print(error, file=sys.stderr)
     else:
-        notif.notify(f"Error: {error}")
-        print(error, file=sys.stderr)
+        await ctx.send("An error occurred. Please try again.")
 
 
 @bot.event
@@ -159,4 +164,4 @@ if __name__ == "__main__":
     Main program entry point
     """
     print("Starting main program...")
-    bot.run(config["DISCORD"]["bot_api_key"])
+    bot.run(os.environ["DISCORD_API_KEY"])

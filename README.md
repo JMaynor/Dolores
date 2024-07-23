@@ -2,17 +2,42 @@
 
 Discord bot named Dolores for rolling dice, playing audio, and a number of other helper functions. She was initially created to help facilitiate playing tabletop games over Discord.
 
-Dolores can be run easily directly as a python program, but she can also be ran within a Docker container, allowing for easier updating. An example `compose.yml` layout is below, assuming the user wants to make use of the lavalink functionality.
+Dolores can be run easily directly as a python program. Generally, I have her running as a Docker container, allows for easier updating. An example `compose.yml` layout is included below, assuming the user wants to make use of all functionality.
 
-> Note: Dolores is largely a personal project created for a few small Discord servers. So there's a number of features or peculiarities that specifically deal with things unique to what we want her to do. Should still be useful in a broader more generalized context, but I will work over time to make her less specific. Or at least make her uses more configurable.
+> Note: Dolores is largely a personal project created for a few small Discord servers. So there's a number of features or peculiarities that specifically deal with things unique to what I want her to do. Should still be useful in a broader more generalized context, but I will work over time to make her less specific. Or at least make her uses more configurable.
 
 ## Config
 
-Dolores requires a config.yml file with a bot API key and a couple other details to run. example_config.yml is included to show formatting. Config file is organized by service. The only heading explicitly required to run is the info under DISCORD.
+Dolores runs using a number of environment variables for API keys and settings. Not all are required for core functionality. Each cog has a corresponding environment variable to turn it on or off. Will determine whether the cog is loaded when Dolores is run. If a cog isn't loaded, none of the environment variables that are associated with it are required.
 
-> Note: Intention is to move all config to env vars so easier to deploy via a single compose spec. No need for the config file.
+The only explicitly required environment variable is `DISCORD_API_KEY`.
 
-Below is an example docker compose spec.
+| Required by Which Module | Env Var Name | Description |
+| --- | --- | --- |
+|  |  |  |
+| Base | DISCORD_API_KEY | The main API key for the bot. |
+| Base | AUDIO_ENABLED | Enables audio cog, when set as true |
+| Base | SCHEDULING_ENABLED | Enables scheduling cog, when set as true |
+| Base | TEXT_ENABLED |  |
+| None | APPRISE_ENDPOINTS | Optional comma-separated list of apprise endpoints to send error messages to. otherwise prints to stderr |
+| Scheduling | NOTION_API_KEY | API Key for querying data from Notion |
+| Scheduling | NOTION_VERSION | Version of Notion API used for querying. |
+| Scheduling | NOTION_BASE_URL | Base URL of the Notion API, should be |
+| Scheduling | NOTION_DATABASE_ID | ID for database where stream info is kept |
+| None | TWITCH_CLIENT_ID | Not yet used |
+| None | TWITCH_BASE_URL | Not yet used |
+| None | TWITCH_BROADCASTER_ID | Not yet used |
+| Text | REPLY_METHOD | Method to use for generating a reply to user's message. At this point only 'openai' is supported. |
+| Text | OPENAI_API_KEY | API Key used for generating replies |
+| Text | MAX_TOKENS | Max number of tokens generated in LLM chat. |
+| Text | SMMRY_BASE_URL | base URL for the SMMRY API. |
+| Text | SMMRY_API_KEY | API key for the SMMRY API |
+| Text | SMMRY_QUOTE_AVOID | SMMRY boolean option on whether to avoid or include quotes in text that's summarized. Usually true. |
+| Text | SMMRY_LENGTH | max number of sentences a summary should be. |
+
+## Compose
+
+Below is an example docker compose spec if using all functionality.
 
 ```yml
 name: Dolores

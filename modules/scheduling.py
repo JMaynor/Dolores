@@ -9,16 +9,14 @@ from datetime import datetime
 
 import discord
 import requests
-from discord.ext import bridge, commands
-
-from configload import config
+from discord.ext import commands
 
 notion_headers = {
-    "Authorization": "Bearer " + config["NOTION"]["api_key"],
-    "Notion-Version": config["NOTION"]["notion_version"],
+    "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
+    "Notion-Version": os.environ["NOTION_VERSION"],
 }
 
-twitch_headers = {"Authorization": "", "Clienti-ID": config["TWITCH"]["client_id"]}
+twitch_headers = {"Authorization": "", "Client-ID": os.environ["TWITCH_CLIENT_ID"]}
 
 sarcastic_names = config["DISCORD"]["sarcastic_names"]
 
@@ -58,9 +56,9 @@ class scheduling(commands.Cog):
         """
         json_data = {"filter": filter, "sorts": sorts}
         response = requests.post(
-            config["NOTION"]["base_url"]
+            os.environ["NOTION_BASE_URL"]
             + "databases/"
-            + config["NOTION"]["database_id"]
+            + os.environ["NOTION_DATABASE_ID"]
             + "/query",
             headers=notion_headers,
             json=json_data,
@@ -95,11 +93,11 @@ class scheduling(commands.Cog):
             after = "&after=" + after
 
         response = requests.get(
-            config["TWITCH"]["base_url"]
+            os.environ["TWITCH_BASE_URL"]
             + "helix/schedule"
             + "?broadcaster_id="
-            + config["TWITCH"]["broadcaster_id"]
-            + start_time
+            + os.environ["TWITCH_BROADCASTER_ID"]
+            + start_time  # type: ignore
             + end_time
             + first
             + after,
@@ -131,10 +129,10 @@ class scheduling(commands.Cog):
         }
 
         response = requests.post(
-            config["TWITCH"]["base_url"]
+            os.environ["TWITCH_BASE_URL"]
             + "helix/schedule/segment"
             + "?broadcaster_id="
-            + config["TWITCH"]["broadcaster_id"],
+            + os.environ["TWITCH_BROADCASTER_ID"],
             json=json_data,
             headers=twitch_headers,
         )
@@ -155,10 +153,10 @@ class scheduling(commands.Cog):
         Requires the segment ID
         """
         response = requests.delete(
-            config["TWITCH"]["base_url"]
+            os.environ["TWITCH_BASE_URL"]
             + "helix/schedule/segment"
             + "?broadcaster_id="
-            + config["TWITCH"]["broadcaster_id"]
+            + os.environ["TWITCH_BROADCASTER_ID"]
             + "?id="
             + id,
             headers=twitch_headers,
@@ -196,7 +194,7 @@ class scheduling(commands.Cog):
         Searches for Twitch categories
         """
         response = requests.get(
-            config["TWITCH"]["base_url"]
+            os.environ["TWITCH_BASE_URL"]
             + "helix/search/categories"
             + "?query="
             + urllib.parse.quote(query),
@@ -212,7 +210,7 @@ class scheduling(commands.Cog):
 
         return response.json()
 
-    @bridge.bridge_command(
+    @commands.slash_command(
         description="Returns the next couple streams on the schedule."
     )
     async def schedule(self, ctx):

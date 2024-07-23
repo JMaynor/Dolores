@@ -6,13 +6,12 @@ Much has come from the pomice example bot
 
 import asyncio
 import math
+import os
 from contextlib import suppress
 
 import discord
 import pomice
 from discord.ext import commands
-
-from configload import config
 
 
 class Player(pomice.Player):
@@ -99,9 +98,9 @@ class audio(commands.Cog):
 
         await self.pomice.create_node(
             bot=self.bot,
-            host=config["LAVALINK"]["host"],
-            port=config["LAVALINK"]["port"],
-            password=config["LAVALINK"]["password"],
+            host=os.environ["LAVALINK_HOST"],
+            port=int(os.environ["LAVALINK_PORT"]),
+            password=os.environ["LAVALINK_PASSWORD"],
             identifier="Dolores",
         )
 
@@ -140,11 +139,14 @@ class audio(commands.Cog):
     async def on_pomice_track_exception(self, player: Player, track, _):
         await player.do_next()
 
-    @commands.command(
+    @commands.slash_command(
         description="Joins the voice channel of the user who called the command."
     )
     async def join(
-        self, ctx: commands.Context, *, channel: discord.VoiceChannel = None
+        self,
+        ctx: discord.commands.context.ApplicationContext,
+        *,
+        channel: discord.VoiceChannel = None,
     ) -> None:
         """
         Joins the voice channel of the user who called the command.
@@ -156,15 +158,15 @@ class audio(commands.Cog):
                     "You must be in a voice channel to use this command "
                     "without specifying the channel argument.",
                 )
-        await ctx.author.voice.channel.connect(cls=pomice.Player)
+        await ctx.author.voice.channel.connect(cls=Player)
         player: Player = ctx.voice_client
 
         # Set the player context so we can use it so send messages
         await player.set_context(ctx=ctx)
         await ctx.send(f"Joined the voice channel `{channel}`")
 
-    @commands.command(description="Disconnects Dolores from voice channel.")
-    async def leave(self, ctx: commands.Context):
+    @commands.slash_command(description="Disconnects Dolores from voice channel.")
+    async def leave(self, ctx: discord.commands.context.ApplicationContext):
         """
         Disconnects Dolores from voice chat channel, if she is connected.
         Also stops any currently playing music
@@ -179,10 +181,10 @@ class audio(commands.Cog):
         await player.destroy()
         await ctx.send("Dolores has left the building.")
 
-    @commands.command(
-        description="Use's pomice/lavalink to play an audio stream in the user's voice channel."
-    )
-    async def play(self, ctx: commands.Context, *, search: str) -> None:
+    @commands.slash_command(description="Play audio stream in user's voice channel.")
+    async def play(
+        self, ctx: discord.commands.context.ApplicationContext, *, search: str
+    ) -> None:
         """
         Plays audio from a given search term.
         Ex: -play https://www.youtube.com/watch?v=O1OTWCd40bc
@@ -215,8 +217,8 @@ class audio(commands.Cog):
         if not player.is_playing:
             await player.do_next()
 
-    @commands.command(description="Pauses the currently playing audio.")
-    async def pause(self, ctx: commands.Context):
+    @commands.slash_command(description="Pauses the currently playing audio.")
+    async def pause(self, ctx: discord.commands.context.ApplicationContext):
         """
         Pauses the currently playing audio
         """
@@ -248,8 +250,8 @@ class audio(commands.Cog):
                 delete_after=15,
             )
 
-    @commands.command(description="Resumes the currently paused audio.")
-    async def resume(self, ctx: commands.Context):
+    @commands.slash_command(description="Resumes the currently paused audio.")
+    async def resume(self, ctx: discord.commands.context.ApplicationContext):
         """
         Resumes the currently paused audio
         """
@@ -281,8 +283,8 @@ class audio(commands.Cog):
                 delete_after=15,
             )
 
-    @commands.command(description="Skips the currently playing song.")
-    async def skip(self, ctx: commands.Context):
+    @commands.slash_command(description="Skips the currently playing song.")
+    async def skip(self, ctx: discord.commands.context.ApplicationContext):
         """
         Skip the currently playing song.
         """
@@ -320,8 +322,47 @@ class audio(commands.Cog):
                 delete_after=15,
             )
 
-    @commands.command(description="Stops the currently playing audio.")
-    async def stop(self, ctx):
+    @commands.slash_command(description="Shuffles the queue.")
+    async def shuffle(self, ctx: discord.commands.context.ApplicationContext):
+        """
+        Shuffles the queue.
+        """
+        if not (player := ctx.voice_client):
+            return await ctx.send(
+                "You must have the bot in a channel in order to use this command",
+                delete_after=7,
+            )
+        if not player.is_connected:
+            return
+
+        if player.queue.qsize() < 3:
+            return await ctx.send(
+                "The queue is empty. Add some songs to shuffle the queue.",
+                delete_after=15,
+            )
+
+        if self.is_privileged(ctx):
+            await ctx.send("An admin or DJ has shuffled the queue.", delete_after=10)
+            player.shuffle_votes.clear()
+            return player.queue.shuffle()
+
+        required = self.required(ctx)
+        player.shuffle_votes.add(ctx.author)
+
+        if len(player.shuffle_votes) >= required:
+            await ctx.send(
+                "Vote to shuffle passed. Shuffling the queue.", delete_after=10
+            )
+            player.shuffle_votes.clear()
+            player.queue.shuffle()
+        else:
+            await ctx.send(
+                f"{ctx.author.mention} has voted to shuffle the queue. Votes: {len(player.shuffle_votes)}/{required}",
+                delete_after=15,
+            )
+
+    @commands.slash_command(description="Stops the currently playing audio.")
+    async def stop(self, ctx: discord.commands.context.ApplicationContext):
         """
         Stops the currently playing song, if one is playing.
         Ex: -stop

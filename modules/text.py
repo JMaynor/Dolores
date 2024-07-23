@@ -2,6 +2,7 @@
 text.py module
 """
 
+import os
 import random
 import sys
 from collections import deque
@@ -9,14 +10,12 @@ from collections import deque
 import discord
 import openai
 import requests
-from discord.ext import bridge, commands
+from discord.ext import commands
 
-from configload import config
-
-reply_method = config["DISCORD"]["reply_method"]
+reply_method = os.environ["REPLY_METHOD"]
 
 if reply_method == "openai":
-    openai.api_key = config["OPENAI"]["api_key"]
+    openai.api_key = os.environ["OPENAI_API_KEY"]
 
 message_history = deque(maxlen=10)
 system_messages = [
@@ -44,7 +43,7 @@ class text(commands.Cog):
             response = openai.chat.completions.create(
                 model=config["OPENAI"]["model"],
                 messages=system_messages + list(message_history),
-                max_tokens=config["OPENAI"]["max_tokens"],
+                max_tokens=int(os.environ["MAX_TOKENS"]),
                 temperature=config["OPENAI"]["temperature"],
                 top_p=config["OPENAI"]["top_p"],
                 frequency_penalty=config["OPENAI"]["frequency_penalty"],
@@ -74,13 +73,13 @@ class text(commands.Cog):
         Summarizes a given URL using the SMMRY API.
         """
         response = requests.post(
-            config["SMMRY"]["base_url"]
+            os.environ["SMMRY_BASE_URL"]
             + "?SM_API_KEY="
-            + str(config["SMMRY"]["api_key"])
+            + os.environ["SMMRY_API_KEY"]
             + "&SM_QUOTE_AVOID="
-            + str(config["SMMRY"]["quote_avoid"]).lower()
+            + os.environ["SMMRY_QUOTE_AVOID"].lower()
             + "&SM_LENGTH="
-            + str(config["SMMRY"]["length"])
+            + os.environ["SMMRY_LENGTH"]
             + "&SM_URL="
             + url
         )
@@ -97,7 +96,7 @@ class text(commands.Cog):
         else:
             return response.json()
 
-    @bridge.bridge_command(description="Summarizes a given URL using the SMMRY API.")
+    @commands.slash_command(description="Summarizes a given URL using the SMMRY API.")
     async def summarize(self, ctx, *, url):
         """
         Summarizes a given URL using the SMMRY API.
