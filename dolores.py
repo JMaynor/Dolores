@@ -9,13 +9,19 @@ but she is also capable of doing some basic audio things.
 """
 
 import asyncio
+import json
 import os
 import re
 import sys
 from datetime import datetime
 
 import discord
-from discord.ext import bridge, commands
+from discord.ext import commands
+from dotenv import load_dotenv
+
+# Check if .env file present, if so load vars from it
+if os.path.exists(".env"):
+    load_dotenv()
 
 from modules import *
 from notify import notif
@@ -35,6 +41,9 @@ if os.environ["SCHEDULING_ENABLED"].lower() == "true":
     bot.add_cog(scheduling(bot))
 if os.environ["TEXT_ENABLED"].lower() == "true":
     bot.add_cog(text(bot))
+
+with open(os.path.join("locales", "strings.json"), "r") as f:
+    summary_exclude_strings = json.load(f).get("SUMMARY_EXCLUDED_STRINGS", [])
 
 
 async def handle_mention(message):
@@ -78,7 +87,7 @@ async def handle_news(message):
         if summary != "":
             if "sm_api_content_reduced" in summary:
                 reduced_amount = summary["sm_api_content_reduced"].replace("%", "")
-                if int(reduced_amount) > config["SMMRY"]["min_reduced_amount"]:
+                if int(reduced_amount) > int(os.environ["SMMRY_MIN_REDUCED_AMOUNT"]):
                     if "sm_api_title" in summary:
                         embed_title = summary["sm_api_title"]
                     else:
@@ -144,16 +153,15 @@ async def on_message(message):
         await handle_mention(message)
 
     # Check for if message was posted in news channel and contains a non-media URL
-    if (
-        message.channel.id == config["DISCORD"]["news_channel_id"]
-        and "https" in message.clean_content
-        and not any(
-            excluded in message.clean_content
-            for excluded in config["SMMRY"]["excluded_strings"]
-        )
-    ):
-        # await handle_news(message)
-        pass
+    # if (
+    #     os.environ["TEXT_ENABLED"].lower() == "true"
+    #     and message.channel.id == int(os.environ["NEWS_CHANNEL_ID"])
+    #     and "https" in message.clean_content
+    #     and not any(
+    #         excluded in message.clean_content for excluded in summary_exclude_strings
+    #     )
+    # ):
+    #     await handle_news(message)
 
     # Normal command processing
     await bot.process_commands(message)

@@ -15,7 +15,9 @@ from discord.ext import commands
 
 
 class Player(pomice.Player):
-    """Custom pomice Player class."""
+    """
+    Custom pomice Player class.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

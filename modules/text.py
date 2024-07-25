@@ -2,6 +2,7 @@
 text.py module
 """
 
+import json
 import os
 import random
 import sys
@@ -18,9 +19,11 @@ if reply_method == "openai":
     openai.api_key = os.environ["OPENAI_API_KEY"]
 
 message_history = deque(maxlen=10)
-system_messages = [
-    {"role": "system", "content": x} for x in config["DISCORD"]["system_messages"]
-]
+
+with open(os.path.join("locales", "strings.json"), "r") as f:
+    json_data = json.load(f)
+    system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [])
+    snarky_comments = json_data.get("SNARKY_COMMENTS", [])
 
 
 class text(commands.Cog):
@@ -41,13 +44,13 @@ class text(commands.Cog):
 
             # Generate a reply using the OpenAI API
             response = openai.chat.completions.create(
-                model=config["OPENAI"]["model"],
+                model=os.environ["OPENAI_MODEL"],
                 messages=system_messages + list(message_history),
                 max_tokens=int(os.environ["MAX_TOKENS"]),
-                temperature=config["OPENAI"]["temperature"],
-                top_p=config["OPENAI"]["top_p"],
-                frequency_penalty=config["OPENAI"]["frequency_penalty"],
-                presence_penalty=config["OPENAI"]["presence_penalty"],
+                temperature=float(os.environ["TEMPERATURE"]),
+                top_p=float(os.environ["TOP_P"]),
+                frequency_penalty=float(os.environ["FREQUENCY_PENALTY"]),
+                presence_penalty=float(os.environ["PRESENCE_PENALTY"]),
             )
             reply = response.choices[0].message.content
             # Add the reply to the message history
@@ -66,7 +69,7 @@ class text(commands.Cog):
         """
         Generates a snarky comment to be used when a user tries to use a command that does not exist.
         """
-        return random.choice(config["DISCORD"]["snarky_comments"])
+        return random.choice(snarky_comments)
 
     def summarize_url(self, url):
         """

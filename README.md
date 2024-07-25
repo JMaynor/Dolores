@@ -8,9 +8,11 @@ Dolores can be run easily directly as a python program. Generally, I have her ru
 
 ## Config
 
-Dolores runs using a number of environment variables for API keys and settings. Not all are required for core functionality. Each cog has a corresponding environment variable to turn it on or off. Will determine whether the cog is loaded when Dolores is run. If a cog isn't loaded, none of the environment variables that are associated with it are required.
+Dolores runs using a number of environment variables for API keys and settings. Not all are required for core functionality. Each cog has a corresponding environment variable to turn it on or off. Will determine whether the cog is loaded when Dolores is run. If a cog isn't loaded, none of the environment variables that are associated with that module are required.
 
 The only explicitly required environment variable is `DISCORD_API_KEY`.
+
+Env vars can be provided via a `.env` file in the main directory, if desired. Useful for testing locally.
 
 | Required by Which Module | Env Var Name | Description |
 | --- | --- | --- |
@@ -25,15 +27,24 @@ The only explicitly required environment variable is `DISCORD_API_KEY`.
 | Scheduling | NOTION_BASE_URL | Base URL of the Notion API, should be |
 | Scheduling | NOTION_DATABASE_ID | ID for database where stream info is kept |
 | None | TWITCH_CLIENT_ID | Not yet used |
+| None | TWITCH_CLIENT_SECRET | Not yet used |
 | None | TWITCH_BASE_URL | Not yet used |
 | None | TWITCH_BROADCASTER_ID | Not yet used |
+| None | TWITCH_BROADCASTER_NAME | not yet used |
 | Text | REPLY_METHOD | Method to use for generating a reply to user's message. At this point only 'openai' is supported. |
 | Text | OPENAI_API_KEY | API Key used for generating replies |
+| Text | OPENAI_MODEL | Which LLM model to use. |
 | Text | MAX_TOKENS | Max number of tokens generated in LLM chat. |
+| Text | TEMPERATURE | Float value for temperature of LLM chat response. |
+| Text | TOP_P | Float value alternative to temperature with LLM chat. |
+| Text | FREQUENCY_PENALTY | Frequency penalty for LLM chat. |
+| Text | PRESENCE_PENALTY | Presence penalty for LLM chat. |
 | Text | SMMRY_BASE_URL | base URL for the SMMRY API. |
 | Text | SMMRY_API_KEY | API key for the SMMRY API |
 | Text | SMMRY_QUOTE_AVOID | SMMRY boolean option on whether to avoid or include quotes in text that's summarized. Usually true. |
 | Text | SMMRY_LENGTH | max number of sentences a summary should be. |
+| Text | SMMRY_MIN_REDUCED_AMOUNT | Minium percentage a news article should be reduced by summarization to post it. |
+| Text | NEWS_CHANNEL_ID | Not currently used, but was automatically summarizing articles posted into a particular discord channel. |
 
 ## Compose
 

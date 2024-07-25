@@ -4,11 +4,14 @@ The basic module of functionality. Rolls some dice.
 rolling.py
 """
 
+import json
+import os
 import random
 
 from discord.ext import commands
 
-sarcastic_names = config["DISCORD"]["sarcastic_names"]
+with open(os.path.join("locales", "strings.json"), "r") as f:
+    sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
 
 
 class rolling(commands.Cog):

@@ -2,6 +2,7 @@
 scheduling.py
 """
 
+import json
 import os
 import random
 import urllib.parse
@@ -18,7 +19,8 @@ notion_headers = {
 
 twitch_headers = {"Authorization": "", "Client-ID": os.environ["TWITCH_CLIENT_ID"]}
 
-sarcastic_names = config["DISCORD"]["sarcastic_names"]
+with open(os.path.join("locales", "strings.json"), "r") as f:
+    sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
 
 
 class Decorators:
