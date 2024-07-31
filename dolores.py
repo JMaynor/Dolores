@@ -1,8 +1,4 @@
 """
-dolores.py
-Author: Jordan Maynor
-Date: Apr 2020
-
 Dolores is a chatbot that connects to a Discord server. Her primary use
 is in being able to roll dice for players of a tabletop roleplaying game
 but she is also capable of doing some basic audio things.
@@ -53,6 +49,7 @@ async def handle_mention(message):
     where the message was posted.
     """
     ctx = await bot.get_context(message)
+
     if os.environ["TEXT_ENABLED"].lower() == "true":
         text_instance = text(bot)
         clean_message = message.clean_content.replace("@Dolores", "Dolores")
@@ -69,11 +66,6 @@ async def handle_mention(message):
 async def handle_news(message):
     """
     handle_news handles bot's response when a news article is posted in the news channel
-    TODO: Currently not being called. Consider using some other service.
-    Too frequently summary isn't useful. Not necessarily SMMRY's fault.
-    It's because too much bullshit is on modern "news" sites that it's not able
-    to pull the actual article content. But maybe some other approach would be
-    better. Look into web scrapers. Firefox's reader mode comes to mind.
     """
     ctx = await bot.get_context(message)
     # Try and extract URL from message
@@ -111,6 +103,7 @@ async def on_ready():
     on_ready gets called when the bot starts up or potentially when restarts
     in event of reconnection. It prints some basic info to the console.
     """
+    assert bot.user is not None
     print("Time is: ", datetime.now())
     print("Bring yourself online, ", bot.user.name)
     print("-----------------------------")
@@ -145,6 +138,7 @@ async def on_message(message):
 
     # If someone mentions Dolores, she will respond to them,
     # unless she is the one who sent the message or it is an @everyone mention
+    assert bot.user is not None
     if (
         bot.user.mentioned_in(message)
         and message.author.id != bot.user.id

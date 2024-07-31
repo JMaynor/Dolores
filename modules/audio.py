@@ -8,6 +8,7 @@ import asyncio
 import math
 import os
 from contextlib import suppress
+from typing import Optional
 
 import discord
 import pomice
@@ -60,25 +61,29 @@ class Player(pomice.Player):
         if track.is_stream:
             embed = discord.Embed(
                 title="Now playing",
-                description=f":red_circle: **LIVE** [{track.title}]({track.uri}) [{track.requester.mention}]",
+                description=f":red_circle: **LIVE** [{track.title}]({track.uri})",
             )
             self.controller = await self.context.send(embed=embed)
         else:
             embed = discord.Embed(
                 title=f"Now playing",
-                description=f"[{track.title}]({track.uri}) [{track.requester.mention}]",
+                description=f"[{track.title}]({track.uri})",
             )
             self.controller = await self.context.send(embed=embed)
 
     async def teardown(self):
-        """Clear internal states, remove player controller and disconnect."""
+        """
+        Clear internal states, remove player controller and disconnect.
+        """
         with suppress((discord.HTTPException), (KeyError)):
             await self.destroy()
             if self.controller:
                 await self.controller.delete()
 
     async def set_context(self, ctx: commands.Context):
-        """Set context for the player"""
+        """
+        Set context for the player
+        """
         self.context = ctx
         self.dj = ctx.author
 
@@ -114,6 +119,7 @@ class audio(commands.Cog):
         channel = self.bot.get_channel(int(player.channel.id))
         required = math.ceil((len(channel.members) - 1) / 2.5)
 
+        assert ctx.command is not None
         if ctx.command.name == "stop":
             if len(channel.members) == 3:
                 required = 2
@@ -124,6 +130,7 @@ class audio(commands.Cog):
         """
         Check whether the user is an Admin or DJ.
         """
+        assert ctx.voice_client is not None
         player: Player = ctx.voice_client
 
         return player.dj == ctx.author or ctx.author.guild_permissions.kick_members
@@ -160,6 +167,7 @@ class audio(commands.Cog):
                     "You must be in a voice channel to use this command "
                     "without specifying the channel argument.",
                 )
+        assert ctx.author is None
         await ctx.author.voice.channel.connect(cls=Player)
         player: Player = ctx.voice_client
 
@@ -208,6 +216,8 @@ class audio(commands.Cog):
 
         if not results:
             await ctx.send("No results were found for that search term", delete_after=7)
+
+        assert results is not None
 
         if isinstance(results, pomice.Playlist):
             for track in results.tracks:
@@ -369,6 +379,7 @@ class audio(commands.Cog):
         Stops the currently playing song, if one is playing.
         Ex: -stop
         """
+        assert ctx.voice_client is not None
         if ctx.voice_client.is_playing():
             ctx.voice_client.stop()
         await ctx.respond("Stopped playing.")
