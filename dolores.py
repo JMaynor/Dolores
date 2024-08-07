@@ -19,14 +19,14 @@ from dotenv import load_dotenv
 if os.path.exists(".env"):
     load_dotenv()
 
+from logger import logger
 from modules import *
-from notify import notif
 
 intents = discord.Intents.all()
 intents.members = True
 bot = commands.Bot(case_insensitive=True, intents=intents)
 
-# Add main cog module
+# Add main cog module, no 3rd party dependencies so no reason not to add
 bot.add_cog(rolling(bot))
 
 # Add modules based on config
@@ -79,7 +79,9 @@ async def handle_news(message):
         if summary != "":
             if "sm_api_content_reduced" in summary:
                 reduced_amount = summary["sm_api_content_reduced"].replace("%", "")
-                if int(reduced_amount) > int(os.environ["SMMRY_MIN_REDUCED_AMOUNT"]):
+                if int(reduced_amount) > int(
+                    os.environ.get("SMMRY_MIN_REDUCED_AMOUNT", 65)
+                ):
                     if "sm_api_title" in summary:
                         embed_title = summary["sm_api_title"]
                     else:
@@ -101,12 +103,10 @@ async def handle_news(message):
 async def on_ready():
     """
     on_ready gets called when the bot starts up or potentially when restarts
-    in event of reconnection. It prints some basic info to the console.
+    in event of a reconnection.
     """
     assert bot.user is not None
-    print("Time is: ", datetime.now())
-    print("Bring yourself online, ", bot.user.name)
-    print("-----------------------------")
+    logger.info("Dolores has connected to Discord.")
 
 
 @bot.event
@@ -122,8 +122,7 @@ async def on_command_error(ctx, error):
         if isinstance(error, (commands.CommandNotFound)):
             await ctx.send(text_instance.generate_snarky_comment())
         else:
-            notif.notify(f"Error: {error}")
-            print(error, file=sys.stderr)
+            logger.error(error)
     else:
         await ctx.send("An error occurred. Please try again.")
 
@@ -165,5 +164,4 @@ if __name__ == "__main__":
     """
     Main program entry point
     """
-    print("Starting main program...")
     bot.run(os.environ["DISCORD_API_KEY"])

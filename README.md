@@ -21,7 +21,7 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | Base | AUDIO_ENABLED | Enables audio cog, when set as true |
 | Base | SCHEDULING_ENABLED | Enables scheduling cog, when set as true |
 | Base | TEXT_ENABLED |  |
-| None | APPRISE_ENDPOINTS | Optional comma-separated list of apprise endpoints to send error messages to. otherwise prints to stderr |
+| Base | LOG_LEVEL | Level of logging. Dolores uses DEBUG, INFO, and ERROR. |
 | Scheduling | NOTION_API_KEY | API Key for querying data from Notion |
 | Scheduling | NOTION_VERSION | Version of Notion API used for querying. |
 | Scheduling | NOTION_BASE_URL | Base URL of the Notion API, should be |

@@ -14,6 +14,8 @@ import discord
 import pomice
 from discord.ext import commands
 
+from logger import logger
+
 
 class Player(pomice.Player):
     """
@@ -142,14 +144,16 @@ class audio(commands.Cog):
 
     @commands.Cog.listener()
     async def on_pomice_track_stuck(self, player: Player, track, _):
+        logger.error(f"Track stuck: {track.title}")
         await player.do_next()
 
     @commands.Cog.listener()
     async def on_pomice_track_exception(self, player: Player, track, _):
+        logger.error(f"Track exception: {track.title}")
         await player.do_next()
 
     @commands.slash_command(
-        description="Joins the voice channel of the user who called the command."
+        description="Joins voice channel of user who called the command."
     )
     async def join(
         self,
@@ -159,6 +163,7 @@ class audio(commands.Cog):
     ) -> None:
         """
         Joins the voice channel of the user who called the command.
+        Ex: /join
         """
         if not channel:
             channel = getattr(ctx.author.voice, "channel", None)
@@ -180,7 +185,7 @@ class audio(commands.Cog):
         """
         Disconnects Dolores from voice chat channel, if she is connected.
         Also stops any currently playing music
-        Ex: -leave
+        Ex: /leave
         """
         if not (player := ctx.voice_client):
             return await ctx.send(
@@ -197,7 +202,7 @@ class audio(commands.Cog):
     ) -> None:
         """
         Plays audio from a given search term.
-        Ex: -play https://www.youtube.com/watch?v=O1OTWCd40bc
+        Ex: /play https://www.youtube.com/watch?v=O1OTWCd40bc
         Dolores will play Wicked Games by The Weeknd
         """
         # Checks if the player is in the channel before we play anything
@@ -233,6 +238,7 @@ class audio(commands.Cog):
     async def pause(self, ctx: discord.commands.context.ApplicationContext):
         """
         Pauses the currently playing audio
+        Ex: /pause
         """
         if not (player := ctx.voice_client):
             return await ctx.send(
@@ -266,6 +272,7 @@ class audio(commands.Cog):
     async def resume(self, ctx: discord.commands.context.ApplicationContext):
         """
         Resumes the currently paused audio
+        Ex: /resume
         """
         if not (player := ctx.voice_client):
             return await ctx.send(
@@ -299,6 +306,7 @@ class audio(commands.Cog):
     async def skip(self, ctx: discord.commands.context.ApplicationContext):
         """
         Skip the currently playing song.
+        Ex: /skip
         """
         if not (player := ctx.voice_client):
             return await ctx.send(
@@ -338,6 +346,7 @@ class audio(commands.Cog):
     async def shuffle(self, ctx: discord.commands.context.ApplicationContext):
         """
         Shuffles the queue.
+        Ex: /shuffle
         """
         if not (player := ctx.voice_client):
             return await ctx.send(
@@ -377,7 +386,7 @@ class audio(commands.Cog):
     async def stop(self, ctx: discord.commands.context.ApplicationContext):
         """
         Stops the currently playing song, if one is playing.
-        Ex: -stop
+        Ex: /stop
         """
         assert ctx.voice_client is not None
         if ctx.voice_client.is_playing():

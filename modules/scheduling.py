@@ -12,6 +12,8 @@ import discord
 import requests
 from discord.ext import commands
 
+from logger import logger
+
 notion_headers = {
     "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
     "Notion-Version": os.environ["NOTION_VERSION"],
@@ -32,9 +34,9 @@ class Decorators:
 
         def wrapper(self, *args, **kwargs):
             if "TWITCH_TOKEN_EXPIRES_AT" not in os.environ:
-                print()
+                pass
             else:
-                print()
+                pass
             return decorated(self, *args, **kwargs)
 
         wrapper.__name__ = decorated.__name__
@@ -67,10 +69,7 @@ class scheduling(commands.Cog):
             timeout=30,
         )
         if response.status_code != 200:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
         else:
             return response.json()
@@ -108,10 +107,7 @@ class scheduling(commands.Cog):
         )
 
         if response.status_code != 200:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
 
         return response.json()
@@ -140,10 +136,7 @@ class scheduling(commands.Cog):
         )
 
         if response.status_code != 200:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
 
         return response.json()
@@ -165,10 +158,7 @@ class scheduling(commands.Cog):
         )
 
         if response.status_code != 204:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
 
         return response.json()
@@ -204,10 +194,7 @@ class scheduling(commands.Cog):
         )
 
         if response.status_code != 200:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
 
         return response.json()
@@ -218,7 +205,7 @@ class scheduling(commands.Cog):
     async def schedule(self, ctx):
         """
         Returns any streams scheduled for the next week.
-        Ex: -schedule
+        Ex: /schedule
         Dolores will return an embed of stream dates, names, and people.
         """
         await ctx.defer()

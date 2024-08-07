@@ -28,7 +28,7 @@ class rolling(commands.Cog):
     async def roll(self, ctx, *, dice_batches: str):
         """
         Rolls a dice in NdN format.
-        Ex: -roll 5d10 3d8 2d4
+        Ex: /roll 5d10 3d8 2d4
         Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
         """
         await ctx.defer()
@@ -68,7 +68,7 @@ class rolling(commands.Cog):
     async def sroll(self, ctx, *, dice_batches: str):
         """
         Rolls a secret dice in NdN format.
-        Ex: -sroll 5d10 3d8 2d4
+        Ex: /sroll 5d10 3d8 2d4
         Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
         """
         await ctx.defer(ephemeral=True)
@@ -110,7 +110,7 @@ class rolling(commands.Cog):
     async def choose(self, ctx, *, choices: str):
         """
         Chooses between multiple choices.
-        Ex: -choose "Kill the king" "Save the king" "Screw the King"
+        Ex: /choose "Kill the king" "Save the king" "Screw the King"
         Dolores would randomly choose one of the options you give her and return the result.
         """
         await ctx.defer()
@@ -137,7 +137,7 @@ class rolling(commands.Cog):
     async def sd20(self, ctx):
         """
         Rolls a single d20
-        Ex: -sd20
+        Ex: /sd20
         Dolores rolls a single d20 and returns the result secretly.
         """
         await ctx.defer(ephemeral=True)

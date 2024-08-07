@@ -13,6 +13,8 @@ import openai
 import requests
 from discord.ext import commands
 
+from logger import logger
+
 reply_method = os.environ["REPLY_METHOD"]
 
 if reply_method == "openai":
@@ -46,11 +48,11 @@ class text(commands.Cog):
             response = openai.chat.completions.create(
                 model=os.environ["OPENAI_MODEL"],
                 messages=system_messages + list(message_history),
-                max_tokens=int(os.environ["MAX_TOKENS"]),
-                temperature=float(os.environ["TEMPERATURE"]),
-                top_p=float(os.environ["TOP_P"]),
-                frequency_penalty=float(os.environ["FREQUENCY_PENALTY"]),
-                presence_penalty=float(os.environ["PRESENCE_PENALTY"]),
+                max_tokens=int(os.environ.get("MAX_TOKENS", 150)),
+                temperature=float(os.environ.get("TEMPERATURE", 0.9)),
+                top_p=float(os.environ.get("TOP_P", 1.0)),
+                frequency_penalty=float(os.environ.get("FREQUENCY_PENALTY", 0.0)),
+                presence_penalty=float(os.environ.get("PRESENCE_PENALTY", 0.6)),
             )
             reply = response.choices[0].message.content
             # Add the reply to the message history
@@ -88,13 +90,13 @@ class text(commands.Cog):
         )
 
         if response.status_code != 200:
-            print(str(response.status_code), file=sys.stderr)
+            logger.error(response.json())
             return ""
         elif "sm_api_error" in response.json():
-            print("Got error: ", response.json()["sm_api_error"], file=sys.stderr)
+            logger.error(response.json()["sm_api_error"])
             return ""
         elif "sm_api_message" in response.json():
-            print("Got message: " + response.json()["sm_api_message"], file=sys.stderr)
+            logger.error(response.json()["sm_api_message"])
             return ""
         else:
             return response.json()
@@ -103,13 +105,13 @@ class text(commands.Cog):
     async def summarize(self, ctx, *, url):
         """
         Summarizes a given URL using the SMMRY API.
-        Ex: -summarize https://www.newsite.com/article
+        Ex: /summarize https://www.newsite.com/article
         Dolores would provide a brief summary of the article.
         """
         await ctx.defer()
         # Sanitize URL first, get rid of any query parameters
         url = url.split("?")[0]
-        print("Summarizing URL: " + url)
+        logger.info("Summarizing URL: " + url)
         response = self.summarize_url(url)
         if response == "":
             await ctx.respond("Unable to summarize that URL.")
