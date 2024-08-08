@@ -5,4 +5,4 @@ COPY . /home/dolores
 RUN python -m venv /home/dolores/.venv
 RUN . /home/dolores/.venv/bin/activate
 RUN pip install -r /home/dolores/requirements.txt
-CMD python /home/dolores/dolores.py
+CMD python /home/dolores/src/dolores.py

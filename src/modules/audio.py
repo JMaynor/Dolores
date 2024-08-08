@@ -14,7 +14,7 @@ import discord
 import pomice
 from discord.ext import commands
 
-from logger import logger
+from src.modules.logger import logger
 
 
 class Player(pomice.Player):

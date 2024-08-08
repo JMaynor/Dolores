@@ -12,7 +12,7 @@ import discord
 import requests
 from discord.ext import commands
 
-from logger import logger
+from src.modules.logger import logger
 
 notion_headers = {
     "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],

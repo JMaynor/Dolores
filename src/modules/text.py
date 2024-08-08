@@ -13,7 +13,7 @@ import openai
 import requests
 from discord.ext import commands
 
-from logger import logger
+from src.modules.logger import logger
 
 reply_method = os.environ["REPLY_METHOD"]
 
@@ -77,16 +77,15 @@ class text(commands.Cog):
         """
         Summarizes a given URL using the SMMRY API.
         """
+        params = {
+            "SM_API_KEY": os.environ["SMMRY_API_KEY"],
+            "SM_QUOTE_AVOID": os.environ.get("SMMRY_QUOTE_AVOID", "true").lower(),
+            "SM_LENGTH": os.environ["SMMRY_LENGTH"],
+            "SM_URL": url,
+        }
         response = requests.post(
-            os.environ["SMMRY_BASE_URL"]
-            + "?SM_API_KEY="
-            + os.environ["SMMRY_API_KEY"]
-            + "&SM_QUOTE_AVOID="
-            + os.environ["SMMRY_QUOTE_AVOID"].lower()
-            + "&SM_LENGTH="
-            + os.environ["SMMRY_LENGTH"]
-            + "&SM_URL="
-            + url
+            os.environ.get("SMMRY_BASE_URL", "https://api.smmry.com"),
+            params=params,
         )
 
         if response.status_code != 200:

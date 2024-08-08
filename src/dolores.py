@@ -19,8 +19,8 @@ from dotenv import load_dotenv
 if os.path.exists(".env"):
     load_dotenv()
 
-from logger import logger
 from modules import *
+from src.modules.logger import logger
 
 intents = discord.Intents.all()
 intents.members = True
