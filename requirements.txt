@@ -2,5 +2,5 @@ requests==2.32.3
 pyyaml==6.0.1
 yt-dlp==2024.8.6
 py-cord[voice]==2.6.0
-openai==1.38.0
+openai==1.40.3
 apprise==1.8.1
