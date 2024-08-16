@@ -35,6 +35,7 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | Generation | OPENAI_API_KEY | API Key used for generating replies |
 | Generation | OPENAI_MODEL | Which LLM model to use. |
 | Generation | OPENAI_IMAGE_MODEL | Which image model to use. |
+| Generation | IMAGE_STYLE | vivid or natural |
 | Generation | MAX_TOKENS | Max number of tokens generated in LLM chat. |
 | Generation | TEMPERATURE | Float value for temperature of LLM chat response. |
 | Generation | TOP_P | Float value alternative to temperature with LLM chat. |

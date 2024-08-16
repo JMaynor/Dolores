@@ -140,10 +140,13 @@ class generation(commands.Cog):
             await ctx.respond("No OpenAI API key found.")
 
         try:
+            style = os.environ.get("IMAGE_STYLE", None)
+            if style not in ["natural", "vivid"]:
+                style = "natural"
             response = openai.images.generate(
                 prompt=prompt,
                 model=os.environ["OPENAI_IMAGE_MODEL"],
-                style=os.environ.get("IMAGE_STYLE", "natural"),
+                style=style,
                 n=1,
                 response_format="url",
                 size="1792x1024",
