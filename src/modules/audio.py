@@ -1,7 +1,7 @@
 """
-audio.py module
-
-Much has come from the pomice example bot
+Module contains code that deals with playing audio in voice channels.
+Much has come directly from the pomice example bot so most of module relies on
+having a lavalink server running.
 """
 
 import asyncio

@@ -20,7 +20,7 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | Base | DISCORD_API_KEY | The main API key for the bot. |
 | Base | AUDIO_ENABLED | Enables audio cog, when set as true |
 | Base | SCHEDULING_ENABLED | Enables scheduling cog, when set as true |
-| Base | TEXT_ENABLED |  |
+| Base | GENERATION_ENABLED | Enables URL sumamrization, LLM replies, image generation. |
 | Base | LOG_LEVEL | Level of logging. Dolores uses DEBUG, INFO, and ERROR. |
 | Scheduling | NOTION_API_KEY | API Key for querying data from Notion |
 | Scheduling | NOTION_VERSION | Version of Notion API used for querying. |
@@ -31,20 +31,21 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | None | TWITCH_BASE_URL | Not yet used |
 | None | TWITCH_BROADCASTER_ID | Not yet used |
 | None | TWITCH_BROADCASTER_NAME | not yet used |
-| Text | REPLY_METHOD | Method to use for generating a reply to user's message. At this point only 'openai' is supported. |
-| Text | OPENAI_API_KEY | API Key used for generating replies |
-| Text | OPENAI_MODEL | Which LLM model to use. |
-| Text | MAX_TOKENS | Max number of tokens generated in LLM chat. |
-| Text | TEMPERATURE | Float value for temperature of LLM chat response. |
-| Text | TOP_P | Float value alternative to temperature with LLM chat. |
-| Text | FREQUENCY_PENALTY | Frequency penalty for LLM chat. |
-| Text | PRESENCE_PENALTY | Presence penalty for LLM chat. |
-| Text | SMMRY_BASE_URL | base URL for the SMMRY API. |
-| Text | SMMRY_API_KEY | API key for the SMMRY API |
-| Text | SMMRY_QUOTE_AVOID | SMMRY boolean option on whether to avoid or include quotes in text that's summarized. Usually true. |
-| Text | SMMRY_LENGTH | max number of sentences a summary should be. |
-| Text | SMMRY_MIN_REDUCED_AMOUNT | Minium percentage a news article should be reduced by summarization to post it. |
-| Text | NEWS_CHANNEL_ID | Not currently used, but was automatically summarizing articles posted into a particular discord channel. |
+| Generation | REPLY_METHOD | Method to use for generating a reply to user's message. At this point only 'openai' is supported. |
+| Generation | OPENAI_API_KEY | API Key used for generating replies |
+| Generation | OPENAI_MODEL | Which LLM model to use. |
+| Generation | OPENAI_IMAGE_MODEL | Which image model to use. |
+| Generation | MAX_TOKENS | Max number of tokens generated in LLM chat. |
+| Generation | TEMPERATURE | Float value for temperature of LLM chat response. |
+| Generation | TOP_P | Float value alternative to temperature with LLM chat. |
+| Generation | FREQUENCY_PENALTY | Frequency penalty for LLM chat. |
+| Generation | PRESENCE_PENALTY | Presence penalty for LLM chat. |
+| Generation | SMMRY_BASE_URL | base URL for the SMMRY API. |
+| Generation | SMMRY_API_KEY | API key for the SMMRY API |
+| Generation | SMMRY_QUOTE_AVOID | SMMRY boolean option on whether to avoid or include quotes in text that's summarized. Usually true. |
+| Generation | SMMRY_LENGTH | max number of sentences a summary should be. |
+| Generation | SMMRY_MIN_REDUCED_AMOUNT | Minium percentage a news article should be reduced by summarization to post it. |
+| Generation | NEWS_CHANNEL_ID | Not currently used, but was automatically summarizing articles posted into a particular discord channel. |
 
 ## Compose
 
@@ -97,7 +98,7 @@ Dolores' functionality is divided into several cogs modules. `dolores.py` handle
 | Rolling | Used to roll dice and for any other randomization-based tasks. |
 | Audio | The audio module uses pomice/lavalink to stream audio. Uses a queue system. Largely a copy of the example bot given in pomice's documentation. |
 | Scheduling | The scheduling module is used for tasks related to Notion and Twitch. Pulling schedule in from a Notion database and posting to twitch schedule. |
-| Text | Module for text generation. Currently using chatGPT, but intent is to move to add ability to use self-hosted LLM. Should be able to choose between something the user is hosting or commercially available alternatives. Also handles simple randomized snarky replies. |
+| Generation | Module for text and image generation. Currently using chatGPT, but intent is to move to add ability to use self-hosted LLM. Should be able to choose between something the user is hosting or commercially available alternatives. Also handles simple randomized snarky replies. |
 
 ## Licensing
 

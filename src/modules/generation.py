@@ -1,5 +1,6 @@
 """
-text.py module
+Fancy schmancy "AI" nonsense.
+Module contains code that deals with text processing and image generation.
 """
 
 import json
@@ -28,9 +29,9 @@ with open(os.path.join("locales", "strings.json"), "r") as f:
     snarky_comments = json_data.get("SNARKY_COMMENTS", [])
 
 
-class text(commands.Cog):
+class generation(commands.Cog):
     """
-    Commands for generating dialogue.
+    Commands for generating dialogue, summarization.
     """
 
     def __init__(self, bot):
@@ -106,6 +107,8 @@ class text(commands.Cog):
         Summarizes a given URL using the SMMRY API.
         Ex: /summarize https://www.newsite.com/article
         Dolores would provide a brief summary of the article.
+
+        :param url: A URL to summarize.
         """
         await ctx.defer()
         # Sanitize URL first, get rid of any query parameters
@@ -122,3 +125,40 @@ class text(commands.Cog):
         embed = discord.Embed(title=embed_title)
         embed.add_field(name="Article Summary", value=response["sm_api_content"])
         await ctx.respond(embed=embed)
+
+    @commands.slash_command(description="Generates an image based on a given prompt.")
+    async def generate_image(self, ctx, *, prompt: str):
+        """
+        Generates an image based on a given prompt and posts as a reply.
+        Ex: /generate_image A cat sitting on a table
+        Dolores would generate an image of a cat sitting on a table.
+
+        :param prompt: A string prompt for generating an image.
+        """
+        await ctx.defer()
+        if os.environ["OPENAI_API_KEY"] == "":
+            await ctx.respond("No OpenAI API key found.")
+
+        try:
+            response = openai.images.generate(
+                prompt=prompt,
+                model=os.environ["OPENAI_IMAGE_MODEL"],
+                style=os.environ.get("IMAGE_STYLE", "natural"),
+                n=1,
+                response_format="url",
+                size="1792x1024",
+                user=str(ctx.author.id),
+            )
+            image_url = response.data[0].url
+        except Exception as e:
+            logger.error(e)
+            await ctx.respond("Error generating image.")
+
+        try:
+            embed = discord.Embed()
+            embed.description = prompt
+            embed.set_image(url=image_url)
+            await ctx.respond(embed=embed)
+        except Exception as e:
+            logger.error(e)
+            await ctx.respond("Error posting image to Discord.")

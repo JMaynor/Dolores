@@ -1,5 +1,9 @@
 """
-scheduling.py
+This module contains functionality relating to getting schedule info
+from Notion.
+
+Is intended to also have functionality for syncing schedule info
+between Notion and Twitch. Not yet implemented.
 """
 
 import json

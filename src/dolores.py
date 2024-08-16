@@ -8,7 +8,6 @@ import asyncio
 import json
 import os
 import re
-import sys
 from datetime import datetime
 
 import discord
@@ -35,8 +34,8 @@ if os.environ["AUDIO_ENABLED"].lower() == "true":
     bot.add_cog(audio(bot))
 if os.environ["SCHEDULING_ENABLED"].lower() == "true":
     bot.add_cog(scheduling(bot))
-if os.environ["TEXT_ENABLED"].lower() == "true":
-    bot.add_cog(text(bot))
+if os.environ["GENERATION_ENABLED"].lower() == "true":
+    bot.add_cog(generation(bot))
 
 with open(os.path.join("locales", "strings.json"), "r") as f:
     summary_exclude_strings = json.load(f).get("SUMMARY_EXCLUDED_STRINGS", [])
@@ -50,8 +49,8 @@ async def handle_mention(message):
     """
     ctx = await bot.get_context(message)
 
-    if os.environ["TEXT_ENABLED"].lower() == "true":
-        text_instance = text(bot)
+    if os.environ["GENERATION_ENABLED"].lower() == "true":
+        text_instance = generation(bot)
         clean_message = message.clean_content.replace("@Dolores", "Dolores")
         clean_message = clean_message.replace("@everyone", "everyone")
         clean_message = clean_message.replace("@Testie", "Testie")
@@ -71,7 +70,7 @@ async def handle_news(message):
     # Try and extract URL from message
     url = re.search(r"(https?://[^\s]+)", message.clean_content)
     if url is not None:
-        text_instance = text(bot)
+        text_instance = generation(bot)
         # If URL is found, get a summary of the article
         summary = text_instance.summarize_url(url.group(0).split("?")[0])
 
@@ -117,8 +116,8 @@ async def on_command_error(ctx, error):
     comeback. Any other error performs default behavior of logging to syserr.
     """
     await ctx.defer()
-    if os.environ["TEXT_ENABLED"].lower() == "true":
-        text_instance = text(bot)
+    if os.environ["GENERATION_ENABLED"].lower() == "true":
+        text_instance = generation(bot)
         if isinstance(error, (commands.CommandNotFound)):
             await ctx.send(text_instance.generate_snarky_comment())
         else:

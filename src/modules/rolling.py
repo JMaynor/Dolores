@@ -1,7 +1,6 @@
 """
-The basic module of functionality. Rolls some dice.
-
-rolling.py
+The basic module of functionality. Provides some simple randomization
+functions for rolling dice.
 """
 
 import json
@@ -30,6 +29,8 @@ class rolling(commands.Cog):
         Rolls a dice in NdN format.
         Ex: /roll 5d10 3d8 2d4
         Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
+
+        :param dice_batches: A string of dice rolls in NdN format.
         """
         await ctx.defer()
         final_formatted_rolls = []
@@ -70,6 +71,8 @@ class rolling(commands.Cog):
         Rolls a secret dice in NdN format.
         Ex: /sroll 5d10 3d8 2d4
         Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
+
+        :param dice_batches: A string of dice rolls in NdN format.
         """
         await ctx.defer(ephemeral=True)
         final_formatted_rolls = []
@@ -112,6 +115,8 @@ class rolling(commands.Cog):
         Chooses between multiple choices.
         Ex: /choose "Kill the king" "Save the king" "Screw the King"
         Dolores would randomly choose one of the options you give her and return the result.
+
+        :param choices: A string of choices separated by spaces.
         """
         await ctx.defer()
         await ctx.respond(random.choice(choices.split()))
