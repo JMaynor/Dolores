@@ -1,41 +1,44 @@
 """
-dolores.py
-Author: Jordan Maynor
-Date: Apr 2020
-
 Dolores is a chatbot that connects to a Discord server. Her primary use
 is in being able to roll dice for players of a tabletop roleplaying game
 but she is also capable of doing some basic audio things.
-
-Majority of functionality has been organized into separate modules.
-dolores.py - Main program file. Handles Discord-related functionality and events
-audio.py - Handles all audio/yt-dlp related functionality
-rolling.py - Handles all dice-rolling/randomization functionality
-scheduling.py - Handles all Notion/Twitch scheduling functionality
-text.py - Handles all text-related functionality
 """
 
 import asyncio
+import json
+import os
 import re
-import sys
 from datetime import datetime
 
 import discord
-from discord.ext import bridge, commands
+from discord.ext import commands
+from dotenv import load_dotenv
 
-from configload import config
+# Check if .env file present, if so load vars from it
+if os.path.exists(os.path.join("..", ".env")):
+    load_dotenv()
+
 from modules import *
-from notify import notif
+from modules.logger import logger
 
 intents = discord.Intents.all()
 intents.members = True
-bot = bridge.Bot(command_prefix="-", case_insensitive=True, intents=intents)
+bot = commands.Bot(case_insensitive=True, intents=intents)
 
-# Add all Cog modules
+# Add main cog module, no 3rd party dependencies so no reason not to add
 bot.add_cog(rolling(bot))
-bot.add_cog(audio(bot))
-bot.add_cog(scheduling(bot))
-bot.add_cog(text(bot))
+
+# Add modules based on config
+# These rely on other dependencies and APIs so only add if enabled
+if os.environ["AUDIO_ENABLED"].lower() == "true":
+    bot.add_cog(audio(bot))
+if os.environ["SCHEDULING_ENABLED"].lower() == "true":
+    bot.add_cog(scheduling(bot))
+if os.environ["GENERATION_ENABLED"].lower() == "true":
+    bot.add_cog(generation(bot))
+
+with open(os.path.join("..", "locales", "strings.json"), "r") as f:
+    summary_exclude_strings = json.load(f).get("SUMMARY_EXCLUDED_STRINGS", [])
 
 
 async def handle_mention(message):
@@ -45,12 +48,16 @@ async def handle_mention(message):
     where the message was posted.
     """
     ctx = await bot.get_context(message)
-    text_instance = text(bot)
-    clean_message = message.clean_content.replace("@Dolores", "Dolores")
-    clean_message = clean_message.replace("@everyone", "everyone")
-    clean_message = clean_message.replace("@Testie", "Testie")
-    await ctx.defer()
-    reply = text_instance.generate_reply(clean_message)
+
+    if os.environ["GENERATION_ENABLED"].lower() == "true":
+        text_instance = generation(bot)
+        clean_message = message.clean_content.replace("@Dolores", "Dolores")
+        clean_message = clean_message.replace("@everyone", "everyone")
+        clean_message = clean_message.replace("@Testie", "Testie")
+        await ctx.defer()
+        reply = text_instance.generate_reply(clean_message)
+    else:
+        reply = "Hi"
     if reply != "":
         await ctx.respond(reply)
 
@@ -58,17 +65,12 @@ async def handle_mention(message):
 async def handle_news(message):
     """
     handle_news handles bot's response when a news article is posted in the news channel
-    TODO: Currently not being called. Consider using some other service.
-    Too frequently summary isn't useful. Not necessarily SMMRY's fault.
-    It's because too much bullshit is on modern "news" sites that it's not able
-    to pull the actual article content. But maybe some other approach would be
-    better. Look into web scrapers. Firefox's reader mode comes to mind.
     """
     ctx = await bot.get_context(message)
     # Try and extract URL from message
     url = re.search(r"(https?://[^\s]+)", message.clean_content)
     if url is not None:
-        text_instance = text(bot)
+        text_instance = generation(bot)
         # If URL is found, get a summary of the article
         summary = text_instance.summarize_url(url.group(0).split("?")[0])
 
@@ -76,7 +78,9 @@ async def handle_news(message):
         if summary != "":
             if "sm_api_content_reduced" in summary:
                 reduced_amount = summary["sm_api_content_reduced"].replace("%", "")
-                if int(reduced_amount) > config["SMMRY"]["min_reduced_amount"]:
+                if int(reduced_amount) > int(
+                    os.environ.get("SMMRY_MIN_REDUCED_AMOUNT", 65)
+                ):
                     if "sm_api_title" in summary:
                         embed_title = summary["sm_api_title"]
                     else:
@@ -98,11 +102,10 @@ async def handle_news(message):
 async def on_ready():
     """
     on_ready gets called when the bot starts up or potentially when restarts
-    in event of reconnection. It prints some basic info to the console.
+    in event of a reconnection.
     """
-    print("Time is: ", datetime.now())
-    print("Bring yourself online, ", bot.user.name)
-    print("-----------------------------")
+    assert bot.user is not None
+    logger.info("Dolores has connected to Discord.")
 
 
 @bot.event
@@ -113,12 +116,14 @@ async def on_command_error(ctx, error):
     comeback. Any other error performs default behavior of logging to syserr.
     """
     await ctx.defer()
-    text_instance = text(bot)
-    if isinstance(error, (commands.CommandNotFound)):
-        await ctx.send(text_instance.generate_snarky_comment())
+    if os.environ["GENERATION_ENABLED"].lower() == "true":
+        text_instance = generation(bot)
+        if isinstance(error, (commands.CommandNotFound)):
+            await ctx.send(text_instance.generate_snarky_comment())
+        else:
+            logger.error(error)
     else:
-        notif.notify(f"Error: {error}")
-        print(error, file=sys.stderr)
+        await ctx.send("An error occurred. Please try again.")
 
 
 @bot.event
@@ -130,21 +135,25 @@ async def on_message(message):
     """
 
     # If someone mentions Dolores, she will respond to them,
-    # unless she is the one who sent the message
-    if (bot.user.mentioned_in(message)) and (message.author.id != bot.user.id):
+    # unless she is the one who sent the message or it is an @everyone mention
+    assert bot.user is not None
+    if (
+        bot.user.mentioned_in(message)
+        and message.author.id != bot.user.id
+        and "@everyone" not in message.clean_content
+    ):
         await handle_mention(message)
 
     # Check for if message was posted in news channel and contains a non-media URL
-    if (
-        message.channel.id == config["DISCORD"]["news_channel_id"]
-        and "https" in message.clean_content
-        and not any(
-            excluded in message.clean_content
-            for excluded in config["SMMRY"]["excluded_strings"]
-        )
-    ):
-        # await handle_news(message)
-        pass
+    # if (
+    #     os.environ["TEXT_ENABLED"].lower() == "true"
+    #     and message.channel.id == int(os.environ["NEWS_CHANNEL_ID"])
+    #     and "https" in message.clean_content
+    #     and not any(
+    #         excluded in message.clean_content for excluded in summary_exclude_strings
+    #     )
+    # ):
+    #     await handle_news(message)
 
     # Normal command processing
     await bot.process_commands(message)
@@ -154,5 +163,4 @@ if __name__ == "__main__":
     """
     Main program entry point
     """
-    print("Starting main program...")
-    bot.run(config["DISCORD"]["bot_api_key"])
+    bot.run(os.environ["DISCORD_API_KEY"])

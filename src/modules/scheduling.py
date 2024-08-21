@@ -1,7 +1,12 @@
 """
-scheduling.py
+This module contains functionality relating to getting schedule info
+from Notion.
+
+Is intended to also have functionality for syncing schedule info
+between Notion and Twitch. Not yet implemented.
 """
 
+import json
 import os
 import random
 import urllib.parse
@@ -9,18 +14,19 @@ from datetime import datetime
 
 import discord
 import requests
-from discord.ext import bridge, commands
+from discord.ext import commands
 
-from configload import config
+from modules.logger import logger
 
 notion_headers = {
-    "Authorization": "Bearer " + config["NOTION"]["api_key"],
-    "Notion-Version": config["NOTION"]["notion_version"],
+    "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
+    "Notion-Version": os.environ["NOTION_VERSION"],
 }
 
-twitch_headers = {"Authorization": "", "Clienti-ID": config["TWITCH"]["client_id"]}
+twitch_headers = {"Authorization": "", "Client-ID": os.environ["TWITCH_CLIENT_ID"]}
 
-sarcastic_names = config["DISCORD"]["sarcastic_names"]
+with open(os.path.join("..", "locales", "strings.json"), "r") as f:
+    sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
 
 
 class Decorators:
@@ -32,9 +38,9 @@ class Decorators:
 
         def wrapper(self, *args, **kwargs):
             if "TWITCH_TOKEN_EXPIRES_AT" not in os.environ:
-                print()
+                pass
             else:
-                print()
+                pass
             return decorated(self, *args, **kwargs)
 
         wrapper.__name__ = decorated.__name__
@@ -58,19 +64,16 @@ class scheduling(commands.Cog):
         """
         json_data = {"filter": filter, "sorts": sorts}
         response = requests.post(
-            config["NOTION"]["base_url"]
+            os.environ["NOTION_BASE_URL"]
             + "databases/"
-            + config["NOTION"]["database_id"]
+            + os.environ["NOTION_DATABASE_ID"]
             + "/query",
             headers=notion_headers,
             json=json_data,
             timeout=30,
         )
         if response.status_code != 200:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
         else:
             return response.json()
@@ -95,11 +98,11 @@ class scheduling(commands.Cog):
             after = "&after=" + after
 
         response = requests.get(
-            config["TWITCH"]["base_url"]
+            os.environ["TWITCH_BASE_URL"]
             + "helix/schedule"
             + "?broadcaster_id="
-            + config["TWITCH"]["broadcaster_id"]
-            + start_time
+            + os.environ["TWITCH_BROADCASTER_ID"]
+            + start_time  # type: ignore
             + end_time
             + first
             + after,
@@ -108,10 +111,7 @@ class scheduling(commands.Cog):
         )
 
         if response.status_code != 200:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
 
         return response.json()
@@ -131,19 +131,16 @@ class scheduling(commands.Cog):
         }
 
         response = requests.post(
-            config["TWITCH"]["base_url"]
+            os.environ["TWITCH_BASE_URL"]
             + "helix/schedule/segment"
             + "?broadcaster_id="
-            + config["TWITCH"]["broadcaster_id"],
+            + os.environ["TWITCH_BROADCASTER_ID"],
             json=json_data,
             headers=twitch_headers,
         )
 
         if response.status_code != 200:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
 
         return response.json()
@@ -155,20 +152,17 @@ class scheduling(commands.Cog):
         Requires the segment ID
         """
         response = requests.delete(
-            config["TWITCH"]["base_url"]
+            os.environ["TWITCH_BASE_URL"]
             + "helix/schedule/segment"
             + "?broadcaster_id="
-            + config["TWITCH"]["broadcaster_id"]
+            + os.environ["TWITCH_BROADCASTER_ID"]
             + "?id="
             + id,
             headers=twitch_headers,
         )
 
         if response.status_code != 204:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
 
         return response.json()
@@ -196,7 +190,7 @@ class scheduling(commands.Cog):
         Searches for Twitch categories
         """
         response = requests.get(
-            config["TWITCH"]["base_url"]
+            os.environ["TWITCH_BASE_URL"]
             + "helix/search/categories"
             + "?query="
             + urllib.parse.quote(query),
@@ -204,21 +198,18 @@ class scheduling(commands.Cog):
         )
 
         if response.status_code != 200:
-            try:
-                print(response.json())
-            except:
-                print(response.content)
+            logger.error(response.json())
             return ""
 
         return response.json()
 
-    @bridge.bridge_command(
+    @commands.slash_command(
         description="Returns the next couple streams on the schedule."
     )
     async def schedule(self, ctx):
         """
         Returns any streams scheduled for the next week.
-        Ex: -schedule
+        Ex: /schedule
         Dolores will return an embed of stream dates, names, and people.
         """
         await ctx.defer()
