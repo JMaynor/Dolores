@@ -14,7 +14,7 @@ import openai
 import requests
 from discord.ext import commands
 
-from src.modules.logger import logger
+from modules.logger import logger
 
 reply_method = os.environ["REPLY_METHOD"]
 
@@ -23,7 +23,7 @@ if reply_method == "openai":
 
 message_history = deque(maxlen=10)
 
-with open(os.path.join("locales", "strings.json"), "r") as f:
+with open(os.path.join("..", "locales", "strings.json"), "r") as f:
     json_data = json.load(f)
     system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [])
     snarky_comments = json_data.get("SNARKY_COMMENTS", [])

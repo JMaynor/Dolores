@@ -14,7 +14,7 @@ import discord
 import pomice
 from discord.ext import commands
 
-from src.modules.logger import logger
+from modules.logger import logger
 
 
 class Player(pomice.Player):
@@ -178,7 +178,7 @@ class audio(commands.Cog):
 
         # Set the player context so we can use it so send messages
         await player.set_context(ctx=ctx)
-        await ctx.send(f"Joined the voice channel `{channel}`")
+        await ctx.respond(f"Joined the voice channel `{channel}`")
 
     @commands.slash_command(description="Disconnects Dolores from voice channel.")
     async def leave(self, ctx: discord.commands.context.ApplicationContext):
@@ -188,13 +188,13 @@ class audio(commands.Cog):
         Ex: /leave
         """
         if not (player := ctx.voice_client):
-            return await ctx.send(
+            return await ctx.respond(
                 "You must have the bot in a channel in order to use this command",
                 delete_after=7,
             )
 
         await player.destroy()
-        await ctx.send("Dolores has left the building.")
+        await ctx.respond("Dolores has left the building.")
 
     @commands.slash_command(description="Play audio stream in user's voice channel.")
     async def play(
@@ -205,6 +205,7 @@ class audio(commands.Cog):
         Ex: /play https://www.youtube.com/watch?v=O1OTWCd40bc
         Dolores will play Wicked Games by The Weeknd
         """
+        await ctx.defer()
         # Checks if the player is in the channel before we play anything
         if not (player := ctx.voice_client):
             await ctx.author.voice.channel.connect(cls=Player)
@@ -220,16 +221,20 @@ class audio(commands.Cog):
         results = await player.get_tracks(search, ctx=ctx)
 
         if not results:
-            await ctx.send("No results were found for that search term", delete_after=7)
+            await ctx.respond(
+                "No results were found for that search term", delete_after=7
+            )
 
         assert results is not None
 
         if isinstance(results, pomice.Playlist):
             for track in results.tracks:
                 player.queue.put(track)
+                await ctx.respond(f"Added {track.title} to the queue.")
         else:
             track = results[0]
             player.queue.put(track)
+            await ctx.respond(f"Added {track.title} to the queue.")
 
         if not player.is_playing:
             await player.do_next()
@@ -240,8 +245,9 @@ class audio(commands.Cog):
         Pauses the currently playing audio
         Ex: /pause
         """
+        await ctx.defer()
         if not (player := ctx.voice_client):
-            return await ctx.send(
+            return await ctx.respond(
                 "You must have the bot in a channel in order to use this command",
                 delete_after=7,
             )
@@ -250,7 +256,7 @@ class audio(commands.Cog):
             return
 
         if self.is_privileged(ctx):
-            await ctx.send("An admin or DJ has paused the player.", delete_after=10)
+            await ctx.respond("An admin or DJ has paused the player.", delete_after=10)
             player.pause_votes.clear()
 
             return await player.set_pause(True)
@@ -259,11 +265,11 @@ class audio(commands.Cog):
         player.pause_votes.add(ctx.author)
 
         if len(player.pause_votes) >= required:
-            await ctx.send("Vote to pause passed. Pausing player.", delete_after=10)
+            await ctx.respond("Vote to pause passed. Pausing player.", delete_after=10)
             player.pause_votes.clear()
             await player.set_pause(True)
         else:
-            await ctx.send(
+            await ctx.respond(
                 f"{ctx.author.mention} has voted to pause the player. Votes: {len(player.pause_votes)}/{required}",
                 delete_after=15,
             )
@@ -274,8 +280,9 @@ class audio(commands.Cog):
         Resumes the currently paused audio
         Ex: /resume
         """
+        await ctx.defer()
         if not (player := ctx.voice_client):
-            return await ctx.send(
+            return await ctx.respond(
                 "You must have the bot in a channel in order to use this command",
                 delete_after=7,
             )
@@ -284,7 +291,7 @@ class audio(commands.Cog):
             return
 
         if self.is_privileged(ctx):
-            await ctx.send("An admin or DJ has resumed the player.", delete_after=10)
+            await ctx.respond("An admin or DJ has resumed the player.", delete_after=10)
             player.resume_votes.clear()
 
             return await player.set_pause(False)
@@ -293,11 +300,13 @@ class audio(commands.Cog):
         player.resume_votes.add(ctx.author)
 
         if len(player.resume_votes) >= required:
-            await ctx.send("Vote to resume passed. Resuming player.", delete_after=10)
+            await ctx.respond(
+                "Vote to resume passed. Resuming player.", delete_after=10
+            )
             player.resume_votes.clear()
             await player.set_pause(False)
         else:
-            await ctx.send(
+            await ctx.respond(
                 f"{ctx.author.mention} has voted to resume the player. Votes: {len(player.resume_votes)}/{required}",
                 delete_after=15,
             )
@@ -308,8 +317,9 @@ class audio(commands.Cog):
         Skip the currently playing song.
         Ex: /skip
         """
+        await ctx.defer()
         if not (player := ctx.voice_client):
-            return await ctx.send(
+            return await ctx.respond(
                 "You must have the bot in a channel in order to use this command",
                 delete_after=7,
             )
@@ -318,13 +328,15 @@ class audio(commands.Cog):
             return
 
         if self.is_privileged(ctx):
-            await ctx.send("An admin or DJ has skipped the song.", delete_after=10)
+            await ctx.respond("An admin or DJ has skipped the song.", delete_after=10)
             player.skip_votes.clear()
 
             return await player.stop()
 
         if ctx.author == player.current.requester:
-            await ctx.send("The song requester has skipped the song.", delete_after=10)
+            await ctx.respond(
+                "The song requester has skipped the song.", delete_after=10
+            )
             player.skip_votes.clear()
 
             return await player.stop()
@@ -333,11 +345,11 @@ class audio(commands.Cog):
         player.skip_votes.add(ctx.author)
 
         if len(player.skip_votes) >= required:
-            await ctx.send("Vote to skip passed. Skipping song.", delete_after=10)
+            await ctx.respond("Vote to skip passed. Skipping song.", delete_after=10)
             player.skip_votes.clear()
             await player.stop()
         else:
-            await ctx.send(
+            await ctx.respond(
                 f"{ctx.author.mention} has voted to skip the song. Votes: {len(player.skip_votes)}/{required} ",
                 delete_after=15,
             )
@@ -348,8 +360,9 @@ class audio(commands.Cog):
         Shuffles the queue.
         Ex: /shuffle
         """
+        await ctx.defer()
         if not (player := ctx.voice_client):
-            return await ctx.send(
+            return await ctx.respond(
                 "You must have the bot in a channel in order to use this command",
                 delete_after=7,
             )
@@ -357,13 +370,13 @@ class audio(commands.Cog):
             return
 
         if player.queue.qsize() < 3:
-            return await ctx.send(
+            return await ctx.respond(
                 "The queue is empty. Add some songs to shuffle the queue.",
                 delete_after=15,
             )
 
         if self.is_privileged(ctx):
-            await ctx.send("An admin or DJ has shuffled the queue.", delete_after=10)
+            await ctx.respond("An admin or DJ has shuffled the queue.", delete_after=10)
             player.shuffle_votes.clear()
             return player.queue.shuffle()
 
@@ -371,13 +384,13 @@ class audio(commands.Cog):
         player.shuffle_votes.add(ctx.author)
 
         if len(player.shuffle_votes) >= required:
-            await ctx.send(
+            await ctx.respond(
                 "Vote to shuffle passed. Shuffling the queue.", delete_after=10
             )
             player.shuffle_votes.clear()
             player.queue.shuffle()
         else:
-            await ctx.send(
+            await ctx.respond(
                 f"{ctx.author.mention} has voted to shuffle the queue. Votes: {len(player.shuffle_votes)}/{required}",
                 delete_after=15,
             )
@@ -388,7 +401,30 @@ class audio(commands.Cog):
         Stops the currently playing song, if one is playing.
         Ex: /stop
         """
-        assert ctx.voice_client is not None
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
-        await ctx.respond("Stopped playing.")
+        await ctx.defer()
+        if not (player := ctx.voice_client):
+            return await ctx.respond(
+                "You must have the bot in a channel in order to use this command",
+                delete_after=7,
+            )
+
+        if not player.is_connected:
+            return
+
+        if self.is_privileged(ctx):
+            await ctx.respond("An admin or DJ has stopped the player.", delete_after=10)
+            return await player.teardown()
+
+        required = self.required(ctx)
+        player.stop_votes.add(ctx.author)
+
+        if len(player.stop_votes) >= required:
+            await ctx.respond(
+                "Vote to stop passed. Stopping the player.", delete_after=10
+            )
+            await player.teardown()
+        else:
+            await ctx.respond(
+                f"{ctx.author.mention} has voted to stop the player. Votes: {len(player.stop_votes)}/{required}",
+                delete_after=15,
+            )

@@ -15,11 +15,11 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 # Check if .env file present, if so load vars from it
-if os.path.exists(".env"):
+if os.path.exists(os.path.join("..", ".env")):
     load_dotenv()
 
 from modules import *
-from src.modules.logger import logger
+from modules.logger import logger
 
 intents = discord.Intents.all()
 intents.members = True
@@ -37,7 +37,7 @@ if os.environ["SCHEDULING_ENABLED"].lower() == "true":
 if os.environ["GENERATION_ENABLED"].lower() == "true":
     bot.add_cog(generation(bot))
 
-with open(os.path.join("locales", "strings.json"), "r") as f:
+with open(os.path.join("..", "locales", "strings.json"), "r") as f:
     summary_exclude_strings = json.load(f).get("SUMMARY_EXCLUDED_STRINGS", [])
 
 

@@ -16,7 +16,7 @@ import discord
 import requests
 from discord.ext import commands
 
-from src.modules.logger import logger
+from modules.logger import logger
 
 notion_headers = {
     "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
@@ -25,7 +25,7 @@ notion_headers = {
 
 twitch_headers = {"Authorization": "", "Client-ID": os.environ["TWITCH_CLIENT_ID"]}
 
-with open(os.path.join("locales", "strings.json"), "r") as f:
+with open(os.path.join("..", "locales", "strings.json"), "r") as f:
     sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
 
 
