@@ -2,7 +2,7 @@
 
 Discord bot named Dolores for rolling dice, playing audio, and a number of other helper functions. She was initially created to help facilitiate playing tabletop games over Discord.
 
-Dolores can be run easily directly as a python program. Generally, I have her running as a Docker container, allows for easier updating. An example `compose.yml` layout is included below, assuming the user wants to make use of all functionality.
+Dolores can be run easily directly as a python program. Generally, I have her running as a Docker container, allows for easier updating. An example `docker-compose.yml` layout is included below, assuming the user wants to make use of all functionality.
 
 > Note: Dolores is largely a personal project created for a few small Discord servers. So there's a number of features or peculiarities that specifically deal with things unique to what I want her to do. Should still be useful in a broader more generalized context, but I will work over time to make her less specific. Or at least make her uses more configurable.
 
@@ -57,11 +57,41 @@ name: Dolores
 
 services:
   dolores:
-    image: exaltatus/dolores:latest
+    image: ghcr.io/jmaynor/dolores:latest
     container_name: dolores
     restart: unless-stopped
+    environment:
+      - DISCORD_API_KEY=Blah
+      - AUDIO_ENABLED=true
+      - SCHEDULING_ENABLED=true
+      - GENERATION_ENABLED=true
+      - LOG_LEVEL=error
+      - NOTION_API_KEY=blah
+      - NOTION_VERSION=
+      - NOTION_BASE_URL=
+      - NOTION_DATABASE_ID=
+      - REPLY_METHOD=
+      - OPENAI_API_KEY=
+      - OPENAI_MODEL=
+      - OPENAI_IMAGE_MODEL=
+      - IMAGE_STYLE=
+      - MAX_TOKENS=
+      - TEMPERATURE=
+      - TOP_P=
+      - FREQUENCY_PENALTY=
+      - PRESENCE_PENALTY=
+      - SMMRY_BASE_URL=
+      - SMMRY_API_KEY=blah
+      - SMMRY_QUOTE_AVOID=
+      - SMMRY_LENGTH=
+      - SMMRY_MIN_REDUCED_AMOUNT=
     volumes:
       - C:\{Docker folder}\Dolores:/home/dolores/config
+    depends_on:
+      - lavalink
+    networks:
+      - lavalink
+
   lavalink:
     image: ghcr.io/lavalink-devs/lavalink:4
     container_name: lavalink
@@ -88,6 +118,9 @@ services:
       - 2333
     ports:
       - "2333:2333"
+networks:
+  lavalink:
+    driver: bridge
 ```
 
 ## Modules
