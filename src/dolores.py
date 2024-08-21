@@ -37,7 +37,8 @@ if os.environ["SCHEDULING_ENABLED"].lower() == "true":
 if os.environ["GENERATION_ENABLED"].lower() == "true":
     bot.add_cog(generation(bot))
 
-with open(os.path.join("..", "locales", "strings.json"), "r") as f:
+strings_path = "/home/dolores/locales/strings.json"
+with open(strings_path, "r") as f:
     summary_exclude_strings = json.load(f).get("SUMMARY_EXCLUDED_STRINGS", [])
 
 

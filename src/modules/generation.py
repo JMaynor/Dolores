@@ -23,7 +23,8 @@ if reply_method == "openai":
 
 message_history = deque(maxlen=10)
 
-with open(os.path.join("..", "locales", "strings.json"), "r") as f:
+strings_path = "/home/dolores/locales/strings.json"
+with open(strings_path, "r") as f:
     json_data = json.load(f)
     system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [])
     snarky_comments = json_data.get("SNARKY_COMMENTS", [])

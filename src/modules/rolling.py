@@ -9,7 +9,8 @@ import random
 
 from discord.ext import commands
 
-with open(os.path.join("..", "locales", "strings.json"), "r") as f:
+strings_path = "/home/dolores/locales/strings.json"
+with open(strings_path, "r") as f:
     sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
 
 

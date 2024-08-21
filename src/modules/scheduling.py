@@ -25,7 +25,8 @@ notion_headers = {
 
 twitch_headers = {"Authorization": "", "Client-ID": os.environ["TWITCH_CLIENT_ID"]}
 
-with open(os.path.join("..", "locales", "strings.json"), "r") as f:
+strings_path = "/home/dolores/locales/strings.json"
+with open(strings_path, "r") as f:
     sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
 
 
