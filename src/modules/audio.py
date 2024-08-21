@@ -10,6 +10,7 @@ import os
 from contextlib import suppress
 from typing import Optional
 
+import aiohttp
 import discord
 import pomice
 from discord.ext import commands
@@ -105,13 +106,19 @@ class audio(commands.Cog):
         # Waiting for the bot to get ready before connecting to nodes.
         await self.bot.wait_until_ready()
 
-        await self.pomice.create_node(
-            bot=self.bot,
-            host=os.environ["LAVALINK_HOST"],
-            port=int(os.environ["LAVALINK_PORT"]),
-            password=os.environ["LAVALINK_PASSWORD"],
-            identifier="Dolores",
-        )
+        # Wait 30 seconds before trying to connect
+        await asyncio.sleep(10)
+
+        try:
+            await self.pomice.create_node(
+                bot=self.bot,
+                host=os.environ["LAVALINK_HOST"],
+                port=int(os.environ["LAVALINK_PORT"]),
+                password=os.environ["LAVALINK_PASSWORD"],
+                identifier="Dolores",
+            )
+        except Exception as e:
+            logger.error(f"Failed to connect to Lavalink: {e}")
 
     def required(self, ctx: commands.Context):
         """
