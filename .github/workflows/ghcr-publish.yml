@@ -34,4 +34,4 @@ jobs:
             push: true
             tags: |
               ${{ steps.meta.outputs.tags }}
-              ghcr.io/JMaynor/dolores:latest
+              ghcr.io/jmaynor/dolores:latest
