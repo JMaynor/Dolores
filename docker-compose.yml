@@ -1,0 +1,78 @@
+name: Dolores
+
+services:
+  dolores:
+    image: ghcr.io/jmaynor/dolores:latest
+    container_name: dolores
+    restart: unless-stopped
+    environment:
+      # Main Settings
+      - DISCORD_API_KEY=${DISCORD_API_KEY}
+      - AUDIO_ENABLED=${AUDIO_ENABLED}
+      - SCHEDULING_ENABLED=${SCHEDULING_ENABLED}
+      - GENERATION_ENABLED=${GENERATION_ENABLED}
+      - LOG_LEVEL=${LOG_LEVEL}
+      # Audio
+      - LAVALINK_HOST=${LAVALINK_HOST}
+      - LAVALINK_PORT=${LAVALINK_PORT}
+      - LAVALINK_PASSWORD=${LAVALINK_PASSWORD}
+      # Scheduling
+      - NOTION_API_KEY=${NOTION_API_KEY}
+      - NOTION_VERSION=${NOTION_VERSION}
+      - NOTION_BASE_URL=${NOTION_BASE_URL}
+      - NOTION_DATABASE_ID=${NOTION_DATABASE_ID}
+      - TWITCH_CLIENT_ID=${TWITCH_CLIENT_ID}
+      - TWITCH_CLIENT_SECRET=${TWITCH_CLIENT_SECRET}
+      - TWITCH_BASE_URL=${TWITCH_BASE_URL}
+      - TWITCH_BROADCASTER_ID=${TWITCH_BROADCASTER_ID}
+      - TWITCH_BROADCASTER_NAME=${TWITCH_BROADCASTER_NAME}
+      # Generation
+      - REPLY_METHOD=${REPLY_METHOD}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL}
+      - OPENAI_IMAGE_MODEL=${OPENAI_IMAGE_MODEL}
+      - IMAGE_STYLE=${IMAGE_STYLE}
+      - MAX_TOKENS=${MAX_TOKENS}
+      - TEMPERATURE=${TEMPERATURE}
+      - TOP_P=${TOP_P}
+      - FREQUENCY_PENALTY=${FREQUENCY_PENALTY}
+      - PRESENCE_PENALTY=${PRESENCE_PENALTY}
+      - SMMRY_BASE_URL=${SMMRY_BASE_URL}
+      - SMMRY_API_KEY=${SMMRY_API_KEY}
+      - SMMRY_QUOTE_AVOID=${SMMRY_QUOTE_AVOID}
+      - SMMRY_LENGTH=${SMMRY_LENGTH}
+      - SMMRY_MIN_REDUCED_AMOUNT=${SMMRY_MIN_REDUCED_AMOUNT}
+    depends_on:
+      - lavalink
+    networks:
+      - lavalink
+
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4
+    container_name: lavalink
+    restart: unless-stopped
+    environment:
+      - _JAVA_OPTIONS=-Xmx6G
+      - SERVER_PORT=2333
+      - SERVER_ADDRESS=0.0.0.0
+      - SERVER_HTTP2_ENABLED=true
+      - LAVALINK_SERVER_PASSWORD=password
+      - LAVALINK_SERVER_SOURCES_YOUTUBE=true
+      - LAVALINK_SERVER_SOURCES_BANDCAMP=false
+      - LAVALINK_SERVER_SOURCES_SOUNDCLOUD=false
+      - LAVALINK_SERVER_SOURCES_TWITCH=false
+      - LAVALINK_SERVER_SOURCES_VIMEO=false
+      - LAVALINK_SERVER_SOURCES_HTTP=true
+      - LAVALINK_SERVER_SOURCES_LOCAL=false
+      - LAVALINK_PLUGINS_DIR=/opt/Lavalink/plugins/
+    volumes:
+      - ${LOCAL_LAVALINK_PLUGINS_FOLDER}:/opt/Lavalink/plugins/
+    networks:
+      - lavalink
+    expose:
+      - 2333
+    ports:
+      - "2333:2333"
+networks:
+  lavalink:
+    driver: bridge
