@@ -14,8 +14,10 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Check if .env file present, if so load vars from it
-if os.path.exists(os.path.join("..", ".env")):
+if os.path.exists(os.path.join(current_dir, "..", ".env")):
     load_dotenv()
 
 from modules import *
@@ -37,9 +39,10 @@ if os.environ["SCHEDULING_ENABLED"].lower() == "true":
 if os.environ["GENERATION_ENABLED"].lower() == "true":
     bot.add_cog(generation(bot))
 
-strings_path = "/home/dolores/locales/strings.json"
-with open(strings_path, "r") as f:
-    summary_exclude_strings = json.load(f).get("SUMMARY_EXCLUDED_STRINGS", [])
+## Construct the path to strings.json
+# strings_path = os.path.join(current_dir, "..", "locales", "strings.json")
+# with open(strings_path, "r") as f:
+#     summary_exclude_strings = json.load(f).get("SUMMARY_EXCLUDED_STRINGS", [])
 
 
 async def handle_mention(message):

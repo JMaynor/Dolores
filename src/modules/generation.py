@@ -23,7 +23,9 @@ if reply_method == "openai":
 
 message_history = deque(maxlen=10)
 
-strings_path = "/home/dolores/locales/strings.json"
+# Construct the path to strings.json
+current_dir = os.path.dirname(os.path.abspath(__file__))
+strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
 with open(strings_path, "r") as f:
     json_data = json.load(f)
     system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [])
