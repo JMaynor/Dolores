@@ -158,7 +158,7 @@ class generation(commands.Cog):
             image_url = response.data[0].url
         except Exception as e:
             logger.error(e)
-            await ctx.respond("Error generating image.")
+            await ctx.respond(f"Error generating image: {e}.")
 
         try:
             embed = discord.Embed()
@@ -167,4 +167,4 @@ class generation(commands.Cog):
             await ctx.respond(embed=embed)
         except Exception as e:
             logger.error(e)
-            await ctx.respond("Error posting image to Discord.")
+            await ctx.respond(f"Error posting image to Discord: {e}.")
