@@ -9,7 +9,6 @@ between Notion and Twitch. Not yet implemented.
 import json
 import os
 import random
-import urllib.parse
 from datetime import datetime
 
 import discord
@@ -23,31 +22,11 @@ notion_headers = {
     "Notion-Version": os.environ["NOTION_VERSION"],
 }
 
-twitch_headers = {"Authorization": "", "Client-ID": os.environ["TWITCH_CLIENT_ID"]}
-
 # Construct the path to strings.json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
 with open(strings_path, "r") as f:
     sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
-
-
-class Decorators:
-    @staticmethod
-    def refresh_twitch_token(decorated):
-        """
-        Decorator to refresh the Twitch token if it's expired.
-        """
-
-        def wrapper(self, *args, **kwargs):
-            if "TWITCH_TOKEN_EXPIRES_AT" not in os.environ:
-                pass
-            else:
-                pass
-            return decorated(self, *args, **kwargs)
-
-        wrapper.__name__ = decorated.__name__
-        return wrapper
 
 
 class scheduling(commands.Cog):
@@ -80,131 +59,6 @@ class scheduling(commands.Cog):
             return ""
         else:
             return response.json()
-
-    @Decorators.refresh_twitch_token
-    def get_twitch_schedule(
-        self, id=None, start_time=None, end_time=None, first=None, after=None
-    ):
-        """
-        Gets schedule data from Twitch.
-        """
-        # Build the query string
-        if id:
-            id = "&id=" + id
-        if start_time:
-            start_time = "&start_time=" + start_time
-        if end_time:
-            end_time = "&end_time=" + end_time
-        if first:
-            first = "&first=" + first
-        if after:
-            after = "&after=" + after
-
-        response = requests.get(
-            os.environ["TWITCH_BASE_URL"]
-            + "helix/schedule"
-            + "?broadcaster_id="
-            + os.environ["TWITCH_BROADCASTER_ID"]
-            + start_time  # type: ignore
-            + end_time
-            + first
-            + after,
-            headers=twitch_headers,
-            timeout=30,
-        )
-
-        if response.status_code != 200:
-            logger.error(response.json())
-            return ""
-
-        return response.json()
-
-    @Decorators.refresh_twitch_token
-    def add_twitch_segment(self, start_time, is_recurring, category_id, title):
-        """
-        Adds a single segment to the Twitch schedule
-        """
-        json_data = {
-            "start_time": start_time,
-            "timezone": "America/Chicago",
-            "duration": "240",
-            "is_recurring": is_recurring,
-            "category_id": category_id,
-            "title": title,
-        }
-
-        response = requests.post(
-            os.environ["TWITCH_BASE_URL"]
-            + "helix/schedule/segment"
-            + "?broadcaster_id="
-            + os.environ["TWITCH_BROADCASTER_ID"],
-            json=json_data,
-            headers=twitch_headers,
-        )
-
-        if response.status_code != 200:
-            logger.error(response.json())
-            return ""
-
-        return response.json()
-
-    @Decorators.refresh_twitch_token
-    def delete_twitch_segment(self, id):
-        """
-        Removes a single segment to the Twitch schedule
-        Requires the segment ID
-        """
-        response = requests.delete(
-            os.environ["TWITCH_BASE_URL"]
-            + "helix/schedule/segment"
-            + "?broadcaster_id="
-            + os.environ["TWITCH_BROADCASTER_ID"]
-            + "?id="
-            + id,
-            headers=twitch_headers,
-        )
-
-        if response.status_code != 204:
-            logger.error(response.json())
-            return ""
-
-        return response.json()
-
-    @Decorators.refresh_twitch_token
-    def clear_twitch_schedule(self):
-        """
-        Clears the Twitch schedule of all segments
-        """
-        twitch_schedule = self.get_twitch_schedule()
-        if twitch_schedule == "":
-            return ""
-
-        segment_ids = []
-        for segment in twitch_schedule["data"]["segments"]:
-            if "id" in segment:
-                segment_ids.append(segment["id"])
-
-        for segment_id in set(segment_ids):
-            self.delete_twitch_segment(segment_id)
-
-    @Decorators.refresh_twitch_token
-    def search_twitch_categories(self, query):
-        """
-        Searches for Twitch categories
-        """
-        response = requests.get(
-            os.environ["TWITCH_BASE_URL"]
-            + "helix/search/categories"
-            + "?query="
-            + urllib.parse.quote(query),
-            headers=twitch_headers,
-        )
-
-        if response.status_code != 200:
-            logger.error(response.json())
-            return ""
-
-        return response.json()
 
     @commands.slash_command(
         description="Returns the next couple streams on the schedule."

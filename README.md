@@ -26,11 +26,6 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | Scheduling | NOTION_VERSION | Version of Notion API used for querying. |
 | Scheduling | NOTION_BASE_URL | Base URL of the Notion API, should be |
 | Scheduling | NOTION_DATABASE_ID | ID for database where stream info is kept |
-| Scheduling | TWITCH_CLIENT_ID | Not yet used |
-| Scheduling | TWITCH_CLIENT_SECRET | Not yet used |
-| Scheduling | TWITCH_BASE_URL | Not yet used |
-| Scheduling | TWITCH_BROADCASTER_ID | Not yet used |
-| Scheduling | TWITCH_BROADCASTER_NAME | not yet used |
 | Generation | REPLY_METHOD | Method to use for generating a reply to user's message. At this point only 'openai' is supported. |
 | Generation | OPENAI_API_KEY | API Key used for generating replies |
 | Generation | OPENAI_MODEL | Which LLM model to use. |
@@ -56,7 +51,7 @@ Dolores' functionality is divided into several cogs modules. `dolores.py` handle
 | --- | ----------- |
 | Rolling | Used to roll dice and for any other randomization-based tasks. |
 | Audio | The audio module uses pomice/lavalink to stream audio. Uses a queue system. Largely a copy of the example bot given in pomice's documentation. |
-| Scheduling | The scheduling module is used for tasks related to Notion and Twitch. Pulling schedule in from a Notion database and posting to twitch schedule. |
+| Scheduling | The scheduling module is used for tasks related to Notion. Pulling schedule in from a Notion database. |
 | Generation | Module for text and image generation. Currently using chatGPT, but intent is to move to add ability to use self-hosted LLM. Should be able to choose between something the user is hosting or commercially available alternatives. Also handles simple randomized snarky replies. |
 
 ## Licensing
