@@ -17,11 +17,6 @@ from discord.ext import commands
 
 from modules.logger import logger
 
-notion_headers = {
-    "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
-    "Notion-Version": os.environ["NOTION_VERSION"],
-}
-
 # Construct the path to strings.json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
@@ -50,7 +45,10 @@ class scheduling(commands.Cog):
             + "databases/"
             + os.environ["NOTION_DATABASE_ID"]
             + "/query",
-            headers=notion_headers,
+            headers={
+                "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
+                "Notion-Version": os.environ["NOTION_VERSION"],
+            },
             json=json_data,
             timeout=30,
         )
