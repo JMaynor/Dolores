@@ -58,6 +58,7 @@ async def handle_mention(message):
         clean_message = message.clean_content.replace("@Dolores", "Dolores")
         clean_message = clean_message.replace("@everyone", "everyone")
         clean_message = clean_message.replace("@Testie", "Testie")
+        logger.info(f"Generating reply to following message: {clean_message}")
         reply = text_instance.generate_reply(clean_message)
     else:
         reply = "Hi"
