@@ -3,6 +3,7 @@ Fancy schmancy "AI" nonsense.
 Module contains code that deals with text processing and image generation.
 """
 
+import asyncio
 import json
 import os
 import random
@@ -30,7 +31,7 @@ with open(strings_path, "r") as f:
     json_data = json.load(f)
     system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [])
     system_messages = [{"role": "system", "content": x} for x in system_messages]
-    snarky_comments = json_data.get("SNARKY_COMMENTS", [""])
+    snarky_comments = json_data.get("SNARKY_COMMENTS", ["Whatever"])
 
 
 class generation(commands.Cog):
@@ -41,13 +42,14 @@ class generation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def generate_reply(self, message):
+    def generate_reply(self, person, message):
         """
-        Generates a reply to a given message. Currently using chatterbot. Intent is to use a proper LLM in the future.
+        Generates a reply to a given message.
         """
         if reply_method == "openai":
+
             # Add the user's message to the message history
-            message_history.append({"role": "user", "content": message})
+            message_history.append({"role": "user", "content": message, "name": person})
 
             try:
                 # Generate a reply using the OpenAI API
@@ -166,6 +168,11 @@ class generation(commands.Cog):
         except Exception as e:
             logger.error(e)
             await ctx.respond(f"Error generating image: {e}.")
+
+        # Add a delay to ensure the image is available
+        # NOTE: Not sure if this is the issue. Image is getting generated, but is
+        # inconsistently not being posted to Discord.
+        await asyncio.sleep(1)
 
         try:
             embed = discord.Embed()

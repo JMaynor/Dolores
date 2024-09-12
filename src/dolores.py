@@ -59,7 +59,7 @@ async def handle_mention(message):
         clean_message = clean_message.replace("@everyone", "everyone")
         clean_message = clean_message.replace("@Testie", "Testie")
         logger.info(f"Generating reply to following message: {clean_message}")
-        reply = text_instance.generate_reply(clean_message)
+        reply = text_instance.generate_reply(message.author.global_name, clean_message)
     else:
         reply = "Hi"
     if reply != "":
@@ -119,13 +119,11 @@ async def on_command_error(ctx, error):
     tries to use a command that does not exist, Dolores will reply with a snarky
     comeback. Any other error performs default behavior of logging to syserr.
     """
-    await ctx.defer()
+    logger.error(error)
     if os.environ["GENERATION_ENABLED"].lower() == "true":
         text_instance = generation(bot)
         if isinstance(error, (commands.CommandNotFound)):
             await ctx.send(text_instance.generate_snarky_comment())
-        else:
-            logger.error(error)
     else:
         await ctx.send("An error occurred. Please try again.")
 
@@ -146,18 +144,10 @@ async def on_message(message):
         and message.author.id != bot.user.id
         and "@everyone" not in message.clean_content
     ):
+        # For testing, print out attributes of message
+        logger.info(f"Message: {message}")
         await handle_mention(message)
-
-    # Check for if message was posted in news channel and contains a non-media URL
-    # if (
-    #     os.environ["TEXT_ENABLED"].lower() == "true"
-    #     and message.channel.id == int(os.environ["NEWS_CHANNEL_ID"])
-    #     and "https" in message.clean_content
-    #     and not any(
-    #         excluded in message.clean_content for excluded in summary_exclude_strings
-    #     )
-    # ):
-    #     await handle_news(message)
+        return
 
     # Normal command processing
     await bot.process_commands(message)
