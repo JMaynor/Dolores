@@ -28,7 +28,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
 with open(strings_path, "r") as f:
     json_data = json.load(f)
-    system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [""])
+    system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [])
+    system_messages = [{"role": "system", "content": x} for x in system_messages]
     snarky_comments = json_data.get("SNARKY_COMMENTS", [""])
 
 
