@@ -28,8 +28,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
 with open(strings_path, "r") as f:
     json_data = json.load(f)
-    system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [])
-    snarky_comments = json_data.get("SNARKY_COMMENTS", [])
+    system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [""])
+    snarky_comments = json_data.get("SNARKY_COMMENTS", [""])
 
 
 class generation(commands.Cog):
@@ -156,6 +156,7 @@ class generation(commands.Cog):
                 user=str(ctx.author.id),
             )
             image_url = response.data[0].url
+            logger.info("Generated image URL: {image_url}")
         except Exception as e:
             logger.error(e)
             await ctx.respond(f"Error generating image: {e}.")
