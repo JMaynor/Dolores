@@ -156,7 +156,7 @@ class generation(commands.Cog):
                 user=str(ctx.author.id),
             )
             image_url = response.data[0].url
-            logger.info("Generated image URL: {image_url}")
+            logger.info(f"Generated image URL: {image_url}")
         except Exception as e:
             logger.error(e)
             await ctx.respond(f"Error generating image: {e}.")
