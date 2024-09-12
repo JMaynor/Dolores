@@ -63,7 +63,7 @@ async def handle_mention(message):
     else:
         reply = "Hi"
     if reply != "":
-        await ctx.respond(reply)
+        await ctx.reply(reply)
 
 
 async def handle_news(message):
@@ -94,7 +94,7 @@ async def handle_news(message):
                         name="Article Summary", value=summary["sm_api_content"]
                     )
                     if len(summary["sm_api_content"]) <= 1024:
-                        await ctx.respond(embed=embed)
+                        await ctx.reply(embed=embed)
 
 
 # ---------------------------------------------------------------------------
