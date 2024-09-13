@@ -168,6 +168,7 @@ class generation(commands.Cog):
         except Exception as e:
             logger.error(e)
             await ctx.respond(f"Error generating image: {e}.")
+            return
 
         # Add a delay to ensure the image is available
         # NOTE: Not sure if this is the issue. Image is getting generated, but is

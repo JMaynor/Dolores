@@ -39,11 +39,6 @@ if os.environ["SCHEDULING_ENABLED"].lower() == "true":
 if os.environ["GENERATION_ENABLED"].lower() == "true":
     bot.add_cog(generation(bot))
 
-## Construct the path to strings.json
-# strings_path = os.path.join(current_dir, "..", "locales", "strings.json")
-# with open(strings_path, "r") as f:
-#     summary_exclude_strings = json.load(f).get("SUMMARY_EXCLUDED_STRINGS", [])
-
 
 async def handle_mention(message):
     """
