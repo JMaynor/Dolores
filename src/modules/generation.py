@@ -17,10 +17,7 @@ from discord.ext import commands
 
 from modules.logger import logger
 
-reply_method = os.environ["REPLY_METHOD"]
-
-if reply_method == "openai":
-    openai.api_key = os.environ["OPENAI_API_KEY"]
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 message_history = deque(maxlen=10)
 
@@ -46,35 +43,37 @@ class generation(commands.Cog):
         """
         Generates a reply to a given message.
         """
-        if reply_method == "openai":
 
-            # Add the user's message to the message history
-            message_history.append({"role": "user", "content": message, "name": person})
+        # Add the user's message to the message history
+        message_history.append({"role": "user", "content": message, "name": person})
 
-            try:
-                # Generate a reply using the OpenAI API
-                response = openai.chat.completions.create(
-                    model=os.environ["OPENAI_MODEL"],
-                    messages=system_messages + list(message_history),
-                    max_tokens=int(os.environ.get("MAX_TOKENS", 150)),
-                    temperature=float(os.environ.get("TEMPERATURE", 0.9)),
-                    top_p=float(os.environ.get("TOP_P", 1.0)),
-                    frequency_penalty=float(os.environ.get("FREQUENCY_PENALTY", 0.0)),
-                    presence_penalty=float(os.environ.get("PRESENCE_PENALTY", 0.6)),
-                )
-                reply = response.choices[0].message.content
-                logger.info(f"Reply generated: {reply}")
-                # Add the reply to the message history
-                message_history.append({"role": "assistant", "content": reply})
-            except Exception as e:
-                logger.error(f"Error generating reply: {e}")
-                logger.error(f"Messages: {system_messages + list(message_history)}")
-
-        # Use a self-hosted LLM to generate a reply
-        elif reply_method == "self":
-            reply = ""
-        # If reply method not specified, return empty string
-        else:
+        try:
+            # Generate a reply using the OpenAI API
+            response = openai.chat.completions.create(
+                model=os.environ["OPENAI_MODEL"],
+                messages=system_messages + list(message_history),
+                max_tokens=int(os.environ.get("MAX_TOKENS", 150)),
+                temperature=float(os.environ.get("TEMPERATURE", 0.9)),
+                top_p=float(os.environ.get("TOP_P", 1.0)),
+                frequency_penalty=float(os.environ.get("FREQUENCY_PENALTY", 0.0)),
+                presence_penalty=float(os.environ.get("PRESENCE_PENALTY", 0.6)),
+            )
+            reply = response.choices[0].message.content
+            logger.info(f"Reply generated: {reply}")
+            # Add the reply to the message history
+            message_history.append({"role": "assistant", "content": reply})
+        except openai.APIConnectionError as e:
+            logger.error(f"Error connecting to the OpenAI API: {e}")
+            reply = "I'm sorry, I'm having trouble connecting to the OpenAI API."
+        except openai.RateLimitError as e:
+            logger.error(f"Error with the OpenAI API rate limit: {e}")
+            reply = "I'm sorry, I've reached my rate limit for now, try again later."
+        except (openai.APIStatusError, openai.APIError) as e:
+            logger.error(f"Error with the OpenAI API: {e}")
+            reply = "I'm sorry, I'm having trouble with the OpenAI API."
+        except Exception as e:
+            logger.error(f"Error generating reply: {e}")
+            logger.error(f"Messages: {system_messages + list(message_history)}")
             reply = ""
 
         return reply

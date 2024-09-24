@@ -26,7 +26,6 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | Scheduling | NOTION_VERSION | Version of Notion API used for querying. |
 | Scheduling | NOTION_BASE_URL | Base URL of the Notion API, should be |
 | Scheduling | NOTION_DATABASE_ID | ID for database where stream info is kept |
-| Generation | REPLY_METHOD | Method to use for generating a reply to user's message. At this point only 'openai' is supported. |
 | Generation | OPENAI_API_KEY | API Key used for generating replies |
 | Generation | OPENAI_MODEL | Which LLM model to use. |
 | Generation | OPENAI_IMAGE_MODEL | Which image model to use. |
