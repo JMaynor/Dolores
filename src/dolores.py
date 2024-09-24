@@ -92,6 +92,24 @@ async def handle_news(message):
                         await ctx.reply(embed=embed)
 
 
+async def handle_question(message):
+    """
+    When someone reacts with a question mark to a message, Dolores will attempt
+    to explain the contents of the message in an informative simpler way.
+    Calls generate_explanation in the generation module.
+    """
+    ctx = await bot.get_context(message)
+
+    if os.environ["GENERATION_ENABLED"].lower() == "true":
+        text_instance = generation(bot)
+        logger.info(f"Generating explanation for message: {message.clean_content}")
+        explanation = text_instance.generate_explanation(
+            message.author.global_name, message.clean_content
+        )
+        if explanation != "":
+            await ctx.reply(explanation)
+
+
 # ---------------------------------------------------------------------------
 # Discord Events
 # ---------------------------------------------------------------------------
@@ -121,6 +139,18 @@ async def on_command_error(ctx, error):
             await ctx.send(text_instance.generate_snarky_comment())
     else:
         await ctx.send("An error occurred. Please try again.")
+
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    """
+    on_reaction_add is a base function for handling when a reaction is added
+    to a message. Currently used to check for question mark reaction
+    """
+    if user == bot.user:
+        return
+    if reaction.emoji == "❓" or reaction.emoji == "❔":
+        await handle_question(reaction.message)
 
 
 @bot.event

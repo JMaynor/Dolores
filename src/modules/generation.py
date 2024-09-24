@@ -79,6 +79,41 @@ class generation(commands.Cog):
 
         return reply
 
+    def generate_explanation(self, person, message):
+        """
+        Generates a simpler more informative explanation to a given message.
+        """
+        # Add the user's message to the message history
+        message_history.append({"role": "user", "content": message, "name": person})
+
+        message_history.append(
+            {
+                "role": "system",
+                "content": "Attempt to explain the previous message if possible. Expand on what they are saying to provide a more informative response. Essentially, explain the contents of the message for somebody else who may not understand what the message is saying.",
+            }
+        )
+
+        try:
+            response = openai.chat.completions.create(
+                model=os.environ["OPENAI_MODEL"],
+                messages=system_messages + list(message_history),
+                max_tokens=int(os.environ.get("MAX_TOKENS", 150)),
+                temperature=float(os.environ.get("TEMPERATURE", 0.9)),
+                top_p=float(os.environ.get("TOP_P", 1.0)),
+                frequency_penalty=float(os.environ.get("FREQUENCY_PENALTY", 0.0)),
+                presence_penalty=float(os.environ.get("PRESENCE_PENALTY", 0.6)),
+            )
+            reply = response.choices[0].message.content
+            logger.info(f"Explanation generated: {reply}")
+            # Add the reply to the message history
+            message_history.append({"role": "assistant", "content": reply})
+        except Exception as e:
+            logger.error(f"Error generating explanation: {e}")
+            logger.error(f"Messages: {system_messages + list(message_history)}")
+            reply = ""
+
+        return reply
+
     def generate_snarky_comment(self):
         """
         Generates a snarky comment to be used when a user tries to use a command that does not exist.
@@ -183,3 +218,6 @@ class generation(commands.Cog):
         except Exception as e:
             logger.error(e)
             await ctx.respond(f"Error posting image to Discord: {e}.")
+
+    # @commands.slash_command(description="Restates a given message in a more informative way. Explans something.")
+    # async def explainthat(self, ctx)
