@@ -199,6 +199,17 @@ class generation(commands.Cog):
             )
             image_url = response.data[0].url
             logger.info(f"Generated image URL: {image_url}")
+        except openai.APIConnectionError as e:
+            logger.error(f"Error connecting to the OpenAI API: {e}")
+            ctx.respond("I'm sorry, I'm having trouble connecting to the OpenAI API.")
+        except openai.RateLimitError as e:
+            logger.error(f"Error with the OpenAI API rate limit: {e}")
+            ctx.respond(
+                "I'm sorry, I've reached my rate limit for now, try again later."
+            )
+        except (openai.APIStatusError, openai.APIError) as e:
+            logger.error(f"Error with the OpenAI API: {e}")
+            ctx.respond("I'm sorry, I'm having trouble with the OpenAI API.")
         except Exception as e:
             logger.error(e)
             await ctx.respond(f"Error generating image: {e}.")
@@ -206,7 +217,8 @@ class generation(commands.Cog):
 
         # Add a delay to ensure the image is available
         # NOTE: Not sure if this is the issue. Image is getting generated, but is
-        # inconsistently not being posted to Discord.
+        # inconsistently not being posted to Discord. Seems to have fixed though
+        # so I will keep the delay there.
         await asyncio.sleep(1)
 
         try:
@@ -217,6 +229,3 @@ class generation(commands.Cog):
         except Exception as e:
             logger.error(e)
             await ctx.respond(f"Error posting image to Discord: {e}.")
-
-    # @commands.slash_command(description="Restates a given message in a more informative way. Explans something.")
-    # async def explainthat(self, ctx)
