@@ -13,8 +13,10 @@ from collections import deque
 import discord
 import openai
 import requests
+import tenacity
 from discord.ext import commands
 
+from modules._helpers import _basic_retry, _openai_retry
 from modules.logger import logger
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -39,6 +41,7 @@ class generation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @_openai_retry
     def generate_reply(self, person, message):
         """
         Generates a reply to a given message.
@@ -78,6 +81,7 @@ class generation(commands.Cog):
 
         return reply
 
+    @_openai_retry
     def generate_explanation(self, person, message):
         """
         Generates a simpler more informative explanation to a given message.
@@ -119,6 +123,7 @@ class generation(commands.Cog):
         """
         return random.choice(snarky_comments)
 
+    @_basic_retry
     def summarize_url(self, url):
         """
         Summarizes a given URL using the SMMRY API.
@@ -129,22 +134,28 @@ class generation(commands.Cog):
             "SM_LENGTH": os.environ["SMMRY_LENGTH"],
             "SM_URL": url,
         }
-        response = requests.post(
-            os.environ.get("SMMRY_BASE_URL", "https://api.smmry.com"),
-            params=params,
-        )
-
-        if response.status_code != 200:
-            logger.error(response.json())
+        try:
+            response = requests.post(
+                os.environ.get("SMMRY_BASE_URL", "https://api.smmry.com"),
+                params=params,
+            )
+        except requests.exceptions.HTTPError as e:
+            logger.error(
+                f"Error {e.response.status_code}, could not summarize URL: {e}"
+            )
             return ""
-        elif "sm_api_error" in response.json():
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error, could not summarize URL: {e}")
+            return ""
+
+        if "sm_api_error" in response.json():
             logger.error(response.json()["sm_api_error"])
             return ""
         elif "sm_api_message" in response.json():
             logger.error(response.json()["sm_api_message"])
             return ""
-        else:
-            return response.json()
+
+        return response.json()
 
     @commands.slash_command(description="Summarizes a given URL using the SMMRY API.")
     async def summarize(self, ctx, *, url):
