@@ -32,11 +32,11 @@ bot.add_cog(rolling(bot))
 
 # Add modules based on config
 # These rely on other dependencies and APIs so only add if enabled
-if os.environ["AUDIO_ENABLED"].lower() == "true":
+if os.environ.get("AUDIO_ENABLED", "false").lower() == "true":
     bot.add_cog(audio(bot))
-if os.environ["SCHEDULING_ENABLED"].lower() == "true":
+if os.environ.get("SCHEDULING_ENABLED", "false").lower() == "true":
     bot.add_cog(scheduling(bot))
-if os.environ["GENERATION_ENABLED"].lower() == "true":
+if os.environ.get("GENERATION_ENABLED", "false").lower() == "true":
     bot.add_cog(generation(bot))
 
 
@@ -48,7 +48,7 @@ async def handle_mention(message):
     """
     ctx = await bot.get_context(message)
 
-    if os.environ["GENERATION_ENABLED"].lower() == "true":
+    if os.environ.get("GENERATION_ENABLED", "false").lower() == "true":
         text_instance = generation(bot)
         clean_message = message.clean_content.replace("@Dolores", "Dolores")
         clean_message = clean_message.replace("@everyone", "everyone")
@@ -100,14 +100,13 @@ async def handle_question(message):
     """
     ctx = await bot.get_context(message)
 
-    if os.environ["GENERATION_ENABLED"].lower() == "true":
-        text_instance = generation(bot)
-        logger.info(f"Generating explanation for message: {message.clean_content}")
-        explanation = text_instance.generate_explanation(
-            message.author.global_name, message.clean_content
-        )
-        if explanation != "":
-            await ctx.reply(explanation)
+    text_instance = generation(bot)
+    logger.info(f"Generating explanation for message: {message.clean_content}")
+    explanation = text_instance.generate_explanation(
+        message.author.global_name, message.clean_content
+    )
+    if explanation != "":
+        await ctx.reply(explanation)
 
 
 # ---------------------------------------------------------------------------
@@ -133,10 +132,9 @@ async def on_command_error(ctx, error):
     comeback. Any other error performs default behavior of logging to syserr.
     """
     logger.error(error)
-    if os.environ["GENERATION_ENABLED"].lower() == "true":
-        text_instance = generation(bot)
-        if isinstance(error, (commands.CommandNotFound)):
-            await ctx.send(text_instance.generate_snarky_comment())
+    text_instance = generation(bot)
+    if isinstance(error, (commands.CommandNotFound)):
+        await ctx.send(text_instance.generate_snarky_comment())
     else:
         await ctx.send("An error occurred. Please try again.")
 
@@ -147,10 +145,11 @@ async def on_reaction_add(reaction, user):
     on_reaction_add is a base function for handling when a reaction is added
     to a message. Currently used to check for question mark reaction
     """
-    if user == bot.user:
-        return
-    if reaction.emoji == "❓" or reaction.emoji == "❔":
-        await handle_question(reaction.message)
+    if os.environ.get("GENERATION_ENABLED", "false").lower() == "true":
+        if user == bot.user:
+            return
+        if reaction.emoji == "❓" or reaction.emoji == "❔":
+            await handle_question(reaction.message)
 
 
 @bot.event
