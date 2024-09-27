@@ -15,6 +15,7 @@ import discord
 import requests
 from discord.ext import commands
 
+from modules._helpers import _basic_retry
 from modules.logger import logger
 
 # Construct the path to strings.json
@@ -32,6 +33,7 @@ class scheduling(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @_basic_retry
     def get_notion_schedule(self, filter: dict, sorts: list):
         """
         Generic function that returns a given number of streams from the Notion schedule.
@@ -40,23 +42,30 @@ class scheduling(commands.Cog):
         sorts are a list of dicts
         """
         json_data = {"filter": filter, "sorts": sorts}
-        response = requests.post(
-            os.environ["NOTION_BASE_URL"]
-            + "databases/"
-            + os.environ["NOTION_DATABASE_ID"]
-            + "/query",
-            headers={
-                "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
-                "Notion-Version": os.environ["NOTION_VERSION"],
-            },
-            json=json_data,
-            timeout=30,
-        )
-        if response.status_code != 200:
-            logger.error(response.json())
+        try:
+            response = requests.post(
+                os.environ["NOTION_BASE_URL"]
+                + "databases/"
+                + os.environ["NOTION_DATABASE_ID"]
+                + "/query",
+                headers={
+                    "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
+                    "Notion-Version": os.environ["NOTION_VERSION"],
+                },
+                json=json_data,
+                timeout=30,
+            )
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            logger.error(
+                f"Error {e.response.status_code}, could not get schedule data: {e}"
+            )
             return ""
-        else:
-            return response.json()
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error, could not get schedule data: {e}")
+            return ""
+
+        return response.json()
 
     @commands.slash_command(
         description="Returns the next couple streams on the schedule."
