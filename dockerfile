@@ -1,4 +1,4 @@
-FROM python:3.12-alpine
+FROM python:3.13-alpine
 RUN python -m pip install --upgrade pip
 RUN mkdir /home/dolores
 COPY . /home/dolores
