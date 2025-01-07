@@ -225,7 +225,9 @@ class audio(commands.Cog):
         # will search up any keyword results on YouTube Music
 
         # We will also set the context here to get special features, like a track.requester object
-        results = await player.get_tracks(search, ctx=ctx)
+        results = await player.get_tracks(
+            search, ctx=ctx, search_type=pomice.SearchType.scsearch
+        )
 
         if not results:
             await ctx.respond(
