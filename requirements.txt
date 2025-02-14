@@ -1,6 +1,6 @@
 requests==2.32.3
 py-cord[voice]==2.6.1
-openai==1.59.8
+openai==1.61.1
 apprise==1.9.2
 pomice==2.9.2
 python-dotenv==1.0.1
