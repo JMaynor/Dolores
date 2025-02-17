@@ -4,11 +4,8 @@ is in being able to roll dice for players of a tabletop roleplaying game
 but she is also capable of doing some basic audio things.
 """
 
-import asyncio
-import json
 import os
 import re
-from datetime import datetime
 
 import discord
 from discord.ext import commands
@@ -20,7 +17,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if os.path.exists(os.path.join(current_dir, "..", ".env")):
     load_dotenv()
 
-from modules import *
+from modules import audio, generation, rolling, scheduling
 from modules.logger import logger
 
 intents = discord.Intents.all()

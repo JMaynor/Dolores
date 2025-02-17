@@ -1,9 +1,15 @@
-FROM python:3.12-alpine
-RUN python -m pip install --upgrade pip
-RUN mkdir /home/dolores
-COPY . /home/dolores
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+
+# Copy the project into the image
+ADD . /home/dolores
 WORKDIR /home/dolores
-RUN python -m venv /home/dolores/.venv
-RUN . /home/dolores/.venv/bin/activate
-RUN pip install -r /home/dolores/requirements.txt
+
+RUN uv sync --frozen
+
+# Place executables in the environment at the front of the path
+ENV PATH="/home/Dolores/.venv/bin:$PATH"
+
+# Reset the entrypoint, don't invoke `uv`
+ENTRYPOINT []
+
 CMD ["python", "/home/dolores/src/dolores.py"]
