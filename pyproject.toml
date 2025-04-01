@@ -1,6 +1,6 @@
 [project]
 name = "dolores"
-version = "0.1.10"
+version = "0.1.11"
 description = "Discord bot named Dolores"
 readme = "README.md"
 requires-python = ">=3.12"

@@ -50,8 +50,15 @@ async def handle_mention(message):
         clean_message = message.clean_content.replace("@Dolores", "Dolores")
         clean_message = clean_message.replace("@everyone", "everyone")
         clean_message = clean_message.replace("@Testie", "Testie")
+
+        # Remove invalid characters from author name for openai
+        author = message.author.global_name
+        author = re.sub(r"[^a-zA-Z0-9_]", "", author)
+        author = author.replace(" ", "_")
+        author = author.lower()
+
         logger.info(f"Generating reply to following message: {clean_message}")
-        reply = text_instance.generate_reply(message.author.global_name, clean_message)
+        reply = text_instance.generate_reply(author, clean_message)
     else:
         reply = "Hi"
     if reply != "":
@@ -98,10 +105,15 @@ async def handle_question(message):
     ctx = await bot.get_context(message)
 
     text_instance = generation(bot)
+
+    # Remove invalid characters from author name for openai
+    author = message.author.global_name
+    author = re.sub(r"[^a-zA-Z0-9_]", "", author)
+    author = author.replace(" ", "_")
+    author = author.lower()
+
     logger.info(f"Generating explanation for message: {message.clean_content}")
-    explanation = text_instance.generate_explanation(
-        message.author.global_name, message.clean_content
-    )
+    explanation = text_instance.generate_explanation(author, message.clean_content)
     if explanation != "":
         await ctx.reply(explanation)
 
