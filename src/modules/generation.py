@@ -7,14 +7,13 @@ import asyncio
 import json
 import os
 import random
-import sys
 from collections import deque
 
 import discord
 import openai
 import requests
-import tenacity
 from discord.ext import commands
+from pydantic_ai import Agent
 
 from modules._helpers import _basic_retry, _openai_retry
 from modules.logger import logger
@@ -29,8 +28,21 @@ strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
 with open(strings_path, "r") as f:
     json_data = json.load(f)
     system_messages = json_data.get("LLM_SYSTEM_MESSAGES", [])
-    system_messages = [{"role": "system", "content": x} for x in system_messages]
+    # system_messages = [{"role": "system", "content": x} for x in system_messages]
     snarky_comments = json_data.get("SNARKY_COMMENTS", ["Whatever"])
+
+# Set up agent
+dol_agent = Agent(
+    model="gpt-4o",
+    system_prompt=system_messages,
+    model_settings={
+        "frequency_penalty": float(os.environ.get("FREQUENCY_PENALTY", 0.0)),
+        "presence_penalty": float(os.environ.get("PRESENCE_PENALTY", 0.6)),
+        "top_p": float(os.environ.get("TOP_P", 1.0)),
+        "temperature": float(os.environ.get("TEMPERATURE", 0.9)),
+        "max_tokens": int(os.environ.get("MAX_TOKENS", 150)),
+    },
+)
 
 
 class generation(commands.Cog):
@@ -51,33 +63,28 @@ class generation(commands.Cog):
         message_history.append({"role": "user", "content": message, "name": person})
 
         try:
-            # Generate a reply using the OpenAI API
-            response = openai.chat.completions.create(
-                model=os.environ["OPENAI_MODEL"],
-                messages=system_messages + list(message_history),
-                max_tokens=int(os.environ.get("MAX_TOKENS", 150)),
-                temperature=float(os.environ.get("TEMPERATURE", 0.9)),
-                top_p=float(os.environ.get("TOP_P", 1.0)),
-                frequency_penalty=float(os.environ.get("FREQUENCY_PENALTY", 0.0)),
-                presence_penalty=float(os.environ.get("PRESENCE_PENALTY", 0.6)),
+            # Generate a reply using the pydantic_ai Agent
+            # The agent was already set up with the correct system prompts
+            result = dol_agent.run_sync(
+                user_prompt=message, message_history=list(message_history)
             )
-            reply = response.choices[0].message.content
+            reply = result.data
             logger.info(f"Reply generated: {reply}")
             # Add the reply to the message history
             message_history.append({"role": "assistant", "content": reply})
-        except openai.APIConnectionError as e:
-            logger.error(f"Error connecting to the OpenAI API: {e}")
-            reply = "I'm sorry, I'm having trouble connecting to the OpenAI API."
-        except openai.RateLimitError as e:
-            logger.error(f"Error with the OpenAI API rate limit: {e}")
-            reply = "I'm sorry, I've reached my rate limit for now, try again later."
-        except (openai.APIStatusError, openai.APIError) as e:
-            logger.error(f"Error with the OpenAI API: {e}")
-            reply = "I'm sorry, I'm having trouble with the OpenAI API."
         except Exception as e:
             logger.error(f"Error generating reply: {e}")
             logger.error(f"Messages: {system_messages + list(message_history)}")
-            reply = ""
+            if "APIConnectionError" in str(e):
+                reply = "I'm sorry, I'm having trouble connecting to the API."
+            elif "RateLimitError" in str(e):
+                reply = (
+                    "I'm sorry, I've reached my rate limit for now, try again later."
+                )
+            elif any(error in str(e) for error in ["APIStatusError", "APIError"]):
+                reply = "I'm sorry, I'm having trouble with the API."
+            else:
+                reply = ""
 
         return reply
 
