@@ -15,7 +15,7 @@ import discord
 import pomice
 from discord.ext import commands
 
-from modules.logger import logger
+from modules._logger import logger
 
 
 class Player(pomice.Player):
@@ -69,7 +69,7 @@ class Player(pomice.Player):
             self.controller = await self.context.send(embed=embed)
         else:
             embed = discord.Embed(
-                title=f"Now playing",
+                title="Now playing",
                 description=f"[{track.title}]({track.uri})",
             )
             self.controller = await self.context.send(embed=embed)

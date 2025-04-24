@@ -27,20 +27,14 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | Scheduling | NOTION_BASE_URL | Base URL of the Notion API, should be |
 | Scheduling | NOTION_DATABASE_ID | ID for database where stream info is kept |
 | Generation | OPENAI_API_KEY | API Key used for generating replies |
-| Generation | OPENAI_MODEL | Which LLM model to use. |
-| Generation | OPENAI_IMAGE_MODEL | Which image model to use. |
+| Generation | LLM_MODEL | Which LLM model to use. |
+| Generation | IMAGE_MODEL | Which image model to use. |
 | Generation | IMAGE_STYLE | vivid or natural |
 | Generation | MAX_TOKENS | Max number of tokens generated in LLM chat. |
 | Generation | TEMPERATURE | Float value for temperature of LLM chat response. |
 | Generation | TOP_P | Float value alternative to temperature with LLM chat. |
 | Generation | FREQUENCY_PENALTY | Frequency penalty for LLM chat. |
 | Generation | PRESENCE_PENALTY | Presence penalty for LLM chat. |
-| Generation | SMMRY_BASE_URL | base URL for the SMMRY API. |
-| Generation | SMMRY_API_KEY | API key for the SMMRY API |
-| Generation | SMMRY_QUOTE_AVOID | SMMRY boolean option on whether to avoid or include quotes in text that's summarized. Usually true. |
-| Generation | SMMRY_LENGTH | max number of sentences a summary should be. |
-| Generation | SMMRY_MIN_REDUCED_AMOUNT | Minium percentage a news article should be reduced by summarization to post it. |
-| Generation | NEWS_CHANNEL_ID | Not currently used, but was automatically summarizing articles posted into a particular discord channel. |
 
 ## Modules
 

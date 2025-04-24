@@ -14,15 +14,22 @@ from datetime import datetime
 import discord
 import requests
 from discord.ext import commands
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
-from modules._helpers import _basic_retry
-from modules.logger import logger
+from modules._logger import logger
 
-# Construct the path to strings.json
-current_dir = os.path.dirname(os.path.abspath(__file__))
-strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
-with open(strings_path, "r") as f:
-    sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
+_basic_retry = retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    retry=retry_if_exception_type(
+        (requests.exceptions.ConnectionError, requests.exceptions.Timeout)
+    ),
+)
 
 
 class scheduling(commands.Cog):
@@ -32,6 +39,19 @@ class scheduling(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
+        # Construct the path to strings.json
+        with open(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "..",
+                "..",
+                "locales",
+                "strings.json",
+            ),
+            "r",
+        ) as f:
+            self.sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
 
     @_basic_retry
     def get_notion_schedule(self, filter: dict, sorts: list):
@@ -70,7 +90,7 @@ class scheduling(commands.Cog):
     @commands.slash_command(
         description="Returns the next couple streams on the schedule."
     )
-    async def schedule(self, ctx):
+    async def schedule(self, ctx: discord.commands.context.ApplicationContext):
         """
         Returns any streams scheduled for the next week.
         Ex: /schedule
@@ -86,7 +106,7 @@ class scheduling(commands.Cog):
         if response == "":
             await ctx.respond(
                 "Notion's API is giving me an error, so I couldn't get that for you, "
-                + random.choice(sarcastic_names)
+                + random.choice(self.sarcastic_names)
             )
             return
 
@@ -97,7 +117,8 @@ class scheduling(commands.Cog):
         if len(response["results"]) == 0:
             embed.add_field(
                 name="Nada",
-                value="We ain't got shit scheduled, " + random.choice(sarcastic_names),
+                value="We ain't got shit scheduled, "
+                + random.choice(self.sarcastic_names),
             )
         else:
             for elem in response["results"]:
