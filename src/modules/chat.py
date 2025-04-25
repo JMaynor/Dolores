@@ -58,7 +58,7 @@ class chat(commands.Cog):
         :param message: The message to reply to
         :return: The generated reply text
         """
-        reply_text = ""  # Initialize reply_text
+        reply_text = ""
         try:
             # Pass the current history (list of ModelMessage objects)
             run = await self.dol_agent.run(
@@ -78,7 +78,7 @@ class chat(commands.Cog):
             logger.error(f"Current message history: {list(self.message_history)}")
             reply_text = "I'm sorry, I encountered an error while generating a reply."
 
-        return reply_text  # Return the extracted text
+        return reply_text
 
     async def generate_explanation(self, person: str, message: str) -> str:
         """
@@ -88,7 +88,7 @@ class chat(commands.Cog):
         :param message: The message to explain
         :return: The generated explanation text
         """
-        explanation_text = ""  # Initialize explanation_text
+        explanation_text = ""
         explanation_prompt = f"Please explain the following message in a simpler, more informative way, as if for someone who might not understand the context or jargon: '{message}'"
 
         try:
@@ -97,7 +97,7 @@ class chat(commands.Cog):
                 user_prompt=explanation_prompt,
                 message_history=list(self.message_history),
             )
-            explanation_text = run.data  # Get the primary text response
+            explanation_text = run.data
             logger.info(f"Explanation generated: {explanation_text}")
 
             # Update history with the new messages from this run
