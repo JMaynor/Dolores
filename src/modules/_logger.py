@@ -7,7 +7,7 @@ import os
 from logging.handlers import RotatingFileHandler
 
 # Create a custom logger
-logger = logging.getLogger("ezosync")
+logger = logging.getLogger("dolores")
 
 # Set the default log level
 log_level = os.getenv("LOG_LEVEL", "ERROR").upper()

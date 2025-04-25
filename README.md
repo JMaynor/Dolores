@@ -18,23 +18,20 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | --- | --- | --- |
 |  |  |  |
 | Base | DISCORD_API_KEY | The main API key for the bot. |
-| Base | AUDIO_ENABLED | Enables audio cog, when set as true |
-| Base | SCHEDULING_ENABLED | Enables scheduling cog, when set as true |
-| Base | GENERATION_ENABLED | Enables URL sumamrization, LLM replies, image generation. |
 | Base | LOG_LEVEL | Level of logging. Dolores uses DEBUG, INFO, and ERROR. |
 | Scheduling | NOTION_API_KEY | API Key for querying data from Notion |
 | Scheduling | NOTION_VERSION | Version of Notion API used for querying. |
 | Scheduling | NOTION_BASE_URL | Base URL of the Notion API, should be |
 | Scheduling | NOTION_DATABASE_ID | ID for database where stream info is kept |
-| Generation | OPENAI_API_KEY | API Key used for generating replies |
-| Generation | LLM_MODEL | Which LLM model to use. |
-| Generation | IMAGE_MODEL | Which image model to use. |
-| Generation | IMAGE_STYLE | vivid or natural |
-| Generation | MAX_TOKENS | Max number of tokens generated in LLM chat. |
-| Generation | TEMPERATURE | Float value for temperature of LLM chat response. |
-| Generation | TOP_P | Float value alternative to temperature with LLM chat. |
-| Generation | FREQUENCY_PENALTY | Frequency penalty for LLM chat. |
-| Generation | PRESENCE_PENALTY | Presence penalty for LLM chat. |
+| Chat | LLM_MODEL | Which LLM model to use. |
+| Images/Chat | OPENAI_API_KEY | API Key used for generating replies |
+| Images | IMAGE_MODEL | Which image model to use. |
+| Images | IMAGE_STYLE | vivid or natural |
+| Chat | MAX_TOKENS | Max number of tokens generated in LLM chat. |
+| Chat | TEMPERATURE | Float value for temperature of LLM chat response. |
+| Chat | TOP_P | Float value alternative to temperature with LLM chat. |
+| Chat | FREQUENCY_PENALTY | Frequency penalty for LLM chat. |
+| Chat | PRESENCE_PENALTY | Presence penalty for LLM chat. |
 
 ## Modules
 
@@ -45,7 +42,7 @@ Dolores' functionality is divided into several cogs modules. `dolores.py` handle
 | Rolling | Used to roll dice and for any other randomization-based tasks. |
 | Audio | The audio module uses pomice/lavalink to stream audio. Uses a queue system. Largely a copy of the example bot given in pomice's documentation. |
 | Scheduling | The scheduling module is used for tasks related to Notion. Pulling schedule in from a Notion database. |
-| Generation | Module for text and image generation. Currently using chatGPT, but intent is to move to add ability to use self-hosted LLM. Should be able to choose between something the user is hosting or commercially available alternatives. Also handles simple randomized snarky replies. |
+| Chat | Module for text generation. |
 
 ## Licensing
 

@@ -37,7 +37,6 @@ class chat(commands.Cog):
             self.system_messages = self.json_data.get("LLM_SYSTEM_MESSAGES", [])
             self.snarky_comments = self.json_data.get("SNARKY_COMMENTS", ["Whatever"])
 
-        # Set up LLM agent
         self.dol_agent = Agent(
             name="Dolores",
             model=os.environ.get("LLM_MODEL", "gpt-4o"),  # type: ignore
@@ -51,69 +50,71 @@ class chat(commands.Cog):
             },
         )
 
-    def generate_reply(self, person: str, message: str) -> str:
+    async def generate_reply(self, person: str, message: str) -> str:
         """
         Generates a reply to a given message
 
-        :param person: The person who sent the message
+        :param person: The person who sent the message (Note: pydantic_ai doesn't directly use this 'person' param in history yet)
         :param message: The message to reply to
-        :return: The generated reply
+        :return: The generated reply text
         """
-        # Add the user's message to the message history as a string
-        self.message_history.append(message)
-
+        reply_text = ""  # Initialize reply_text
         try:
-            # Generate a reply using the pydantic_ai Agent
-            result = self.dol_agent.run_sync(
+            # Pass the current history (list of ModelMessage objects)
+            run = await self.dol_agent.run(
                 user_prompt=message, message_history=list(self.message_history)
             )
-            reply = result.data
-            logger.info(f"Reply generated: {reply}")
+            reply_text = run.data  # Get the primary text response
+            logger.info(f"Reply generated: {reply_text}")
 
-            # Add the reply to the message history
-            self.message_history.append(reply)
+            # Update history with the new messages from this run
+            # run.new_messages() typically contains [UserPromptPart(...), TextPart(...)]
+            new_messages = run.new_messages()
+            self.message_history.extend(new_messages)
 
         except Exception as e:
-            logger.error(f"Error generating reply with pydantic-ai: {e}")
+            logger.error(f"Error generating reply: {e}")
+            # Log history if error occurs (history contains ModelMessage objects now)
             logger.error(f"Current message history: {list(self.message_history)}")
-            reply = "I'm sorry, I encountered an error while generating a reply."
+            reply_text = "I'm sorry, I encountered an error while generating a reply."
 
-        return reply
+        return reply_text  # Return the extracted text
 
-    def generate_explanation(self, person: str, message: str) -> str:
+    async def generate_explanation(self, person: str, message: str) -> str:
         """
         Generates a simpler more informative explanation to a given message
 
-        :param person: The person who sent the message
+        :param person: The person who sent the message (Note: pydantic_ai doesn't directly use this 'person' param in history yet)
         :param message: The message to explain
-        :return: The generated explanation
+        :return: The generated explanation text
         """
-        # Add the user's message to the message history
-        self.message_history.append(message)
-
-        # Construct a prompt that asks the agent to explain the last message
+        explanation_text = ""  # Initialize explanation_text
         explanation_prompt = f"Please explain the following message in a simpler, more informative way, as if for someone who might not understand the context or jargon: '{message}'"
 
         try:
-            # Use the agent to generate the explanation
-            result = self.dol_agent.run_sync(
+            # Pass the current history (list of ModelMessage objects)
+            run = await self.dol_agent.run(
                 user_prompt=explanation_prompt,
                 message_history=list(self.message_history),
             )
-            explanation = result.data
-            logger.info(f"Explanation generated: {explanation}")
-            # Add the explanation to the message history
-            self.message_history.append(explanation)
+            explanation_text = run.data  # Get the primary text response
+            logger.info(f"Explanation generated: {explanation_text}")
+
+            # Update history with the new messages from this run
+            new_messages = run.new_messages()
+            self.message_history.extend(new_messages)
+
         except Exception as e:
-            logger.error(f"Error generating explanation with pydantic-ai: {e}")
+            logger.error(f"Error generating explanation: {e}")
+            # Log history if error occurs (history contains ModelMessage objects now)
             logger.error(f"Current message history: {list(self.message_history)}")
-            explanation = (
+            explanation_text = (
                 "I'm sorry, I encountered an error while generating an explanation."
             )
 
-        return explanation
+        return explanation_text  # Return the extracted text
 
-    def generate_snarky_comment(self) -> str:
+    async def generate_snarky_comment(self) -> str:
         """
         Generates a snarky comment to be used when a user tries to
         use a command that does not exist.

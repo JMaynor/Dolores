@@ -94,7 +94,7 @@ async def handle_mention(message):
         author = author.lower() or "discord_user"  # Ensure not empty
 
         logger.info(f"Generating reply to following message: {clean_message}")
-        reply = getattr(chat_cog, "generate_reply")(author, clean_message)
+        reply = await getattr(chat_cog, "generate_reply")(author, clean_message)
     else:
         reply = "Hi"
 
@@ -122,7 +122,7 @@ async def handle_question(message):
         logger.info(f"Generating explanation for message: {message.clean_content}")
         generate_explanation = getattr(chat_cog, "generate_explanation", None)
         if generate_explanation:
-            explanation = generate_explanation(author, message.clean_content)
+            explanation = await generate_explanation(author, message.clean_content)
             if explanation:
                 await ctx.reply(explanation)
 
