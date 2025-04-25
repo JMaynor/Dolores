@@ -26,21 +26,18 @@ services:
       - TWITCH_BASE_URL=${TWITCH_BASE_URL}
       - TWITCH_BROADCASTER_ID=${TWITCH_BROADCASTER_ID}
       - TWITCH_BROADCASTER_NAME=${TWITCH_BROADCASTER_NAME}
-      # Generation
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Chat
+      # you'd also want to add an env var for the LLM model that you're using.
       - LLM_MODEL=${LLM_MODEL}
-      - IMAGE_MODEL=${IMAGE_MODEL}
-      - IMAGE_STYLE=${IMAGE_STYLE}
       - MAX_TOKENS=${MAX_TOKENS}
       - TEMPERATURE=${TEMPERATURE}
       - TOP_P=${TOP_P}
       - FREQUENCY_PENALTY=${FREQUENCY_PENALTY}
       - PRESENCE_PENALTY=${PRESENCE_PENALTY}
-      - SMMRY_BASE_URL=${SMMRY_BASE_URL}
-      - SMMRY_API_KEY=${SMMRY_API_KEY}
-      - SMMRY_QUOTE_AVOID=${SMMRY_QUOTE_AVOID}
-      - SMMRY_LENGTH=${SMMRY_LENGTH}
-      - SMMRY_MIN_REDUCED_AMOUNT=${SMMRY_MIN_REDUCED_AMOUNT}
+      # Images
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - IMAGE_MODEL=${IMAGE_MODEL}
+      - IMAGE_STYLE=${IMAGE_STYLE}
     depends_on:
       - lavalink
     networks:
