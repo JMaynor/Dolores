@@ -39,7 +39,7 @@ class chat(commands.Cog):
 
         self.dol_agent = Agent(
             name="Dolores",
-            model=os.environ.get("LLM_MODEL", "gpt-4o"),  # type: ignore
+            model=os.environ["LLM_MODEL"],  # type: ignore
             system_prompt=self.system_messages,
             model_settings={
                 "frequency_penalty": float(os.environ.get("FREQUENCY_PENALTY", 0.0)),

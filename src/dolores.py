@@ -40,7 +40,7 @@ def check_required_vars(var_list):
 
 # Define the minimum required environment variables for each module to function.
 AUDIO_REQUIRED_VARS = ["LAVALINK_HOST", "LAVALINK_PORT", "LAVALINK_PASSWORD"]
-CHAT_REQUIRED_VARS = []
+CHAT_REQUIRED_VARS = ["LLM_MODEL"]
 IMAGES_REQUIRED_VARS = ["OPENAI_API_KEY", "IMAGE_MODEL"]
 ROLLING_REQUIRED_VARS = []  # No req vars for rolling, uses built-in python libs
 SCHEDULING_REQUIRED_VARS = [
