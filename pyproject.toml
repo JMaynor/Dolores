@@ -5,7 +5,7 @@ description = "Discord bot named Dolores"
 readme = "README.md"
 requires-python = "==3.12"
 dependencies = [
-    "apprise==1.9.2",
+    "apprise==1.9.3",
     "openai==1.61.1",
     "pomice==2.9.2",
     "py-cord[voice]==2.6.1",
