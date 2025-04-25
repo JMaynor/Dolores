@@ -3,12 +3,13 @@ name = "dolores"
 version = "0.1.11"
 description = "Discord bot named Dolores"
 readme = "README.md"
-requires-python = "==3.12"
+requires-python = ">=3.13"
 dependencies = [
     "apprise==1.9.2",
+    "hikari>=2.3.0",
+    "hikari-lightbulb>=3.0.0a10",
     "openai==1.61.1",
     "pomice==2.9.2",
-    "py-cord[voice]==2.6.1",
     "pydantic-ai>=0.0.29",
     "python-dotenv==1.0.1",
     "requests==2.32.3",

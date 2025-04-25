@@ -1,152 +1,212 @@
+# rolling_hikari.py
 """
-The basic module of functionality. Provides some simple randomization
-functions for rolling dice.
+Hikari/Lightbulb version of the rolling module.
+Provides randomization functions for rolling dice.
 """
 
 import json
 import os
 import random
 
-from discord.ext import commands
+import hikari
+import lightbulb
 
-# Construct the path to strings.json
-current_dir = os.path.dirname(os.path.abspath(__file__))
-strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
-with open(strings_path, "r") as f:
-    sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
-
-
-class rolling(commands.Cog):
-    """
-    Commands for rolling dice.
-    """
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.slash_command(
-        description="A catch-all command for rolling any number of any-sided dice."
+try:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # Adjust path relative to this file if needed, assuming it's in src/modules/
+    strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
+    with open(strings_path, "r") as f:
+        sarcastic_names = json.load(f).get(
+            "SARCASTIC_NAMES", ["buddy"]
+        )  # Default added
+except FileNotFoundError:
+    print(
+        f"Warning: strings.json not found at {strings_path}. Using default sarcastic name."
     )
-    async def roll(self, ctx, *, dice_batches: str):
-        """
-        Rolls a dice in NdN format.
-        Ex: /roll 5d10 3d8 2d4
-        Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
+    sarcastic_names = ["buddy"]
+except Exception as e:
+    print(f"Error loading strings.json: {e}")
+    sarcastic_names = ["buddy"]
 
-        :param dice_batches: A string of dice rolls in NdN format.
-        """
+
+rolling = lightbulb.Group("rolling", "Rolling commands group")
+
+
+@rolling.commands
+class RollDice(
+    lightbulb.SlashCommand, name="roll", description="Rolls dice in NdN format."
+):
+    """
+    Rolls dice in NdN format.
+    """
+
+    dice_batches = lightbulb.string("dice_batches", "Dice to roll (e.g., 5d10 3d8 2d4)")
+
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
         await ctx.defer()
         final_formatted_rolls = []
-        for dice_batch in dice_batches.split():
+        dice_batches_str: str = self.dice_batches
+
+        for dice_batch in dice_batches_str.split():
             try:
                 rolls, limit = map(int, dice_batch.split("d"))
+                if rolls <= 0 or limit <= 0:
+                    raise ValueError("Number of rolls and limit must be positive.")
             except ValueError:
-                break
-            rolls_result = [str(random.randint(1, limit)) for r in range(rolls)]
-            if len(rolls_result) > 500:
+                await ctx.respond(
+                    f"Invalid format in '{dice_batch}'. Use NdN format, {random.choice(sarcastic_names)}."
+                )
+                return  # Stop processing on first error
+
+            if rolls > 500:  # Check before generating rolls
                 await ctx.respond(
                     random.choice(
                         ["I ain't rollin all that for you...", "Absolutely not.", "No."]
                     )
                 )
                 return
-            formatted_rolls = "(d" + str(limit) + ")  " + ", ".join(rolls_result)
-            if limit != 20 and len(rolls_result) >= 3:
-                formatted_rolls = (
-                    formatted_rolls
-                    + "    Sum: "
-                    + str(sum([int(x) for x in rolls_result]))
-                )
+
+            rolls_result = [str(random.randint(1, limit)) for _ in range(rolls)]
+
+            formatted_rolls = f"(d{limit})  {', '.join(rolls_result)}"
+            # Add sum for non-d20 rolls with 3+ dice
+            if limit != 20 and rolls >= 3:
+                try:
+                    roll_sum = sum(int(x) for x in rolls_result)
+                    formatted_rolls += f"    Sum: {roll_sum}"
+                except ValueError:  # Should not happen if randint works
+                    pass
             final_formatted_rolls.append(formatted_rolls)
-        if len(final_formatted_rolls) > 0:
-            await ctx.respond("\n".join(final_formatted_rolls))
+
+        if final_formatted_rolls:
+            response = "\n".join(final_formatted_rolls)
+            # Discord message length limit is 2000 characters
+            if len(response) > 2000:
+                await ctx.respond("Result too long to display!")
+            else:
+                await ctx.respond(response)
         else:
+            # This case should ideally be caught by the ValueError check earlier
             await ctx.respond(
-                f"Format has to be in NdN, {random.choice(sarcastic_names)}."
+                f"No valid dice batches provided. Format has to be in NdN, {random.choice(sarcastic_names)}."
+            )
+
+
+# --- Secret Roll Command ---
+@roll_group.command
+@lightbulb.option("dice_batches", "Dice to roll secretly (e.g., 5d10 3d8)", str)
+@lightbulb.command("secret_dice", "Rolls dice secretly (DM only).")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def sroll_dice(ctx: lightbulb.Context) -> None:
+    """Rolls dice secretly."""
+    await ctx.defer(flags=hikari.MessageFlag.EPHEMERAL)
+    final_formatted_rolls = []
+    dice_batches_str: str = ctx.options.dice_batches
+
+    for dice_batch in dice_batches_str.split():
+        try:
+            rolls, limit = map(int, dice_batch.split("d"))
+            if rolls <= 0 or limit <= 0:
+                raise ValueError("Number of rolls and limit must be positive.")
+        except ValueError:
+            await ctx.respond(
+                f"Invalid format in '{dice_batch}'. Use NdN format, {random.choice(sarcastic_names)}.",
+                flags=hikari.MessageFlag.EPHEMERAL,
             )
             return
 
-    @commands.slash_command(
-        description="A catch-all command for rolling any number of any-sided dice. This one for DMs."
-    )
-    async def sroll(self, ctx, *, dice_batches: str):
-        """
-        Rolls a secret dice in NdN format.
-        Ex: /sroll 5d10 3d8 2d4
-        Dolores would roll 5 d10s, 3 d8s, 2 d4s and return the result of each.
+        if rolls > 500:
+            await ctx.respond(
+                random.choice(
+                    ["I ain't rollin all that for you...", "Absolutely not.", "No."]
+                ),
+                flags=hikari.MessageFlag.EPHEMERAL,
+            )
+            return
 
-        :param dice_batches: A string of dice rolls in NdN format.
-        """
-        await ctx.defer(ephemeral=True)
-        final_formatted_rolls = []
-        for dice_batch in dice_batches.split():
+        rolls_result = [str(random.randint(1, limit)) for _ in range(rolls)]
+
+        formatted_rolls = f"(d{limit})  {', '.join(rolls_result)}"
+        if limit != 20 and rolls >= 3:
             try:
-                rolls, limit = map(int, dice_batch.split("d"))
+                roll_sum = sum(int(x) for x in rolls_result)
+                formatted_rolls += f"    Sum: {roll_sum}"
             except ValueError:
-                break
-            rolls_result = [str(random.randint(1, limit)) for r in range(rolls)]
-            if len(rolls_result) > 500:
-                await ctx.respond(
-                    random.choice(
-                        ["I ain't rollin all that for you...", "Absolutely not.", "No."]
-                    ),
-                    ephemeral=True,
-                )
-                return
-            formatted_rolls = "(d" + str(limit) + ")  " + ", ".join(rolls_result)
-            if limit != 20 and len(rolls_result) >= 3:
-                formatted_rolls = (
-                    formatted_rolls
-                    + "    Sum: "
-                    + str(sum([int(x) for x in rolls_result]))
-                )
-            final_formatted_rolls.append(formatted_rolls)
-        if len(final_formatted_rolls) > 0:
-            await ctx.respond("\n".join(final_formatted_rolls), ephemeral=True)
-        else:
+                pass
+        final_formatted_rolls.append(formatted_rolls)
+
+    if final_formatted_rolls:
+        response = "\n".join(final_formatted_rolls)
+        if len(response) > 2000:
             await ctx.respond(
-                f"Format has to be in NdN, {random.choice(sarcastic_names)}.",
-                ephemeral=True,
+                "Result too long to display!", flags=hikari.MessageFlag.EPHEMERAL
             )
-            return
+        else:
+            await ctx.respond(response, flags=hikari.MessageFlag.EPHEMERAL)
+    else:
+        await ctx.respond(
+            f"No valid dice batches provided. Format has to be in NdN, {random.choice(sarcastic_names)}.",
+            flags=hikari.MessageFlag.EPHEMERAL,
+        )
 
-    @commands.slash_command(
-        description="For when you can't make a simple decision to save your life."
+
+# --- Choose Command (Standalone) ---
+@plugin.command
+@lightbulb.option(
+    "choices", "Choices separated by spaces (use quotes for multi-word choices)", str
+)
+@lightbulb.command("choose", "For when you can't make a simple decision.")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def choose(ctx: lightbulb.Context) -> None:
+    """Chooses between multiple choices."""
+    await ctx.defer()
+    # Lightbulb might parse quoted strings as single arguments,
+    # but splitting by space is the original behavior.
+    # Consider using multiple options or a converter for more robust parsing if needed.
+    choices_str: str = ctx.options.choices
+    choice_list = choices_str.split()
+    if not choice_list:
+        await ctx.respond(
+            "You need to give me choices!", flags=hikari.MessageFlag.EPHEMERAL
+        )
+        return
+    await ctx.respond(random.choice(choice_list))
+
+
+# --- d20 Command ---
+@roll_group.command
+@lightbulb.command("d20", "Rolls a single d20.")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def roll_d20(ctx: lightbulb.Context) -> None:
+    """Rolls a single d20."""
+    await ctx.defer()
+    # 1 in million chance to roll a goon.
+    if random.randint(1, 1000000) == 1:
+        await ctx.respond("Goon.")
+    else:
+        await ctx.respond(f"(d20)  {random.randint(1, 20)}")
+
+
+# --- Secret d20 Command ---
+@roll_group.command
+@lightbulb.command("secret_d20", "Rolls a single d20 secretly.")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def sroll_d20(ctx: lightbulb.Context) -> None:
+    """Rolls a single d20 secretly."""
+    await ctx.defer(flags=hikari.MessageFlag.EPHEMERAL)
+    # No goon check for secret rolls? (Following original logic)
+    await ctx.respond(
+        f"(d20)  {random.randint(1, 20)}", flags=hikari.MessageFlag.EPHEMERAL
     )
-    async def choose(self, ctx, *, choices: str):
-        """
-        Chooses between multiple choices.
-        Ex: /choose "Kill the king" "Save the king" "Screw the King"
-        Dolores would randomly choose one of the options you give her and return the result.
 
-        :param choices: A string of choices separated by spaces.
-        """
-        await ctx.defer()
-        await ctx.respond(random.choice(choices.split()))
 
-    @commands.slash_command(
-        description="Modified dice-roll command to roll a single d20. Short and sweet."
-    )
-    async def d20(self, ctx):
-        """
-        Rolls a single d20
-        Ex: -d20
-        Dolores rolls a single d20 and returns the result.
-        """
-        await ctx.defer()
-        # 1 in million chance to roll a goon.
-        if random.randint(1, 1000000) == 1:
-            await ctx.respond("Goon.")
-        await ctx.respond("(d20)  " + str(random.randint(1, 20)))
+# --- Required load/unload functions for Lightbulb extensions ---
+def load(bot: lightbulb.BotApp) -> None:
+    bot.add_plugin(plugin)
+    print("Rolling plugin loaded.")
 
-    @commands.slash_command(
-        description="Modified dice-roll command to roll a single d20. Short and sweet. Also secret."
-    )
-    async def sd20(self, ctx):
-        """
-        Rolls a single d20
-        Ex: /sd20
-        Dolores rolls a single d20 and returns the result secretly.
-        """
-        await ctx.defer(ephemeral=True)
-        await ctx.respond("(d20)  " + str(random.randint(1, 20)), ephemeral=True)
+
+def unload(bot: lightbulb.BotApp) -> None:
+    bot.remove_plugin(plugin)
+    print("Rolling plugin unloaded.")
