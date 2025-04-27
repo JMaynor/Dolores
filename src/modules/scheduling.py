@@ -7,13 +7,14 @@ between Notion and Twitch. Not yet implemented.
 """
 
 import json
+import logging
 import os
 import random
 from datetime import datetime
 
-import discord
+import hikari
+import lightbulb
 import requests
-from discord.ext import commands
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -21,39 +22,42 @@ from tenacity import (
     wait_exponential,
 )
 
-from modules._logger import logger
+logger = logging.getLogger(__name__)
 
-_basic_retry = retry(
-    stop=stop_after_attempt(5),
-    wait=wait_exponential(multiplier=1, min=4, max=10),
-    retry=retry_if_exception_type(
-        (requests.exceptions.ConnectionError, requests.exceptions.Timeout)
-    ),
-)
+try:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # Adjust path relative to this file if needed, assuming it's in src/modules/
+    strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
+    with open(strings_path, "r") as f:
+        sarcastic_names = json.load(f).get(
+            "SARCASTIC_NAMES", ["buddy"]
+        )  # Default added
+except FileNotFoundError:
+    logger.warning(
+        f"strings.json not found at {strings_path}. Using default sarcastic name."
+    )
+    sarcastic_names = ["buddy"]
+except Exception as e:
+    logger.error(f"Error loading strings.json: {e}. Using default sarcastic name.")
+    sarcastic_names = ["buddy"]
 
 
-class scheduling(commands.Cog):
+loader = lightbulb.Loader()
+
+
+@loader.command
+class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the schedule"):
     """
-    Commands for getting and writing schedule info.
+    Returns streams scheduled for the next week.
     """
 
-    def __init__(self, bot):
-        self.bot = bot
-
-        # Construct the path to strings.json
-        with open(
-            os.path.join(
-                os.path.dirname(os.path.abspath(__file__)),
-                "..",
-                "..",
-                "locales",
-                "strings.json",
-            ),
-            "r",
-        ) as f:
-            self.sarcastic_names = json.load(f).get("SARCASTIC_NAMES", [])
-
-    @_basic_retry
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type(
+            (requests.exceptions.ConnectionError, requests.exceptions.Timeout)
+        ),
+    )
     def get_notion_schedule(self, filter: dict, sorts: list):
         """
         Generic function that returns a given number of streams from the Notion schedule.
@@ -81,23 +85,17 @@ class scheduling(commands.Cog):
                 f"Error {e.response.status_code}, could not get schedule data: {e}"
             )
             return ""
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            raise
         except requests.exceptions.RequestException as e:
             logger.error(f"Error, could not get schedule data: {e}")
             return ""
 
         return response.json()
 
-    @commands.slash_command(
-        description="Returns the next couple streams on the schedule."
-    )
-    async def schedule(self, ctx: discord.commands.context.ApplicationContext):
-        """
-        Returns any streams scheduled for the next week.
-        Ex: /schedule
-        Dolores will return an embed of stream dates, names, and people.
-        """
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
         await ctx.defer()
-
         filter = {"property": "Date", "date": {"next_week": {}}}
         sorts = [{"property": "Date", "direction": "ascending"}]
 
@@ -106,19 +104,19 @@ class scheduling(commands.Cog):
         if response == "":
             await ctx.respond(
                 "Notion's API is giving me an error, so I couldn't get that for you, "
-                + random.choice(self.sarcastic_names)
+                + random.choice(sarcastic_names)
             )
             return
 
-        embed = discord.Embed(
+        embed = hikari.Embed(
             title="Stream Schedule", description="Streams within the next week."
         )
+
         # Check for no streams
         if len(response["results"]) == 0:
             embed.add_field(
                 name="Nada",
-                value="We ain't got shit scheduled, "
-                + random.choice(self.sarcastic_names),
+                value="We ain't got shit scheduled, " + random.choice(sarcastic_names),
             )
         else:
             for elem in response["results"]:

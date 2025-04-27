@@ -3,11 +3,12 @@ This module contains the Images cog for generating images
 """
 
 import asyncio
+import logging
 import os
 from typing import Literal
 
-import discord
-from discord.ext import commands
+import hikari
+import lightbulb
 from openai import (
     APIConnectionError,
     APIError,
@@ -16,43 +17,42 @@ from openai import (
     RateLimitError,
 )
 
-from modules._logger import logger
+logger = logging.getLogger(__name__)
+
+loader = lightbulb.Loader()
+
+async_openai_client = AsyncOpenAI()
 
 
-class images(commands.Cog):
+@loader.command
+class Images(lightbulb.SlashCommand, name="images", description="Generate images"):
     """
-    Commands for generating images.
+    Generates an image based on a given prompt and posts as a reply.
+    Ex: /generate_image A cat sitting on a table
+    Dolores would generate an image of a cat sitting on a table.
+
+    :param prompt: A string prompt for generating an image.
     """
 
-    def __init__(self, bot):
-        self.bot = bot
-        self.async_openai_client = AsyncOpenAI()
+    prompt = lightbulb.string("prompt", "Prompt for image generation")
 
-    @commands.slash_command(description="Generates an image based on a given prompt.")
-    async def generate_image(self, ctx, *, prompt: str):
-        """
-        Generates an image based on a given prompt and posts as a reply.
-        Ex: /generate_image A cat sitting on a table
-        Dolores would generate an image of a cat sitting on a table.
-
-        :param prompt: A string prompt for generating an image.
-        """
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
         await ctx.defer()
-
         try:
             style_input = os.environ.get("IMAGE_STYLE", "natural").lower()
             style: Literal["natural", "vivid"] = "natural"
             if style_input == "vivid":
                 style = "vivid"
 
-            response = await self.async_openai_client.images.generate(
-                prompt=prompt,
+            response = await async_openai_client.images.generate(
+                prompt=self.prompt,
                 model=os.environ["IMAGE_MODEL"],
                 style=style,
                 n=1,
                 response_format="url",
                 size="1792x1024",
-                user=str(ctx.author.id),
+                user=str(ctx.user.id),
             )
             image_url = response.data[0].url
             logger.info(f"Generated image URL: {image_url}")
@@ -80,9 +80,9 @@ class images(commands.Cog):
         await asyncio.sleep(1)
 
         try:
-            embed = discord.Embed()
-            embed.description = prompt
-            embed.set_image(url=image_url)
+            embed = hikari.Embed()
+            embed.description = self.prompt
+            embed.set_image(image_url)
             await ctx.respond(embed=embed)
         except Exception as e:
             logger.error(e)

@@ -4,23 +4,22 @@ Module contains code that deals with generating text responses using an LLM.
 """
 
 import json
+import logging
 import os
 import random
 from collections import deque
 
-from discord.ext import commands
 from pydantic_ai import Agent
 
-from modules._logger import logger
+logger = logging.getLogger(__name__)
 
 
-class chat(commands.Cog):
+class chat:
     """
     Commands for generating dialogue.
     """
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self):
         self.message_history = deque(maxlen=10)
 
         with open(

@@ -8,9 +8,6 @@ services:
     environment:
       # Main Settings
       - DISCORD_API_KEY=${DISCORD_API_KEY}
-      - AUDIO_ENABLED=${AUDIO_ENABLED}
-      - SCHEDULING_ENABLED=${SCHEDULING_ENABLED}
-      - GENERATION_ENABLED=${GENERATION_ENABLED}
       - LOG_LEVEL=${LOG_LEVEL}
       # Audio
       - LAVALINK_HOST=${LAVALINK_HOST}
