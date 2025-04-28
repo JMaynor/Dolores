@@ -6,10 +6,11 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "apprise>=1.9.3",
-    "hikari==2.2.1",
-    "hikari-lightbulb>=3.0.0a18",
+    "hikari>=2.3.1",
+    "hikari-lightbulb>=3.0.0a19",
+    "hikari-miru>=4.2.0",
+    "lavalink>=5.9.0",
     "openai>=1.75.0",
-    "pomice==2.9.2",
     "pydantic-ai>=0.0.29",
     "python-dotenv>=1.1.0",
     "requests==2.32.3",

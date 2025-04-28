@@ -21,6 +21,7 @@ if os.path.exists(
 from src._logger import logger
 from src.modules.chat import chat
 
+AUDIO_REQUIRED_VARS = ["LAVALINK_HOST", "LAVALINK_PORT", "LAVALINK_PASSWORD"]
 CHAT_REQUIRED_VARS = []
 IMAGES_REQUIRED_VARS = ["OPENAI_API_KEY", "IMAGE_MODEL"]
 ROLLING_REQUIRED_VARS = []
@@ -125,7 +126,6 @@ async def on_reaction_add(event: hikari.ReactionAddEvent):
     on_reaction_add is a base function for handling when a reaction is added
     to a message. Currently used to check for question mark reaction
     """
-    # TODO Add check for if chat module has been loaded once hikari version of that is added
     if event.is_for_emoji("❓") or event.is_for_emoji("❔"):
         await handle_question(event.message_id)
 
