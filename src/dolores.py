@@ -18,7 +18,6 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if os.path.exists(os.path.join(current_dir, "..", ".env")):
     load_dotenv()
 
-from src import modules
 from src._logger import logger
 from src.modules.chat import chat
 
@@ -136,7 +135,9 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     Called while bot is starting up. Adds commands to it. Any other initialization-related
     things that need to be done before the bot connects to discord should be done here.
     """
-    await client.load_extensions_from_package(modules)
+    await client.load_extensions(
+        "modules.images", "modules.rolling", "modules.scheduling"
+    )
     await client.start()
 
 
