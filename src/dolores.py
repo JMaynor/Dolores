@@ -12,18 +12,36 @@ import hikari.events.reaction_events
 import lightbulb
 from dotenv import load_dotenv
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
 # Check if .env file present, if so load vars from it
-if os.path.exists(os.path.join(current_dir, "..", ".env")):
+if os.path.exists(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+):
     load_dotenv()
 
 from src._logger import logger
 from src.modules.chat import chat
 
+CHAT_REQUIRED_VARS = []
+IMAGES_REQUIRED_VARS = ["OPENAI_API_KEY", "IMAGE_MODEL"]
+ROLLING_REQUIRED_VARS = []
+SCHEDULING_REQUIRED_VARS = []
+
 bot = hikari.GatewayBot(intents=hikari.Intents.ALL, token=os.environ["DISCORD_API_KEY"])
 client = lightbulb.client_from_app(bot)
-chat_inst = chat()
+
+
+def check_for_required_env_vars(vars: list[str]) -> bool:
+    """
+    Checks that the list of envvars provided are present in the environment.
+    Returns True if all are present, False if any are missing.
+    """
+    missing_vars = [var for var in vars if not os.environ.get(var)]
+    if missing_vars:
+        logger.error(
+            f"Missing required environment variables: {', '.join(missing_vars)}"
+        )
+        return False
+    return True
 
 
 async def handle_mention(message: hikari.Message):
@@ -31,10 +49,12 @@ async def handle_mention(message: hikari.Message):
     handle_mention is a coroutine that handles the bot's response to being mentioned
     in a message. It will generate a reply to the message and send it to the channel
     where the message was posted.
-    TODO: Add a check to see if chat module is loaded before trying to use it.
     """
     message_content = message.content
     if message_content is None:
+        return
+
+    if chat_inst is None:
         return
 
     message_content = message_content.replace("@Dolores", "Dolores")
@@ -61,10 +81,12 @@ async def handle_question(message) -> None:
     When someone reacts with a question mark to a message, Dolores will attempt
     to explain the contents of the message in an informative simpler way.
     Calls generate_explanation in the generation module.
-    TODO: Add a check to see if chat module is loaded before trying to use it.
     """
     message_content = message.content
     if message_content is None:
+        return
+
+    if chat_inst is None:
         return
 
     # Remove invalid characters from author name
@@ -135,9 +157,17 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     Called while bot is starting up. Adds commands to it. Any other initialization-related
     things that need to be done before the bot connects to discord should be done here.
     """
-    await client.load_extensions(
-        "modules.images", "modules.rolling", "modules.scheduling"
-    )
+
+    if check_for_required_env_vars(IMAGES_REQUIRED_VARS):
+        logger.info("Loading images module")
+        await client.load_extensions("modules.images")
+    if check_for_required_env_vars(ROLLING_REQUIRED_VARS):
+        logger.info("Loading rolling module")
+        await client.load_extensions("modules.rolling")
+    if check_for_required_env_vars(SCHEDULING_REQUIRED_VARS):
+        logger.info("Loading scheduling module")
+        await client.load_extensions("modules.scheduling")
+
     await client.start()
 
 
@@ -145,4 +175,8 @@ if __name__ == "__main__":
     """
     Main program entry point
     """
+    if check_for_required_env_vars(CHAT_REQUIRED_VARS):
+        chat_inst = chat()
+    else:
+        chat_inst = None
     bot.run()
