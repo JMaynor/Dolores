@@ -7,7 +7,7 @@ from sources import Spotify, Deezer
 from utils import player_bar, format_time, trim
 
 DELETE_AFTER = 60
-plugin = lightbulb.Group("Queue", "Queue commands")
+
 
 DESC_TEMPL = (
     "[{title}]({uri})\n"
@@ -17,8 +17,10 @@ DESC_TEMPL = (
     "Requested <@!{requester}>\n"
 )
 
+group = lightbulb.Group("Queue", "Queue commands")
 
-@plugin.command()
+
+@group.register()
 @lightbulb.add_checks(lightbulb.guild_only, player_playing)
 @lightbulb.command("now", "Display current track")
 @lightbulb.implements(lightbulb.SlashCommand)
