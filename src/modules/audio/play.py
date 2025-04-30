@@ -2,7 +2,7 @@ import hikari
 import lavalink
 import lightbulb
 from base import _get_tracks, _play
-from checks import valid_user_voice
+from hooks import valid_user_voice
 from choice import AutocompleteChoice
 from lavasearch import LavasearchResult
 from sources import Deezer, SoundCloud, Source, Spotify, YouTube
@@ -12,7 +12,7 @@ DELETE_AFTER = 60
 SOURCES = [Spotify, Deezer, YouTube, SoundCloud]
 QUERY_TYPES = ["track", "artist", "playlist", "album"]
 
-plugin = lightbulb.Plugin("Play", "Commands to play music")
+group = lightbulb.Group("play", "Play music commands")
 
 
 def play_checks_options(

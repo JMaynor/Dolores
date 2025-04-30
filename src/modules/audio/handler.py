@@ -2,9 +2,10 @@ import logging
 
 import lavalink
 import miru
-from bot.logger.custom_logger import track_logger
 from events import VoiceServerUpdate, VoiceStateUpdate
 from view import PlayerView
+
+logger = logging.getLogger(__name__)
 
 
 class EventHandler:
@@ -28,7 +29,7 @@ class EventHandler:
             try:
                 await delete_message(channel_id, message_id)
             except Exception as e:
-                logging.error("Failed to delete old player: %s", e)
+                logger.error("Failed to delete old player: %s", e)
                 return
         player.message_id, player.text_channel = None, None
 
@@ -49,21 +50,21 @@ class EventHandler:
     async def track_start(self, event: lavalink.TrackStartEvent):
         await self.update_player(event)
         track, guild_id = event.track, event.player.guild_id
-        track_logger.info("%s - %s - %s", track.title, track.author, track.uri)
-        logging.info("Track started on guild: %s", guild_id)
+        logger.info("%s - %s - %s", track.title, track.author, track.uri)
+        logger.info("Track started on guild: %s", guild_id)
 
     @lavalink.listener(lavalink.TrackEndEvent)
     async def track_end(self, event: lavalink.TrackEndEvent):
-        logging.info("Track finished on guild: %s", event.player.guild_id)
+        logger.info("Track finished on guild: %s", event.player.guild_id)
 
     @lavalink.listener(lavalink.QueueEndEvent)
     async def queue_finish(self, event: lavalink.QueueEndEvent):
         await self.update_player(event)
-        logging.info("Queue finished on guild: %s", event.player.guild_id)
+        logger.info("Queue finished on guild: %s", event.player.guild_id)
 
     @lavalink.listener(lavalink.TrackExceptionEvent)
     async def track_exception(self, event: lavalink.TrackExceptionEvent):
-        logging.warning(
+        logger.warning(
             "Track exception event happened on guild: %s", event.player.guild_id
         )
 
@@ -92,7 +93,7 @@ class EventHandler:
             if not bot_state or user_id == bot_id:
                 if not bot_state and user_id == bot_id:  # bot is disconnected
                     await player.stop()
-                    logging.info(
+                    logger.info(
                         "Client disconnected from voice on guild: %s",
                         event.cur_state.guild_id,
                     )
@@ -126,14 +127,14 @@ class EventHandler:
             if prev_state.is_self_deafened and not cur_state.is_self_deafened:
                 if player and player.paused:
                     await player.set_pause(False)
-                    logging.info("Track resumed on guild: %s", guild_id)
+                    logger.info("Track resumed on guild: %s", guild_id)
 
             # pause player when user deafens
             if not prev_state.is_self_deafened and cur_state.is_self_deafened:
                 if not player or not player.is_playing:
                     return
                 await player.set_pause(True)
-                logging.info("Track paused on guild: %s", guild_id)
+                logger.info("Track paused on guild: %s", guild_id)
 
         await self.bot.d.lavalink.voice_update_handler(
             {

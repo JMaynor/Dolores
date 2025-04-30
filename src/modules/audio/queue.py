@@ -1,10 +1,9 @@
 import hikari
 import lightbulb
-
-from checks import valid_user_voice, player_playing
+from hooks import player_playing, valid_user_voice
 from choice import AutocompleteChoice
-from sources import Spotify, Deezer
-from utils import player_bar, format_time, trim
+from sources import Deezer, Spotify
+from utils import format_time, player_bar, trim
 
 DELETE_AFTER = 60
 
@@ -19,13 +18,27 @@ DESC_TEMPL = (
 
 group = lightbulb.Group("Queue", "Queue commands")
 
-
 @group.register()
+class CurrentTrack(
+    lightbulb.SlashCommand, hooks=[lightbulb.prefab.checks], name="now", description="Display current track"
+):
+    """
+    Displays the current track
+    """
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
+        await ctx.defer()
+        pass
+
+
+
 @lightbulb.add_checks(lightbulb.guild_only, player_playing)
 @lightbulb.command("now", "Display current track")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def now(ctx: lightbulb.Context) -> None:
-    """Display current track"""
+    """
+    Display current track
+    """
 
     player = plugin.bot.d.lavalink.player_manager.get(ctx.guild_id)
     current = player.current
@@ -73,7 +86,9 @@ async def now(ctx: lightbulb.Context) -> None:
 @lightbulb.command("queue", "Display the next 10 tracks in queue")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def queue(ctx: lightbulb.Context) -> None:
-    """Display next (max 10) tracks in queue"""
+    """
+    Display next (max 10) tracks in queue
+    """
 
     player = plugin.bot.d.lavalink.player_manager.get(ctx.guild_id)
     current = player.current
@@ -139,7 +154,9 @@ async def remove_autocomplete(option, interaction):
 @lightbulb.command("remove", "Remove a track from queue")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def remove(ctx: lightbulb.Context) -> None:
-    """Remove a track from queue"""
+    """
+    Remove a track from queue
+    """
 
     index = ctx.options.track
     if not index.isdigit():

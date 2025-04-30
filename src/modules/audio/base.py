@@ -5,11 +5,12 @@ from random import randrange
 import hikari
 import lavalink
 from lavalink import LoadType
-
-from sources import *
+from sources import SoundCloud, Source
 from utils import format_time
 
 URL_RX = re.compile(r"https?://(?:www\.)?.+")
+
+logger = logging.getLogger(__name__)
 
 
 async def _join(bot, guild_id: int, author_id: int):
@@ -24,15 +25,15 @@ async def _join(bot, guild_id: int, author_id: int):
             guild_id, voice_state[1].channel_id, self_deaf=True
         )
     except RuntimeError as e:
-        logging.error(
+        logger.error(
             "Failed to join voice channel on guild: %s, Reason: %s", guild_id, e
         )
         raise e
-    logging.info("Client connected to voice channel on guild: %s", guild_id)
+    logger.info("Client connected to voice channel on guild: %s", guild_id)
 
 
 async def _get_tracks(
-    lavalink: lavalink.Client, query: str = None, source: Source = YouTube
+    lavalink: lavalink.Client, query: str = None, source: Source = SoundCloud
 ) -> lavalink.LoadResult:
     def parse_query(query):
         query = query.strip("<>")
@@ -60,7 +61,7 @@ async def _play(
     shuffle: bool = True,
 ) -> hikari.Embed:
     if not result or result.load_type in (LoadType.ERROR, LoadType.EMPTY):
-        logging.warning("Failed to load search result")
+        logger.warning("Failed to load search result")
         return
 
     player = bot.d.lavalink.player_manager.get(guild_id)

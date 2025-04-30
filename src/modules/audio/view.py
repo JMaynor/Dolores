@@ -19,7 +19,7 @@ from utils import format_time
 def next_state(cur, mn, mx):
     while True:
         cur += 1
-        if not cur in range(mn, mx + 1):
+        if cur not in range(mn, mx + 1):
             cur = mn
         yield cur
 
