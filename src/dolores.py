@@ -22,10 +22,17 @@ from src._logger import logger
 from src.modules.chat import chat
 
 AUDIO_REQUIRED_VARS = ["LAVALINK_HOST", "LAVALINK_PORT", "LAVALINK_PASSWORD"]
-CHAT_REQUIRED_VARS = []
+CHAT_REQUIRED_VARS = [
+    "LLM_MODEL"
+]  # Also requires an API key, but var name will be different depending on whatever service being used, so can't check for.
 IMAGES_REQUIRED_VARS = ["OPENAI_API_KEY", "IMAGE_MODEL"]
 ROLLING_REQUIRED_VARS = []
-SCHEDULING_REQUIRED_VARS = []
+SCHEDULING_REQUIRED_VARS = [
+    "NOTION_BASE_URL",
+    "NOTION_DATABASE_ID",
+    "NOTION_API_KEY",
+    "NOTION_VERSION",
+]
 
 bot = hikari.GatewayBot(intents=hikari.Intents.ALL, token=os.environ["DISCORD_API_KEY"])
 client = lightbulb.client_from_app(bot)
