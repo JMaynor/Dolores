@@ -22,9 +22,9 @@ from src._logger import logger
 from src.modules.chat import chat
 
 AUDIO_REQUIRED_VARS = ["LAVALINK_HOST", "LAVALINK_PORT", "LAVALINK_PASSWORD"]
-CHAT_REQUIRED_VARS = [
-    "LLM_MODEL"
-]  # Also requires an API key, but var name will be different depending on whatever service being used, so can't check for.
+# Chat also requires an API key, but the var name will be different
+# depending on whatever service being used, so can't check for.
+CHAT_REQUIRED_VARS = ["LLM_MODEL"]
 IMAGES_REQUIRED_VARS = ["OPENAI_API_KEY", "IMAGE_MODEL"]
 ROLLING_REQUIRED_VARS = []
 SCHEDULING_REQUIRED_VARS = [

@@ -25,14 +25,16 @@ class NotSameVoice(RuntimeError):
 async def valid_user_voice(
     pipeline: lightbulb.ExecutionPipeline, ctx: lightbulb.Context
 ) -> None:
-    """Hook to check if the user is in a valid voice state."""
+    """
+    Hook to check if the user is in a valid voice state.
+    """
     if not ctx.guild_id:
         raise RuntimeError("Cannot invoke command in DMs")
 
     # Fetch voice states using hikari cache
-    states = ctx.app.cache.get_voice_states_view_for_guild(ctx.guild_id)
-    user_voice_state = states.get(ctx.author.id)
-    bot_voice_state = states.get(ctx.app.get_me().id)
+    states = ctx.client.app.cache.get_voice_states_view_for_guild(ctx.guild_id)
+    user_voice_state = states.get(ctx.user.id)
+    bot_voice_state = states.get(ctx.client.get_me().id)
 
     if not user_voice_state or not user_voice_state.channel_id:
         raise NotInVoice("Join a voice channel to use this command.")
