@@ -1,3 +1,6 @@
+"""
+base
+"""
 import logging
 import re
 from random import randrange
@@ -59,10 +62,10 @@ async def _play(
     play_next: bool = False,
     loop: bool = False,
     shuffle: bool = True,
-) -> hikari.Embed:
+) -> hikari.Embed | None:
     if not result or result.load_type in (LoadType.ERROR, LoadType.EMPTY):
         logger.warning("Failed to load search result")
-        return
+        return None
 
     player = bot.d.lavalink.player_manager.get(guild_id)
     if not player or not player.is_connected:

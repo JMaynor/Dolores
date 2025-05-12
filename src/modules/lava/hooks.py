@@ -55,7 +55,9 @@ async def valid_user_voice(
 async def player_connected(
     pipeline: lightbulb.ExecutionPipeline, ctx: lightbulb.Context
 ) -> None:
-    """Hook to check if the Lavalink player is connected."""
+    """
+    Hook to check if the Lavalink player is connected.
+    """
     # Ensure guild_id exists (though check_valid_user_voice likely runs first)
     if not ctx.guild_id:
         raise RuntimeError("Cannot check player connection in DMs")
@@ -74,7 +76,9 @@ async def player_connected(
 async def player_playing(
     pipeline: lightbulb.ExecutionPipeline, ctx: lightbulb.Context
 ) -> None:
-    """Hook to check if the Lavalink player is currently playing."""
+    """
+    Hook to check if the Lavalink player is currently playing.
+    """
     if not ctx.guild_id:
         raise RuntimeError("Cannot check player status in DMs")
 

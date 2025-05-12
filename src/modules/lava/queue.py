@@ -1,7 +1,7 @@
 import hikari
 import lightbulb
-from hooks import player_playing, valid_user_voice
 from choice import AutocompleteChoice
+from hooks import player_playing, valid_user_voice
 from sources import Deezer, Spotify
 from utils import format_time, player_bar, trim
 
@@ -18,18 +18,22 @@ DESC_TEMPL = (
 
 group = lightbulb.Group("Queue", "Queue commands")
 
+
 @group.register()
 class CurrentTrack(
-    lightbulb.SlashCommand, hooks=[lightbulb.prefab.checks], name="now", description="Display current track"
+    lightbulb.SlashCommand,
+    hooks=[lightbulb.prefab.checks],
+    name="now",
+    description="Display current track",
 ):
     """
     Displays the current track
     """
+
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         await ctx.defer()
         pass
-
 
 
 @lightbulb.add_checks(lightbulb.guild_only, player_playing)

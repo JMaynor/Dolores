@@ -1,14 +1,17 @@
+"""
+Play
+"""
+
 import hikari
 import lavalink
 import lightbulb
 from base import _get_tracks, _play
-from hooks import valid_user_voice
 from choice import AutocompleteChoice
+from hooks import valid_user_voice
 from lavasearch import LavasearchResult
 from sources import Deezer, SoundCloud, Source, Spotify, YouTube
 from utils import trim
 
-DELETE_AFTER = 60
 SOURCES = [Spotify, Deezer, YouTube, SoundCloud]
 QUERY_TYPES = ["track", "artist", "playlist", "album"]
 
@@ -105,7 +108,7 @@ async def query_autocomplete(option, interaction):
 
 async def handle_play(ctx: lightbulb.Context) -> None:
     result = await _get_tracks(lavalink=plugin.bot.d.lavalink, query=ctx.options.query)
-    embed: hikari.Embed = await _play(
+    embed: hikari.Embed | None = await _play(
         bot=plugin.bot,
         result=result,
         guild_id=ctx.guild_id,
@@ -115,8 +118,8 @@ async def handle_play(ctx: lightbulb.Context) -> None:
         loop=eval(ctx.options.loop),
         shuffle=eval(ctx.options.shuffle),
     )
-    if embed:
-        await ctx.respond(embed=embed, delete_after=DELETE_AFTER)
+    if embed is not None:
+        await ctx.respond(embed=embed)
     else:
         await ctx.respond("No result for query!", flags=hikari.MessageFlag.EPHEMERAL)
 

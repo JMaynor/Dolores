@@ -164,7 +164,9 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     Called while bot is starting up. Adds commands to it. Any other initialization-related
     things that need to be done before the bot connects to discord should be done here.
     """
-
+    if check_for_required_env_vars(AUDIO_REQUIRED_VARS):
+        logger.info("Loading audio module")
+        await client.load_extensions("modules.audio")
     if check_for_required_env_vars(IMAGES_REQUIRED_VARS):
         logger.info("Loading images module")
         await client.load_extensions("modules.images")
