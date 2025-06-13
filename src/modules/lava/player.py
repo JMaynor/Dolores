@@ -1,5 +1,4 @@
 from random import randrange
-from typing import Dict, List, Optional, Union
 
 from lavalink import AudioTrack, DefaultPlayer, DeferredAudioTrack, QueueEndEvent
 from lavalink.common import MISSING
@@ -16,20 +15,17 @@ class Player(DefaultPlayer):
 
     def __init__(self, guild_id: int, node):
         super().__init__(guild_id, node)
-        self.recently_played: List[AudioTrack] = []
+        self.recently_played: list[AudioTrack] = []
         self.message_id = None
         self.text_channel = None
         self.send_channel = None
 
     async def play(
         self,
-        track: Optional[
-            Union[
-                AudioTrack,
-                "DeferredAudioTrack",
-                Dict[str, Union[Optional[str], bool, int]],
-            ]
-        ] = None,
+        track: AudioTrack
+        | DeferredAudioTrack
+        | dict[str, str | bool | int | None]
+        | None = None,
         start_time: int = 0,
         end_time: int = MISSING,
         no_replace: bool = MISSING,

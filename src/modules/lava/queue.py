@@ -1,13 +1,12 @@
 import hikari
 import lightbulb
-from choice import AutocompleteChoice
-from hooks import player_playing, valid_user_voice
-from sources import Deezer, Spotify
-from utils import format_time, player_bar, trim
+
+from .choice import AutocompleteChoice
+from .hooks import in_guild, player_playing, valid_user_voice
+from .sources import Deezer, Spotify
+from .utils import format_time, player_bar, trim
 
 DELETE_AFTER = 60
-
-
 DESC_TEMPL = (
     "[{title}]({uri})\n"
     "{author}\n"
@@ -22,7 +21,7 @@ group = lightbulb.Group("Queue", "Queue commands")
 @group.register()
 class CurrentTrack(
     lightbulb.SlashCommand,
-    hooks=[lightbulb.prefab.checks],
+    hooks=[in_guild, player_playing],
     name="now",
     description="Display current track",
 ):
@@ -34,6 +33,43 @@ class CurrentTrack(
     async def invoke(self, ctx: lightbulb.Context) -> None:
         await ctx.defer()
         pass
+
+
+@group.register()
+class Queue(
+    lightbulb.SlashCommand,
+    hooks=[in_guild, player_playing],
+    name="queue",
+    description="Display the next 10 tracks in queue",
+):
+    """
+    Displays the next (max 10) tracks in queue
+    """
+
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
+        await ctx.defer()
+        pass
+
+
+@group.register()
+class RemoveTrack(
+    lightbulb.SlashCommand,
+    hooks=[in_guild, player_playing],
+    name="remove",
+    description="Remove a track from the queue",
+):
+    """
+    Removes a track from the queue
+    """
+
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
+        await ctx.defer()
+        pass
+
+
+# Older code below, reimplimenting above
 
 
 @lightbulb.add_checks(lightbulb.guild_only, player_playing)
@@ -178,11 +214,3 @@ async def remove(ctx: lightbulb.Context) -> None:
         ),
         delete_after=DELETE_AFTER,
     )
-
-
-def load(bot: lightbulb.BotApp) -> None:
-    bot.add_plugin(plugin)
-
-
-def unload(bot: lightbulb.BotApp) -> None:
-    bot.remove_plugin(plugin)

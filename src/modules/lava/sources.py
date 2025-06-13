@@ -1,8 +1,8 @@
 class Source:
     playable: bool = False
-    search_prefix: str = None
-    source_name: str = None
-    display_name: str = None
+    search_prefix: str
+    source_name: str
+    display_name: str
 
 
 class YouTube(Source):

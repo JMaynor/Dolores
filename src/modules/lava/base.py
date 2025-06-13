@@ -1,6 +1,7 @@
 """
 base
 """
+
 import logging
 import re
 from random import randrange
@@ -8,8 +9,9 @@ from random import randrange
 import hikari
 import lavalink
 from lavalink import LoadType
-from sources import SoundCloud, Source
-from utils import format_time
+
+from .sources import SoundCloud, Source
+from .utils import format_time
 
 URL_RX = re.compile(r"https?://(?:www\.)?.+")
 

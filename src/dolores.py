@@ -6,6 +6,7 @@ but she is also capable of doing some basic audio things.
 
 import os
 import re
+from pathlib import Path
 
 import hikari
 import hikari.events.reaction_events
@@ -13,10 +14,10 @@ import lightbulb
 from dotenv import load_dotenv
 
 # Check if .env file present, if so load vars from it
-if os.path.exists(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
-):
-    load_dotenv()
+
+env_path = Path(__file__).resolve().parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 from src._logger import logger
 from src.modules.chat import chat

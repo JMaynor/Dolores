@@ -8,6 +8,7 @@ import logging
 import os
 import random
 from collections import deque
+from pathlib import Path
 
 from pydantic_ai import Agent
 
@@ -22,16 +23,10 @@ class chat:
     def __init__(self):
         self.message_history = deque(maxlen=10)
 
-        with open(
-            os.path.join(
-                os.path.dirname(os.path.abspath(__file__)),
-                "..",
-                "..",
-                "locales",
-                "strings.json",
-            ),
-            "r",
-        ) as f:
+        strings_path = (
+            Path(__file__).resolve().parent.parent.parent / "locales" / "strings.json"
+        )
+        with open(strings_path, "r") as f:
             self.json_data = json.load(f)
             self.system_messages = self.json_data.get("LLM_SYSTEM_MESSAGES", [])
             self.snarky_comments = self.json_data.get("SNARKY_COMMENTS", ["Whatever"])

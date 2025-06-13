@@ -1,11 +1,30 @@
+"""
+Lavalink event handler
+"""
+
 import logging
 
 import lavalink
 import miru
-from events import VoiceServerUpdate, VoiceStateUpdate
-from view import PlayerView
+from lavalink import Event
+
+from .view import PlayerView
 
 logger = logging.getLogger(__name__)
+
+
+class VoiceStateUpdate(Event):
+    def __init__(self, event) -> None:
+        self.prev_state = event.old_state
+        self.cur_state = event.state
+        self.guild_id = event.guild_id
+
+
+class VoiceServerUpdate(Event):
+    def __init__(self, event) -> None:
+        self.guild_id = event.guild_id
+        self.endpoint = event.endpoint[6:]
+        self.token = event.token
 
 
 class EventHandler:

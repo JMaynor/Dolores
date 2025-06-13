@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any
 
 from lavalink import AudioTrack
 
@@ -6,21 +6,14 @@ from lavalink import AudioTrack
 class SearchResultItem:
     def __init__(
         self,
-        title: Optional[str] = None,
-        author: Optional[str] = None,
-        uri: Optional[str] = None,
-        artwork_url: Optional[str] = None,
-        item_type: Optional[str] = None,
+        title: str | None = None,
+        author: str | None = None,
+        uri: str | None = None,
+        artwork_url: str | None = None,
+        item_type: str | None = None,
     ) -> None:
         """
         Initialize a SearchResultItem instance.
-
-        Args:
-            title (Optional[str]): The title of the item.
-            author (Optional[str]): The author of the item.
-            uri (Optional[str]): The URI of the item.
-            artwork_url (Optional[str]): The artwork URL of the item.
-            item_type (Optional[str]): The type of the item.
         """
         self.title = title
         self.author = author
@@ -53,39 +46,30 @@ class LavasearchResult:
     def __init__(
         self,
         raw: Any,
-        tracks: Optional[List[dict]] = None,
-        albums: Optional[List[dict]] = None,
-        artists: Optional[List[dict]] = None,
-        playlists: Optional[List[dict]] = None,
-        texts: Optional[List[str]] = None,
-        plugin: Optional[Any] = None,
+        tracks: list[dict] | None = None,
+        albums: list[dict] | None = None,
+        artists: list[dict] | None = None,
+        playlists: list[dict] | None = None,
+        texts: list[str] | None = None,
+        plugin: Any | None = None,
     ) -> None:
         """
         Initialize a LavasearchResult instance.
-
-        Args:
-            raw (Any): The raw data.
-            tracks (Optional[List[dict]]): List of raw track dictionaries. Defaults to None.
-            albums (Optional[List[dict]]): List of raw album dictionaries. Defaults to None.
-            artists (Optional[List[dict]]): List of raw artist dictionaries. Defaults to None.
-            playlists (Optional[List[dict]]): List of raw playlist dictionaries. Defaults to None.
-            texts (Optional[List[str]]): List of text data. Defaults to None.
-            plugin (Optional[Any]): An optional plugin. Defaults to None.
         """
         self.raw = raw
-        self.tracks: List[AudioTrack] = [
+        self.tracks: list[AudioTrack] = [
             AudioTrack.from_dict(raw_track) for raw_track in (tracks or [])
         ]
-        self.albums: List[SearchResultItem] = [
+        self.albums: list[SearchResultItem] = [
             SearchResultItem.from_dict(raw_item) for raw_item in (albums or [])
         ]
-        self.artists: List[SearchResultItem] = [
+        self.artists: list[SearchResultItem] = [
             SearchResultItem.from_dict(raw_item) for raw_item in (artists or [])
         ]
-        self.playlists: List[SearchResultItem] = [
+        self.playlists: list[SearchResultItem] = [
             SearchResultItem.from_dict(raw_item) for raw_item in (playlists or [])
         ]
-        self.texts: List[str] = texts or []
+        self.texts: list[str] = texts or []
         self.plugin = plugin
 
     @classmethod

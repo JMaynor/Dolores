@@ -1,10 +1,9 @@
-import typing as t
-
 import lavalink
-from constants import EMOJI_PAUSE_PLAYER, EMOJI_RADIO_BUTTON, EMOJI_RESUME_PLAYER
+
+from .constants import EMOJI_PAUSE_PLAYER, EMOJI_RADIO_BUTTON, EMOJI_RESUME_PLAYER
 
 
-def parse_time(time: int) -> t.Tuple[int, int, int, int]:
+def parse_time(time: int) -> tuple[int, int, int, int]:
     """
     Parses the given time into days, hours, minutes and seconds.
     Useful for formatting time yourself.

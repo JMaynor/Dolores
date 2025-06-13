@@ -22,6 +22,18 @@ class NotSameVoice(RuntimeError):
 
 
 @lightbulb.hook(lightbulb.ExecutionSteps.CHECKS)
+async def in_guild(
+    pipeline: lightbulb.ExecutionPipeline, ctx: lightbulb.Context
+) -> None:
+    """
+    Hook to ensure the command is invoked in a guild context.
+    Raises an error if invoked in DMs.
+    """
+    if not ctx.guild_id:
+        raise RuntimeError("This command can only be used in a server (guild).")
+
+
+@lightbulb.hook(lightbulb.ExecutionSteps.CHECKS)
 async def valid_user_voice(
     pipeline: lightbulb.ExecutionPipeline, ctx: lightbulb.Context
 ) -> None:
@@ -48,7 +60,6 @@ async def valid_user_voice(
         raise NotSameVoice(
             "Join the same voice channel as the bot to use this command."
         )
-    # If checks pass, return None implicitly
 
 
 @lightbulb.hook(lightbulb.ExecutionSteps.CHECKS)
@@ -69,7 +80,6 @@ async def player_connected(
     player = ctx.app.d.lavalink.player_manager.get(ctx.guild_id)
     if not player or not player.is_connected:
         raise PlayerNotConnected("Bot is not connected to any voice channel.")
-    # If check passes, return None implicitly
 
 
 @lightbulb.hook(lightbulb.ExecutionSteps.CHECKS)
@@ -89,4 +99,3 @@ async def player_playing(
     # PlayerConnected hook likely runs first, but double-check player existence
     if not player or not player.is_playing:
         raise PlayerNotPlaying("Player is not currently playing anything.")
-    # If check passes, return None implicitly

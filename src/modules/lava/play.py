@@ -5,12 +5,13 @@ Play
 import hikari
 import lavalink
 import lightbulb
-from base import _get_tracks, _play
-from choice import AutocompleteChoice
-from hooks import valid_user_voice
-from lavasearch import LavasearchResult
-from sources import Deezer, SoundCloud, Source, Spotify, YouTube
-from utils import trim
+
+from .base import _get_tracks, _play
+from .choice import AutocompleteChoice
+from .hooks import in_guild, valid_user_voice
+from .lavasearch import LavasearchResult
+from .sources import Deezer, SoundCloud, Source, Spotify, YouTube
+from .utils import trim
 
 SOURCES = [Spotify, Deezer, YouTube, SoundCloud]
 QUERY_TYPES = ["track", "artist", "playlist", "album"]
@@ -151,25 +152,3 @@ async def play(ctx: lightbulb.Context) -> None:
 async def search(ctx: lightbulb.Context) -> None:
     """Precise track lookup via query autocomplete"""
     await handle_play(ctx)
-
-
-"""
-@plugin.command()
-@lightbulb.add_checks(
-    lightbulb.guild_only, valid_user_voice,
-)
-@lightbulb.command('previous', 'Play previous track')
-@lightbulb.implements(lightbulb.SlashCommand)
-async def previous(ctx: lightbulb.Context) -> None:
-
-    player = plugin.bot.d.lavalink.player_manager.get(ctx.guild_id)
-    await player.play_previous()
-"""
-
-
-def load(bot: lightbulb.BotApp) -> None:
-    bot.add_plugin(plugin)
-
-
-def unload(bot: lightbulb.BotApp) -> None:
-    bot.remove_plugin(plugin)

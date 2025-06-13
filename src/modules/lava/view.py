@@ -1,7 +1,8 @@
 import hikari
 import lavalink
 import miru
-from constants import (
+
+from .constants import (
     EMOJI_LOOP_OFF,
     EMOJI_LOOP_QUEUE,
     EMOJI_LOOP_TRACK,
@@ -13,7 +14,7 @@ from constants import (
     EMOJI_SHUFFLE_ON,
     EMOJI_STOP_PLAYER,
 )
-from utils import format_time
+from .utils import format_time
 
 
 def next_state(cur, mn, mx):

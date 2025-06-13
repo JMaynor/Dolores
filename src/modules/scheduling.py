@@ -11,6 +11,7 @@ import logging
 import os
 import random
 from datetime import datetime
+from pathlib import Path
 
 import hikari
 import lightbulb
@@ -25,20 +26,12 @@ from tenacity import (
 logger = logging.getLogger(__name__)
 
 try:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    # Adjust path relative to this file if needed, assuming it's in src/modules/
-    strings_path = os.path.join(current_dir, "..", "..", "locales", "strings.json")
+    current_dir = Path(__file__).resolve().parent
+    strings_path = current_dir.parent.parent / "locales" / "strings.json"
     with open(strings_path, "r") as f:
-        sarcastic_names = json.load(f).get(
-            "SARCASTIC_NAMES", ["buddy"]
-        )  # Default added
-except FileNotFoundError:
-    logger.warning(
-        f"strings.json not found at {strings_path}. Using default sarcastic name."
-    )
-    sarcastic_names = ["buddy"]
+        sarcastic_names = json.load(f).get("SARCASTIC_NAMES", ["buddy"])
 except Exception as e:
-    logger.error(f"Error loading strings.json: {e}. Using default sarcastic name.")
+    logger.warning(f"Could not load sarcastic names: {e}. Using default.")
     sarcastic_names = ["buddy"]
 
 
