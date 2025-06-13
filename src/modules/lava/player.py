@@ -119,11 +119,9 @@ class Player(DefaultPlayer):
     async def skip(self):
         """|coro|
 
-        Skips and return the current track.
+        Skips the current track.
         """
-        current = self.current
         await self.play()
-        return current
 
     def remove(self, index):
         """

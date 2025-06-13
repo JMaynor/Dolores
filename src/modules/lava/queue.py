@@ -52,6 +52,18 @@ class Queue(
         pass
 
 
+async def remove_autocomplete(ctx: lightbulb.AutocompleteContext[int]):
+    # player = plugin.bot.d.lavalink.player_manager.get(interaction.guild_id)
+    return [
+        AutocompleteChoice(
+            "{} - {}".format(trim(track.title, 60), trim(track.author, 20)), i
+        )
+        for i, track in enumerate(player.queue[:25])
+    ]
+    queued_tracks = [1, 2, 3]  # Placeholder
+    await ctx.respond(queued_tracks)
+
+
 @group.register()
 class RemoveTrack(
     lightbulb.SlashCommand,
@@ -63,13 +75,19 @@ class RemoveTrack(
     Removes a track from the queue
     """
 
+    track = lightbulb.integer(
+        "track",
+        "Track index to remove",
+        autocomplete=remove_autocomplete,
+    )
+
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         await ctx.defer()
         pass
 
 
-# Older code below, reimplimenting above
+# Older code below, reimplimenting above using up-to-date dependencies
 
 
 @lightbulb.add_checks(lightbulb.guild_only, player_playing)
@@ -172,18 +190,6 @@ async def queue(ctx: lightbulb.Context) -> None:
             description=desc,
         ).set_thumbnail(current.artwork_url)
     )
-
-
-async def remove_autocomplete(option, interaction):
-    player = plugin.bot.d.lavalink.player_manager.get(interaction.guild_id)
-    if not player or not player.is_playing:
-        return None
-    return [
-        AutocompleteChoice(
-            "{} - {}".format(trim(track.title, 60), trim(track.author, 20)), i
-        )
-        for i, track in enumerate(player.queue[:25])
-    ]
 
 
 @plugin.command()
