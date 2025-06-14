@@ -18,7 +18,7 @@ URL_RX = re.compile(r"https?://(?:www\.)?.+")
 logger = logging.getLogger(__name__)
 
 
-async def _join(bot, guild_id: int, author_id: int):
+async def _join(bot: hikari.GatewayBot, guild_id: int, author_id: int):
     states = bot.cache.get_voice_states_view_for_guild(guild_id)
     voice_state = next(filter(lambda i: i[0] == author_id, states.items()), None)
 
@@ -38,7 +38,7 @@ async def _join(bot, guild_id: int, author_id: int):
 
 
 async def _get_tracks(
-    lavalink: lavalink.Client, query: str = None, source: Source = SoundCloud
+    lavalink: lavalink.Client, query: str | None = None, source: Source = SoundCloud
 ) -> lavalink.LoadResult:
     def parse_query(query):
         query = query.strip("<>")
@@ -56,7 +56,7 @@ async def _get_tracks(
 
 
 async def _play(
-    bot,
+    bot: hikari.GatewayBot,
     result: lavalink.LoadResult,
     guild_id: int,
     author_id: int,
