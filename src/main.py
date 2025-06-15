@@ -182,6 +182,30 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     await client.start()
 
 
+@bot.listen()
+async def on_voice_state_update(event: hikari.VoiceStateUpdateEvent):
+    """
+    Handle voice state updates for lavalink integration.
+    This is required for lavalink to know about voice connections.
+    """
+    from src.lavaclient import music_client
+
+    if music_client and music_client.lavalink:
+        await music_client.lavalink.voice_update_handler(event) # type: ignore
+
+
+@bot.listen()
+async def on_voice_server_update(event: hikari.VoiceServerUpdateEvent):
+    """
+    Handle voice server updates for lavalink integration.
+    This is required for lavalink to connect to Discord's voice servers.
+    """
+    from src.lavaclient import music_client
+
+    if music_client and music_client.lavalink:
+        await music_client.lavalink.voice_update_handler(event) # type: ignore
+
+
 if __name__ == "__main__":
     """
     Main program entry point

@@ -18,7 +18,7 @@ class QueueTrack:
     Represents a track in the queue with additional metadata.
     """
 
-    track: object  # lavalink.AudioTrack
+    track: lavalink.AudioTrack
     requester_id: int
     requester_name: str
     added_at: float
@@ -26,7 +26,7 @@ class QueueTrack:
 
 class MusicClient:
     """
-    A lavalink client that handles music playback with proper event filtering.
+    A lavalink client that handles music playbook with proper event filtering.
     """
 
     def __init__(self, bot):
@@ -37,7 +37,7 @@ class MusicClient:
 
     async def initialize(self) -> bool:
         """
-        Initialize the lavalink client.
+        Initialize the lavalink client and wait for node connection.
         """
         try:
             host = os.getenv("LAVALINK_HOST", "localhost")
@@ -49,10 +49,34 @@ class MusicClient:
                 logger.error("Bot user not available yet")
                 return False
 
+            logger.info(f"Initializing lavalink client for {host}:{port}")
+
             self.lavalink = lavalink.Client(user_id=bot_user.id)
+
+            # Add the node
             self.lavalink.add_node(
                 host=host, port=port, password=password, region="us", name="default"
             )
+
+            # Wait for node to be available (with timeout)
+            import asyncio
+
+            max_attempts = 10
+            attempt = 0
+
+            while attempt < max_attempts:
+                if self.lavalink.node_manager.available_nodes:
+                    logger.info("Lavalink node connected successfully")
+                    break
+                logger.info(
+                    f"Waiting for lavalink node connection... (attempt {attempt + 1}/{max_attempts})"
+                )
+                await asyncio.sleep(1)
+                attempt += 1
+
+            if not self.lavalink.node_manager.available_nodes:
+                logger.error("Failed to connect to lavalink node after 10 attempts")
+                return False
 
             # Add event hooks with proper filtering
             self.lavalink.add_event_hook(self._on_track_start)
@@ -144,9 +168,7 @@ class MusicClient:
             return False
         try:
             await self.bot.update_voice_state(guild_id, channel_id)
-            self.lavalink.player_manager.create(
-                guild_id, endpoint=str(guild_id), node="dolores"
-            )
+            self.lavalink.player_manager.create(guild_id, endpoint=str(guild_id))
             if guild_id not in self.queues:
                 self.queues[guild_id] = []
             return True
@@ -162,7 +184,7 @@ class MusicClient:
             return None
         try:
             if not (query.startswith("http://") or query.startswith("https://")):
-                query = f"ytsearch:{query}"
+                query = f"scsearch:{query}"
             results = await self.lavalink.get_tracks(query)
             return results.tracks if results and results.tracks else None
         except Exception as e:
