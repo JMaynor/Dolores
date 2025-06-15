@@ -6,12 +6,10 @@ Is intended to also have functionality for syncing schedule info
 between Notion and Twitch. Not yet implemented.
 """
 
-import json
 import logging
 import os
 import random
 from datetime import datetime
-from pathlib import Path
 
 import hikari
 import lightbulb
@@ -23,18 +21,9 @@ from tenacity import (
     wait_exponential,
 )
 
+from src.constants import SARCASTIC_NAMES
+
 logger = logging.getLogger(__name__)
-
-try:
-    current_dir = Path(__file__).resolve().parent
-    strings_path = current_dir.parent.parent / "locales" / "strings.json"
-    with open(strings_path, "r") as f:
-        sarcastic_names = json.load(f).get("SARCASTIC_NAMES", ["buddy"])
-except Exception as e:
-    logger.warning(f"Could not load sarcastic names: {e}. Using default.")
-    sarcastic_names = ["buddy"]
-
-
 loader = lightbulb.Loader()
 
 
@@ -97,7 +86,7 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
         if response == "":
             await ctx.respond(
                 "Notion's API is giving me an error, so I couldn't get that for you, "
-                + random.choice(sarcastic_names)
+                + random.choice(SARCASTIC_NAMES)
             )
             return
 
@@ -109,7 +98,7 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
         if len(response["results"]) == 0:
             embed.add_field(
                 name="Nada",
-                value="We ain't got shit scheduled, " + random.choice(sarcastic_names),
+                value="We ain't got shit scheduled, " + random.choice(SARCASTIC_NAMES),
             )
         else:
             for elem in response["results"]:

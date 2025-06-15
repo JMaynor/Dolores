@@ -12,4 +12,4 @@ ENV PATH="/home/dolores/.venv/bin:$PATH"
 # Reset the entrypoint, don't invoke `uv`
 ENTRYPOINT []
 
-CMD ["python", "/home/dolores/src/dolores.py"]
+CMD ["python", "/home/dolores/src/main.py"]

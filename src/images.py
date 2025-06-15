@@ -18,9 +18,7 @@ from openai import (
 )
 
 logger = logging.getLogger(__name__)
-
 loader = lightbulb.Loader()
-
 async_openai_client = AsyncOpenAI()
 
 
@@ -54,6 +52,14 @@ class Images(lightbulb.SlashCommand, name="images", description="Generate images
                 size="1792x1024",
                 user=str(ctx.user.id),
             )
+            if (
+                not response.data
+                or len(response.data) == 0
+                or not hasattr(response.data[0], "url")
+            ):
+                logger.error("No image data returned from OpenAI API.")
+                await ctx.respond("Sorry, I couldn't generate an image this time.")
+                return
             image_url = response.data[0].url
             logger.info(f"Generated image URL: {image_url}")
         except APIConnectionError as e:

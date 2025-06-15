@@ -3,26 +3,15 @@ Hikari/Lightbulb version of the rolling module.
 Provides randomization functions for rolling dice.
 """
 
-import json
 import logging
 import random
-from pathlib import Path
 
 import hikari
 import lightbulb
 
+from src.constants import SARCASTIC_NAMES
+
 logger = logging.getLogger(__name__)
-
-try:
-    current_dir = Path(__file__).resolve().parent
-    strings_path = current_dir.parent.parent / "locales" / "strings.json"
-    with open(strings_path, "r") as f:
-        sarcastic_names = json.load(f).get("SARCASTIC_NAMES", ["buddy"])
-except Exception as e:
-    logger.warning(f"Could not load sarcastic names: {e}. Using default.")
-    sarcastic_names = ["buddy"]
-
-
 loader = lightbulb.Loader()
 
 
@@ -52,7 +41,7 @@ class RollDice(
                     f"Invalid format in '{dice_batch}'. Expected NdN format."
                 )
                 await ctx.respond(
-                    f"Invalid format in '{dice_batch}'. Use NdN format, {random.choice(sarcastic_names)}."
+                    f"Invalid format in '{dice_batch}'. Use NdN format, {random.choice(SARCASTIC_NAMES)}."
                 )
                 return  # Stop processing on first error
 
@@ -90,7 +79,7 @@ class RollDice(
         else:
             # This case should ideally be caught by the ValueError check earlier
             await ctx.respond(
-                f"No valid dice batches provided. Format has to be in NdN, {random.choice(sarcastic_names)}."
+                f"No valid dice batches provided. Format has to be in NdN, {random.choice(SARCASTIC_NAMES)}."
             )
 
 
@@ -119,7 +108,7 @@ class SecretRollDice(
                     raise ValueError("Number of rolls and limit must be positive.")
             except ValueError:
                 await ctx.respond(
-                    f"Invalid format in '{dice_batch}'. Use NdN format, {random.choice(sarcastic_names)}.",
+                    f"Invalid format in '{dice_batch}'. Use NdN format, {random.choice(SARCASTIC_NAMES)}.",
                     flags=hikari.MessageFlag.EPHEMERAL,
                 )
                 return
@@ -154,7 +143,7 @@ class SecretRollDice(
                 await ctx.respond(response, flags=hikari.MessageFlag.EPHEMERAL)
         else:
             await ctx.respond(
-                f"No valid dice batches provided. Format has to be in NdN, {random.choice(sarcastic_names)}.",
+                f"No valid dice batches provided. Format has to be in NdN, {random.choice(SARCASTIC_NAMES)}.",
                 flags=hikari.MessageFlag.EPHEMERAL,
             )
 

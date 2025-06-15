@@ -14,13 +14,13 @@ import lightbulb
 from dotenv import load_dotenv
 
 # Check if .env file present, if so load vars from it
-
 env_path = Path(__file__).resolve().parent.parent / ".env"
 if env_path.exists():
     load_dotenv(env_path)
 
 from src._logger import logger
-from src.modules.chat import chat
+from src.audio import music
+from src.chat import chat
 
 AUDIO_REQUIRED_VARS = ["LAVALINK_HOST", "LAVALINK_PORT", "LAVALINK_PASSWORD"]
 # Chat also requires an API key, but the var name will be different
@@ -167,16 +167,17 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     """
     if check_for_required_env_vars(AUDIO_REQUIRED_VARS):
         logger.info("Loading audio module")
-        await client.load_extensions("modules.audio")
+        # await client.load_extensions("audio")
+        client.register(music)
     if check_for_required_env_vars(IMAGES_REQUIRED_VARS):
         logger.info("Loading images module")
-        await client.load_extensions("modules.images")
+        await client.load_extensions("images")
     if check_for_required_env_vars(ROLLING_REQUIRED_VARS):
         logger.info("Loading rolling module")
-        await client.load_extensions("modules.rolling")
+        await client.load_extensions("rolling")
     if check_for_required_env_vars(SCHEDULING_REQUIRED_VARS):
         logger.info("Loading scheduling module")
-        await client.load_extensions("modules.scheduling")
+        await client.load_extensions("scheduling")
 
     await client.start()
 

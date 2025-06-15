@@ -3,14 +3,14 @@ Fancy schmancy "AI" nonsense.
 Module contains code that deals with generating text responses using an LLM.
 """
 
-import json
 import logging
 import os
 import random
 from collections import deque
-from pathlib import Path
 
 from pydantic_ai import Agent
+
+from src.constants import LLM_SYSTEM_MESSAGES, SNARKY_COMMENTS
 
 logger = logging.getLogger(__name__)
 
@@ -23,18 +23,10 @@ class chat:
     def __init__(self):
         self.message_history = deque(maxlen=10)
 
-        strings_path = (
-            Path(__file__).resolve().parent.parent.parent / "locales" / "strings.json"
-        )
-        with open(strings_path, "r") as f:
-            self.json_data = json.load(f)
-            self.system_messages = self.json_data.get("LLM_SYSTEM_MESSAGES", [])
-            self.snarky_comments = self.json_data.get("SNARKY_COMMENTS", ["Whatever"])
-
         self.dol_agent = Agent(
             name="Dolores",
             model=os.environ["LLM_MODEL"],  # type: ignore
-            system_prompt=self.system_messages,
+            system_prompt=LLM_SYSTEM_MESSAGES,
             model_settings={
                 "frequency_penalty": float(os.environ.get("FREQUENCY_PENALTY", 0.0)),
                 "presence_penalty": float(os.environ.get("PRESENCE_PENALTY", 0.6)),
@@ -113,4 +105,4 @@ class chat:
         Generates a snarky comment to be used when a user tries to
         use a command that does not exist.
         """
-        return random.choice(self.snarky_comments)
+        return random.choice(SNARKY_COMMENTS)
