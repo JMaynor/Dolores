@@ -168,7 +168,14 @@ class MusicClient:
             return False
         try:
             await self.bot.update_voice_state(guild_id, channel_id)
-            self.lavalink.player_manager.create(guild_id, endpoint=str(guild_id))
+
+            # Create player without endpoint - let voice events handle the connection details
+            player = self.lavalink.player_manager.create(guild_id)
+
+            # Set default volume to 100%
+            await player.set_volume(100)
+
+            # Initialize queue if not exists
             if guild_id not in self.queues:
                 self.queues[guild_id] = []
             return True
@@ -185,8 +192,18 @@ class MusicClient:
         try:
             if not (query.startswith("http://") or query.startswith("https://")):
                 query = f"scsearch:{query}"
+            logger.info(f"Searching for tracks with query: {query}")
             results = await self.lavalink.get_tracks(query)
-            return results.tracks if results and results.tracks else None
+            if results and results.tracks:
+                logger.info(
+                    f"Found {len(results.tracks)} tracks. First track: {results.tracks[0].title} by {results.tracks[0].author}"
+                )
+                logger.info(f"Track URI: {results.tracks[0].uri}")
+                logger.info(f"Track duration: {results.tracks[0].duration}ms")
+                return results.tracks
+            else:
+                logger.warning(f"No tracks found for query: {query}")
+                return None
         except Exception as e:
             logger.error(f"Failed to search tracks: {e}")
             return None
@@ -216,7 +233,30 @@ class MusicClient:
 
         if not player.is_playing:
             try:
+                # Wait until player is connected to the voice channel
+                import asyncio
+
+                max_attempts = 10
+                attempt = 0
+                while not player.is_connected and attempt < max_attempts:
+                    logger.info(
+                        f"Waiting for player to connect... (attempt {attempt + 1}/{max_attempts})"
+                    )
+                    await asyncio.sleep(0.5)
+                    attempt += 1
+                if not player.is_connected:
+                    logger.error(
+                        "Player is not connected to voice channel after waiting."
+                    )
+                    return False
+                logger.info(f"Playing track directly. Volume: {player.volume}")
+                logger.info(f"Player connected: {player.is_connected}")
+                logger.info(
+                    f"Player channel: {getattr(player, 'channel_id', 'Unknown')}"
+                )
+                logger.info(f"Track info: {track.title} - {track.uri}")
                 await player.play(track)
+                logger.info("Track play command sent successfully")
                 return True
             except Exception as e:
                 logger.error(f"Failed to play track: {e}")
