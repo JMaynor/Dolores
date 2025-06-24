@@ -83,6 +83,8 @@ class MusicClient:
             self.lavalink.add_event_hook(self._on_track_end)
             self.lavalink.add_event_hook(self._on_track_exception)
             self.lavalink.add_event_hook(self._on_track_stuck)
+            self.lavalink.add_event_hook(self._on_track_load_failed)
+            self.lavalink.add_event_hook(self._on_websocket_closed)
 
             self.is_initialized = True
             logger.info(
@@ -94,9 +96,37 @@ class MusicClient:
             logger.error(f"Failed to initialize lavalink client: {e}")
             return False
 
+    async def _on_track_load_failed(self, event) -> None:
+        """
+        Handle track load failed events.
+        """
+        if not hasattr(lavalink, "TrackLoadFailedEvent") or not isinstance(
+            event, lavalink.TrackLoadFailedEvent
+        ):
+            return
+        guild_id = int(getattr(event.player, "guild_id", 0))
+        logger.error(
+            f"Track load failed in guild {guild_id}: {getattr(event, 'exception', 'Unknown error')}"
+        )
+
+    async def _on_websocket_closed(self, event) -> None:
+        """
+        Handle websocket closed events.
+        """
+        if not hasattr(lavalink, "WebSocketClosedEvent") or not isinstance(
+            event, lavalink.WebSocketClosedEvent
+        ):
+            return
+        guild_id = int(getattr(event.player, "guild_id", 0))
+        code = getattr(event, "code", "Unknown")
+        reason = getattr(event, "reason", "Unknown")
+        logger.warning(
+            f"WebSocket closed in guild {guild_id}: code={code}, reason={reason}"
+        )
+
     async def _on_track_start(self, event) -> None:
         """
-        Handle track start events only - FIXED EVENT FILTERING.
+        Handle track start events only
         """
         if not isinstance(event, lavalink.TrackStartEvent):
             return
@@ -106,7 +136,7 @@ class MusicClient:
 
     async def _on_track_end(self, event) -> None:
         """
-        Handle track end events only - FIXED EVENT FILTERING.
+        Handle track end events only
         """
         if not isinstance(event, lavalink.TrackEndEvent):
             return
@@ -118,7 +148,7 @@ class MusicClient:
 
     async def _on_track_exception(self, event) -> None:
         """
-        Handle track exception events only - FIXED EVENT FILTERING.
+        Handle track exception events only
         """
         if not isinstance(event, lavalink.TrackExceptionEvent):
             return
@@ -129,7 +159,7 @@ class MusicClient:
 
     async def _on_track_stuck(self, event) -> None:
         """
-        Handle track stuck events only - FIXED EVENT FILTERING.
+        Handle track stuck events only
         """
         if not isinstance(event, lavalink.TrackStuckEvent):
             return
