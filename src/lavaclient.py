@@ -372,7 +372,7 @@ class MusicClient:
             logger.error(f"Failed to disconnect: {e}")
             return False
 
-    def is_playing(self, guild_id: int) -> bool:
+    async def is_playing(self, guild_id: int) -> bool:
         """
         Check if music is currently playing.
         """
@@ -381,7 +381,7 @@ class MusicClient:
         player = self.lavalink.player_manager.get(guild_id)
         return bool(player and player.is_playing)
 
-    def is_paused(self, guild_id: int) -> bool:
+    async def is_paused(self, guild_id: int) -> bool:
         """
         Check if music is currently paused.
         """
@@ -390,7 +390,7 @@ class MusicClient:
         player = self.lavalink.player_manager.get(guild_id)
         return bool(player and player.paused)
 
-    def get_current_track(self, guild_id: int):
+    async def get_current_track(self, guild_id: int):
         """
         Get the currently playing track.
         """
@@ -399,7 +399,7 @@ class MusicClient:
         player = self.lavalink.player_manager.get(guild_id)
         return player.current if player else None
 
-    def get_queue(self, guild_id: int) -> list:
+    async def get_queue(self, guild_id: int) -> list:
         """
         Get the queue for a guild.
         """
