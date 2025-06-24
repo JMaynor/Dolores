@@ -407,7 +407,7 @@ class MusicClient:
 
 
 # Global instance
-music_client = None
+music_client: MusicClient | None = None
 
 
 async def get_music_client(bot: hikari.GatewayBot) -> MusicClient | None:

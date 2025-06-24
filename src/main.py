@@ -35,7 +35,12 @@ SCHEDULING_REQUIRED_VARS = [
     "NOTION_VERSION",
 ]
 
-bot = hikari.GatewayBot(intents=hikari.Intents.ALL, token=os.environ["DISCORD_API_KEY"])
+bot = hikari.GatewayBot(
+    intents=hikari.Intents.ALL,
+    suppress_optimization_warning=True,
+    banner=None,
+    token=os.environ["DISCORD_API_KEY"],
+)
 client = lightbulb.client_from_app(bot)
 
 
