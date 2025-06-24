@@ -2,6 +2,7 @@
 This module handles interacting with the lavalink server.
 """
 
+import asyncio
 import logging
 import os
 import time
@@ -52,6 +53,7 @@ class MusicClient:
             logger.info(f"Initializing lavalink client for {host}:{port}")
 
             self.lavalink = lavalink.Client(user_id=bot_user.id)
+            self.lavalink.add_event_hooks(self)
 
             # Add the node
             self.lavalink.add_node(
@@ -59,8 +61,6 @@ class MusicClient:
             )
 
             # Wait for node to be available (with timeout)
-            import asyncio
-
             max_attempts = 10
             attempt = 0
 
@@ -78,14 +78,6 @@ class MusicClient:
                 logger.error("Failed to connect to lavalink node after 10 attempts")
                 return False
 
-            # Add event hooks with proper filtering
-            self.lavalink.add_event_hook(self._on_track_start)
-            self.lavalink.add_event_hook(self._on_track_end)
-            self.lavalink.add_event_hook(self._on_track_exception)
-            self.lavalink.add_event_hook(self._on_track_stuck)
-            self.lavalink.add_event_hook(self._on_track_load_failed)
-            self.lavalink.add_event_hook(self._on_websocket_closed)
-
             self.is_initialized = True
             logger.info(
                 f"Lavalink client initialized successfully. Connected to {host}:{port}"
@@ -96,27 +88,21 @@ class MusicClient:
             logger.error(f"Failed to initialize lavalink client: {e}")
             return False
 
+    @lavalink.listener(lavalink.TrackLoadFailedEvent)
     async def _on_track_load_failed(self, event) -> None:
         """
         Handle track load failed events.
         """
-        if not hasattr(lavalink, "TrackLoadFailedEvent") or not isinstance(
-            event, lavalink.TrackLoadFailedEvent
-        ):
-            return
         guild_id = int(getattr(event.player, "guild_id", 0))
         logger.error(
             f"Track load failed in guild {guild_id}: {getattr(event, 'exception', 'Unknown error')}"
         )
 
+    @lavalink.listener(lavalink.WebSocketClosedEvent)
     async def _on_websocket_closed(self, event) -> None:
         """
         Handle websocket closed events.
         """
-        if not hasattr(lavalink, "WebSocketClosedEvent") or not isinstance(
-            event, lavalink.WebSocketClosedEvent
-        ):
-            return
         guild_id = int(getattr(event.player, "guild_id", 0))
         code = getattr(event, "code", "Unknown")
         reason = getattr(event, "reason", "Unknown")
@@ -124,46 +110,38 @@ class MusicClient:
             f"WebSocket closed in guild {guild_id}: code={code}, reason={reason}"
         )
 
+    @lavalink.listener(lavalink.TrackStartEvent)
     async def _on_track_start(self, event) -> None:
         """
         Handle track start events only
         """
-        if not isinstance(event, lavalink.TrackStartEvent):
-            return
-
         guild_id = int(event.player.guild_id)
         logger.info(f"Track started in guild {guild_id}: {event.track.title}")
 
+    @lavalink.listener(lavalink.TrackEndEvent)
     async def _on_track_end(self, event) -> None:
         """
         Handle track end events only
         """
-        if not isinstance(event, lavalink.TrackEndEvent):
-            return
-
         guild_id = int(event.player.guild_id)
         logger.info(f"Track ended in guild {guild_id}")
         # Play next track if available
         await self._play_next(guild_id)
 
+    @lavalink.listener(lavalink.TrackExceptionEvent)
     async def _on_track_exception(self, event) -> None:
         """
         Handle track exception events only
         """
-        if not isinstance(event, lavalink.TrackExceptionEvent):
-            return
-
         guild_id = int(event.player.guild_id)
         logger.error(f"Track exception in guild {guild_id}")
         await self._play_next(guild_id)
 
+    @lavalink.listener(lavalink.TrackStuckEvent)
     async def _on_track_stuck(self, event) -> None:
         """
         Handle track stuck events only
         """
-        if not isinstance(event, lavalink.TrackStuckEvent):
-            return
-
         guild_id = int(event.player.guild_id)
         logger.warning(f"Track stuck in guild {guild_id}, skipping...")
         await self._play_next(guild_id)
@@ -263,9 +241,6 @@ class MusicClient:
 
         if not player.is_playing:
             try:
-                # Wait until player is connected to the voice channel
-                import asyncio
-
                 max_attempts = 10
                 attempt = 0
                 while not player.is_connected and attempt < max_attempts:
