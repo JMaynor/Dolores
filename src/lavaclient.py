@@ -8,6 +8,7 @@ import os
 import time
 from dataclasses import dataclass
 
+import hikari
 import lavalink
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ class MusicClient:
     A lavalink client that handles music playbook with proper event filtering.
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: hikari.GatewayBot):
         self.bot = bot
         self.lavalink = None
         self.queues = {}
@@ -89,7 +90,7 @@ class MusicClient:
             return False
 
     @lavalink.listener(lavalink.TrackLoadFailedEvent)
-    async def _on_track_load_failed(self, event) -> None:
+    async def _on_track_load_failed(self, event: lavalink.TrackLoadFailedEvent) -> None:
         """
         Handle track load failed events.
         """
@@ -99,7 +100,7 @@ class MusicClient:
         )
 
     @lavalink.listener(lavalink.WebSocketClosedEvent)
-    async def _on_websocket_closed(self, event) -> None:
+    async def _on_websocket_closed(self, event: lavalink.WebSocketClosedEvent) -> None:
         """
         Handle websocket closed events.
         """
@@ -111,7 +112,7 @@ class MusicClient:
         )
 
     @lavalink.listener(lavalink.TrackStartEvent)
-    async def _on_track_start(self, event) -> None:
+    async def _on_track_start(self, event: lavalink.TrackStartEvent) -> None:
         """
         Handle track start events only
         """
@@ -119,7 +120,7 @@ class MusicClient:
         logger.info(f"Track started in guild {guild_id}: {event.track.title}")
 
     @lavalink.listener(lavalink.TrackEndEvent)
-    async def _on_track_end(self, event) -> None:
+    async def _on_track_end(self, event: lavalink.TrackEndEvent) -> None:
         """
         Handle track end events only
         """
@@ -129,7 +130,7 @@ class MusicClient:
         await self._play_next(guild_id)
 
     @lavalink.listener(lavalink.TrackExceptionEvent)
-    async def _on_track_exception(self, event) -> None:
+    async def _on_track_exception(self, event: lavalink.TrackExceptionEvent) -> None:
         """
         Handle track exception events only
         """
@@ -138,7 +139,7 @@ class MusicClient:
         await self._play_next(guild_id)
 
     @lavalink.listener(lavalink.TrackStuckEvent)
-    async def _on_track_stuck(self, event) -> None:
+    async def _on_track_stuck(self, event: lavalink.TrackStuckEvent) -> None:
         """
         Handle track stuck events only
         """
@@ -409,7 +410,7 @@ class MusicClient:
 music_client = None
 
 
-async def get_music_client(bot):
+async def get_music_client(bot: hikari.GatewayBot) -> MusicClient | None:
     """
     Get or create the global music client instance.
     """
