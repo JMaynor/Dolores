@@ -196,7 +196,7 @@ async def on_voice_state_update(event: hikari.VoiceStateUpdateEvent):
     from src.lavaclient import music_client
 
     if music_client and music_client.lavalink:
-        await music_client.lavalink.voice_update_handler(event)  # type: ignore
+        await music_client.lavalink.voice_update_handler(event)
 
 
 @bot.listen()
@@ -208,7 +208,7 @@ async def on_voice_server_update(event: hikari.VoiceServerUpdateEvent):
     from src.lavaclient import music_client
 
     if music_client and music_client.lavalink:
-        await music_client.lavalink.voice_update_handler(event)  # type: ignore
+        await music_client.lavalink.voice_update_handler(event)
 
 
 if __name__ == "__main__":
