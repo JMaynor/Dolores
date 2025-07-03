@@ -33,9 +33,9 @@ class MusicClient:
 
     def __init__(self, bot: hikari.GatewayBot):
         self.bot = bot
-        self.lavalink = None
-        self.queues = {}
-        self.is_initialized = False
+        self.lavalink: lavalink.Client | None = None
+        self.queues: dict[int, list[QueueTrack]] = {}
+        self.is_initialized: bool = False
 
     async def initialize(self) -> bool:
         """
