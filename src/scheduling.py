@@ -105,12 +105,12 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
                 try:
                     date = elem["properties"]["Date"]["date"]["start"]
                     date_weekday = datetime.strptime(date, "%Y-%m-%d").strftime("%A")
-                except:
+                except Exception:
                     date = ""
                     date_weekday = ""
                 try:
                     title = elem["properties"]["Name"]["title"][0]["plain_text"]
-                except:
+                except Exception:
                     title = ""
                 try:
                     people = ", ".join(
@@ -119,7 +119,7 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
                             for person in elem["properties"]["Tags"]["multi_select"]
                         ]
                     )
-                except:
+                except Exception:
                     people = ""
 
                 embed.add_field(
