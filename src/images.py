@@ -21,47 +21,82 @@ logger = logging.getLogger(__name__)
 loader = lightbulb.Loader()
 async_openai_client = AsyncOpenAI()
 
-# class ImageMenu(lightbulb.components.Menu):
-#     """
-#     A menu for the image generation command.
-#     Allows user to select, style, size, enter prompt.
-#     """
-#     def __init__(self, member: hikari.Member):
-#         """
-#         Initialize menu
-#         """
-#         self.member = member
-#         self.sele
 
-
-@loader.command
-class Images(lightbulb.SlashCommand, name="images", description="Generate images"):
+class ImagePrompt(lightbulb.components.TextInput):
     """
-    Generates an image based on a given prompt and posts as a reply.
-    Ex: /generate_image A cat sitting on a table
-    Dolores would generate an image of a cat sitting on a table.
-
-    :param prompt: A string prompt for generating an image.
+    A text input for the image generation prompt.
     """
 
-    prompt = lightbulb.string("prompt", "Prompt for image generation")
+    def __init__(self) -> None:
+        """
+        Initialize prompt input
+        """
+        super().__init__(
+            placeholder="Enter your prompt here...",
+            custom_id="image_prompt",
+            style=hikari.TextInputStyle.PARAGRAPH,
+            max_length=1000,
+            required=True,
+            label="Image Prompt",
+            min_length=1,
+            value="",
+        )
 
-    @lightbulb.invoke
-    async def invoke(self, ctx: lightbulb.Context) -> None:
-        await ctx.defer()
+
+class ImageMenu(lightbulb.components.Menu):
+    """
+    A menu for the image generation command.
+    Allows user to select, style, size, enter prompt.
+    """
+
+    def __init__(self) -> None:
+        """
+        Initialize menu
+        """
+        self.style = self.add_text_select(
+            options=["natural", "vivid"],
+            on_select=self.on_style_select,
+            placeholder="Select style",
+        )
+        self.size = self.add_text_select(
+            options=["1024x1024", "1792x1024", "1024x1792"],
+            on_select=self.on_size_select,
+            placeholder="Select size",
+        )
+        self.prompt = self.add(ImagePrompt())
+        self.submit_button = self.add_interactive_button(
+            hikari.ButtonStyle.PRIMARY, self.on_submit, label="Submit"
+        )
+
+    async def on_style_select(self, ctx: lightbulb.components.MenuContext) -> None:
+        """
+        Handle style selection
+        """
+        self.style = ctx.selected_values_for(self.style)
+        logger.info(f"Style selected: {self.style}")
+
+    async def on_size_select(self, ctx: lightbulb.components.MenuContext) -> None:
+        """
+        Handle size selection
+        """
+        self.size = ctx.selected_values_for(self.size)
+        logger.info(f"Size selected: {self.size}")
+
+    async def on_submit(self, ctx: lightbulb.components.MenuContext) -> None:
+        """
+        Handle form submission
+        """
+        prompt = self.prompt.value
+        logger.info(f"Prompt submitted: {prompt}")
+        # Trigger image generation with the selected options
         try:
-            style_input = os.environ.get("IMAGE_STYLE", "natural").lower()
-            style: Literal["natural", "vivid"] = "natural"
-            if style_input == "vivid":
-                style = "vivid"
-
             response = await async_openai_client.images.generate(
-                prompt=self.prompt,
+                prompt=prompt,
                 model=os.environ["IMAGE_MODEL"],
-                style=style,
+                style=self.style,
                 n=1,
                 response_format="url",
-                size="1792x1024",
+                size=self.size,
                 user=str(ctx.user.id),
             )
             if (
@@ -99,9 +134,37 @@ class Images(lightbulb.SlashCommand, name="images", description="Generate images
 
         try:
             embed = hikari.Embed()
-            embed.description = self.prompt
+            embed.description = prompt
             embed.set_image(image_url)
             await ctx.respond(embed=embed)
         except Exception as e:
             logger.error(e)
             await ctx.respond(f"Error posting image to Discord: {e}.")
+
+
+@loader.command
+class Images(lightbulb.SlashCommand, name="images", description="Generate images"):
+    """
+    Generates an image based on a given prompt and posts as a reply.
+    Ex: /generate_image A cat sitting on a table
+    Dolores would generate an image of a cat sitting on a table.
+
+    :param prompt: A string prompt for generating an image.
+    """
+
+    prompt = lightbulb.string("prompt", "Prompt for image generation")
+
+    @lightbulb.invoke
+    async def invoke(self, ctx: lightbulb.Context) -> None:
+        assert ctx.member is not None
+
+        menu = ImageMenu()
+        resp = await ctx.respond(
+            "Please select the options for your image generation.",
+            components=menu,
+        )
+
+        try:
+            await menu.attach(ctx.client, timeout=60)
+        except asyncio.TimeoutError:
+            await ctx.edit_response(resp, "Image generation menu timed out.")
