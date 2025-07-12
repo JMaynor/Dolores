@@ -84,7 +84,7 @@ class Play(
                     return
 
             # Connect to voice channel if not already connected
-            if not music_client.is_playing(guild_id):
+            if not await music_client.is_playing(guild_id):
                 if not await music_client.connect_to_voice(guild_id, voice_channel):
                     await ctx.respond("❌ Failed to connect to voice channel.")
                     return
@@ -93,9 +93,9 @@ class Play(
             tracks = await music_client.search_tracks(self.query)
             if not tracks:
                 # Check if there's nothing playing and no queue
-                if not music_client.is_playing(guild_id) and not music_client.get_queue(
+                if not await music_client.is_playing(
                     guild_id
-                ):
+                ) and not music_client.get_queue(guild_id):
                     # Disconnect from voice channel since there's nothing to do
                     await music_client.disconnect_from_voice(guild_id)
                     await ctx.respond(
@@ -121,7 +121,7 @@ class Play(
                 duration_seconds = (track.duration % 60000) // 1000
                 duration_str = f"{duration_minutes}:{duration_seconds:02d}"
 
-                if music_client.is_playing(guild_id):
+                if await music_client.is_playing(guild_id):
                     await ctx.respond(
                         f"🎵 **Added to queue:** {track.title} by {track.author} [{duration_str}]\n"
                         f"👤 Requested by {requester_name}"
@@ -165,11 +165,11 @@ class Pause(
                 await ctx.respond("❌ Music client is not available.")
                 return
 
-            if not music_client.is_playing(guild_id):
+            if not await music_client.is_playing(guild_id):
                 await ctx.respond("❌ Nothing is currently playing.")
                 return
 
-            if music_client.is_paused(guild_id):
+            if await music_client.is_paused(guild_id):
                 await ctx.respond("⏸️ Playback is already paused.")
                 return
 
@@ -208,7 +208,7 @@ class Resume(
                 await ctx.respond("❌ Music client is not available.")
                 return
 
-            if not music_client.is_paused(guild_id):
+            if not await music_client.is_paused(guild_id):
                 await ctx.respond("▶️ Playback is not paused.")
                 return
 
@@ -247,9 +247,9 @@ class Stop(
                 await ctx.respond("❌ Music client is not available.")
                 return
 
-            if not music_client.is_playing(guild_id) and not music_client.is_paused(
+            if not await music_client.is_playing(
                 guild_id
-            ):
+            ) and not await music_client.is_paused(guild_id):
                 await ctx.respond("❌ Nothing is currently playing.")
                 return
 
@@ -293,12 +293,12 @@ class Skip(
                 await ctx.respond("❌ Music client is not available.")
                 return
 
-            if not music_client.is_playing(guild_id):
+            if not await music_client.is_playing(guild_id):
                 await ctx.respond("❌ Nothing is currently playing.")
                 return
 
             # Get current track info before skipping
-            current_track = music_client.get_current_track(guild_id)
+            current_track = await music_client.get_current_track(guild_id)
             track_info = (
                 f"{current_track.title} by {current_track.author}"
                 if current_track
@@ -340,8 +340,8 @@ class Queue(
                 await ctx.respond("❌ Music client is not available.")
                 return
 
-            current_track = music_client.get_current_track(guild_id)
-            queue = music_client.get_queue(guild_id)
+            current_track = await music_client.get_current_track(guild_id)
+            queue = await music_client.get_queue(guild_id)
 
             if not current_track and not queue:
                 await ctx.respond("📜 The queue is empty.")
@@ -356,7 +356,11 @@ class Queue(
                 duration_seconds = (current_track.duration % 60000) // 1000
                 duration_str = f"{duration_minutes}:{duration_seconds:02d}"
 
-                status = "⏸️ Paused" if music_client.is_paused(guild_id) else "▶️ Playing"
+                status = (
+                    "⏸️ Paused"
+                    if await music_client.is_paused(guild_id)
+                    else "▶️ Playing"
+                )
                 embed.add_field(
                     name=f"{status} - Now Playing",
                     value=f"**{current_track.title}** by {current_track.author} [{duration_str}]",

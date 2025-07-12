@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "apprise>=1.9.3",
-    "hikari>=2.3.3",
+    "hikari>=2.3.5",
     "hikari-lightbulb>=3.0.1",
     "hikari-miru>=4.2.0",
     "lavalink>=5.9.0",

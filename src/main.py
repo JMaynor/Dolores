@@ -196,7 +196,18 @@ async def on_voice_state_update(event: hikari.VoiceStateUpdateEvent):
     from src.lavaclient import music_client
 
     if music_client and music_client.lavalink:
-        await music_client.lavalink.voice_update_handler(event)
+        lava_data = {
+            "t": "VOICE_STATE_UPDATE",
+            "d": {
+                "guild_id": str(event.guild_id),
+                "user_id": str(event.state.user_id) if event.state else None,
+                "session_id": event.state.session_id if event.state else None,
+                "channel_id": str(event.state.channel_id)
+                if event.state and event.state.channel_id
+                else None,
+            },
+        }
+        await music_client.lavalink.voice_update_handler(lava_data)
 
 
 @bot.listen()
@@ -208,7 +219,15 @@ async def on_voice_server_update(event: hikari.VoiceServerUpdateEvent):
     from src.lavaclient import music_client
 
     if music_client and music_client.lavalink:
-        await music_client.lavalink.voice_update_handler(event)
+        lava_data = {
+            "t": "VOICE_SERVER_UPDATE",
+            "d": {
+                "guild_id": str(event.guild_id),
+                "token": event.token,
+                "endpoint": event.endpoint,
+            },
+        }
+        await music_client.lavalink.voice_update_handler(lava_data)
 
 
 if __name__ == "__main__":

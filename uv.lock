@@ -312,7 +312,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "apprise", specifier = ">=1.9.3" },
-    { name = "hikari", specifier = ">=2.3.3" },
+    { name = "hikari", specifier = ">=2.3.5" },
     { name = "hikari-lightbulb", specifier = ">=3.0.1" },
     { name = "hikari-miru", specifier = ">=4.2.0" },
     { name = "lavalink", specifier = ">=5.9.0" },
@@ -513,7 +513,7 @@ wheels = [
 
 [[package]]
 name = "hikari"
-version = "2.3.3"
+version = "2.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -521,9 +521,9 @@ dependencies = [
     { name = "colorlog" },
     { name = "multidict" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/25/4a0e34e51b2e488178f79a2cf03edb64b46dbd6b26a49b4ac78396eb43e0/hikari-2.3.3.tar.gz", hash = "sha256:ad7a07f277b6c3ee1c7a320ce52d9c3fd07313e9af928f0e7e2319b13d2f2aab", size = 1883735, upload-time = "2025-05-18T10:51:22.754Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/f9/0d0e2767af45b8b8ee378588f22e4e331f6c3823ac08a396319a65805d3a/hikari-2.3.5.tar.gz", hash = "sha256:33ab457680bb36edea93730952d7bda6174c8c26e5dcfdb9a45b91f0548fb089", size = 1892942, upload-time = "2025-06-25T17:37:18.608Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c3/dc/d31353ef1d041079de3c19d2a03ef210824b743e6008d9a70cd8969fef33/hikari-2.3.3-py3-none-any.whl", hash = "sha256:b7f24bb4d18b8d024d48ec201f9ccae7840964ca57c9becf6fa968c4109cc8ad", size = 574079, upload-time = "2025-05-18T10:51:20.105Z" },
+    { url = "https://files.pythonhosted.org/packages/f9/81/9c4bcb9502d6cb7a8aab04b89006bc9d6e2a274f0bf0e17eeb156aa7d632/hikari-2.3.5-py3-none-any.whl", hash = "sha256:8ee60cbecaef34f77977d8bc7f707bf034c2b04f2c480e081d66e1943a6cdab6", size = 578267, upload-time = "2025-06-25T17:37:16.658Z" },
 ]
 
 [[package]]
