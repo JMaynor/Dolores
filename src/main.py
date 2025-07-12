@@ -124,12 +124,22 @@ async def handle_question(message) -> None:
 # ---------------------------------------------------------------------------
 
 
+BOT_USER_ID = None
+
+
 @bot.listen()
 async def on_ready(event: hikari.StartedEvent) -> None:
     """
     on_ready gets called when the bot starts up or potentially when restarts
     in event of a reconnection.
     """
+    global BOT_USER_ID
+
+    me = bot.get_me()
+    if me is not None:
+        BOT_USER_ID = me.id
+    else:
+        logger.warning("Could not determine bot user ID in on_ready.")
     logger.info("Dolores has connected to Discord.")
 
 
@@ -196,18 +206,20 @@ async def on_voice_state_update(event: hikari.VoiceStateUpdateEvent):
     from src.lavaclient import music_client
 
     if music_client and music_client.lavalink:
-        lava_data = {
-            "t": "VOICE_STATE_UPDATE",
-            "d": {
-                "guild_id": str(event.guild_id),
-                "user_id": str(event.state.user_id) if event.state else None,
-                "session_id": event.state.session_id if event.state else None,
-                "channel_id": str(event.state.channel_id)
-                if event.state and event.state.channel_id
-                else None,
-            },
-        }
-        await music_client.lavalink.voice_update_handler(lava_data)
+        if event.state and BOT_USER_ID:
+            lava_data = {
+                "t": "VOICE_STATE_UPDATE",
+                "d": {
+                    "guild_id": str(event.guild_id),
+                    "user_id": str(BOT_USER_ID),
+                    "session_id": event.state.session_id,
+                    "channel_id": str(event.state.channel_id)
+                    if event.state.channel_id
+                    else None,
+                },
+            }
+            logger.debug(f"Voice state update data: {lava_data}")
+            await music_client.lavalink.voice_update_handler(lava_data)
 
 
 @bot.listen()
@@ -224,9 +236,11 @@ async def on_voice_server_update(event: hikari.VoiceServerUpdateEvent):
             "d": {
                 "guild_id": str(event.guild_id),
                 "token": event.token,
-                "endpoint": event.endpoint,
+                # Remove "wss://" prefix
+                "endpoint": event.endpoint[6:],  # type: ignore
             },
         }
+        logger.debug(f"Voice server update data: {lava_data}")
         await music_client.lavalink.voice_update_handler(lava_data)
 
 
