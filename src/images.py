@@ -5,7 +5,7 @@ This module contains the Images cog for generating images
 import asyncio
 import logging
 import os
-from typing import Literal
+from typing import Literal, cast
 
 import hikari
 import lightbulb
@@ -53,17 +53,20 @@ class ImageMenu(lightbulb.components.Menu):
         """
         Initialize menu
         """
-        self.style = self.add_text_select(
+        self.selected_style = "natural"
+        self.selected_size = "1024x1024"
+
+        self.style_select = self.add_text_select(
             options=["natural", "vivid"],
             on_select=self.on_style_select,
             placeholder="Select style",
         )
-        self.size = self.add_text_select(
+        self.size_select = self.add_text_select(
             options=["1024x1024", "1792x1024", "1024x1792"],
             on_select=self.on_size_select,
             placeholder="Select size",
         )
-        self.prompt = self.add(ImagePrompt())
+        self.prompt_input = self.add(ImagePrompt())
         self.submit_button = self.add_interactive_button(
             hikari.ButtonStyle.PRIMARY, self.on_submit, label="Submit"
         )
@@ -72,31 +75,40 @@ class ImageMenu(lightbulb.components.Menu):
         """
         Handle style selection
         """
-        self.style = ctx.selected_values_for(self.style)
-        logger.info(f"Style selected: {self.style}")
+        self.selected_style = ctx.selected_values_for(self.style_select)[0]
+        logger.info(f"Style selected: {self.selected_style}")
 
     async def on_size_select(self, ctx: lightbulb.components.MenuContext) -> None:
         """
         Handle size selection
         """
-        self.size = ctx.selected_values_for(self.size)
-        logger.info(f"Size selected: {self.size}")
+        self.selected_size = ctx.selected_values_for(self.size_select)[0]
+        logger.info(f"Size selected: {self.selected_size}")
 
     async def on_submit(self, ctx: lightbulb.components.MenuContext) -> None:
         """
         Handle form submission
         """
-        prompt = self.prompt.value
+        prompt = self.prompt_input.value
+
+        if not prompt:
+            await ctx.respond("Prompt cannot be empty.", flags=hikari.MessageFlag.EPHEMERAL)
+            return
+
         logger.info(f"Prompt submitted: {prompt}")
         # Trigger image generation with the selected options
         try:
+            style = cast(Literal["natural", "vivid"], self.selected_style)
+            size = cast(
+                Literal["1024x1024", "1792x1024", "1024x1792"], self.selected_size
+            )
             response = await async_openai_client.images.generate(
                 prompt=prompt,
                 model=os.environ["IMAGE_MODEL"],
-                style=self.style,
+                style=style,
                 n=1,
                 response_format="url",
-                size=self.size,
+                size=size,
                 user=str(ctx.user.id),
             )
             if (
@@ -130,8 +142,6 @@ class ImageMenu(lightbulb.components.Menu):
             await ctx.respond(f"Error generating image: {e}.")
             return
 
-        await asyncio.sleep(1)
-
         try:
             embed = hikari.Embed()
             embed.description = prompt
@@ -145,14 +155,8 @@ class ImageMenu(lightbulb.components.Menu):
 @loader.command
 class Images(lightbulb.SlashCommand, name="images", description="Generate images"):
     """
-    Generates an image based on a given prompt and posts as a reply.
-    Ex: /generate_image A cat sitting on a table
-    Dolores would generate an image of a cat sitting on a table.
-
-    :param prompt: A string prompt for generating an image.
+    Generates an image by opening a menu for options.
     """
-
-    prompt = lightbulb.string("prompt", "Prompt for image generation")
 
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
