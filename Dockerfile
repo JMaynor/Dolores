@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.12-alpine
+FROM ghcr.io/astral-sh/uv:python3.13-alpine
 
 # Copy the project into the image
 ADD . /home/dolores

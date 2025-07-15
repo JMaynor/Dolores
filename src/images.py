@@ -21,18 +21,6 @@ logger = logging.getLogger(__name__)
 loader = lightbulb.Loader()
 async_openai_client = AsyncOpenAI()
 
-# class ImageMenu(lightbulb.components.Menu):
-#     """
-#     A menu for the image generation command.
-#     Allows user to select, style, size, enter prompt.
-#     """
-#     def __init__(self, member: hikari.Member):
-#         """
-#         Initialize menu
-#         """
-#         self.member = member
-#         self.sele
-
 
 @loader.command
 class Images(lightbulb.SlashCommand, name="images", description="Generate images"):
