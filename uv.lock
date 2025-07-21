@@ -294,7 +294,7 @@ wheels = [
 
 [[package]]
 name = "dolores"
-version = "2.0"
+version = "2.1"
 source = { virtual = "." }
 dependencies = [
     { name = "apprise" },
@@ -528,17 +528,18 @@ wheels = [
 
 [[package]]
 name = "hikari-lightbulb"
-version = "3.0.1"
+version = "3.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "async-timeout" },
     { name = "confspec" },
     { name = "hikari" },
     { name = "linkd" },
+    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/72/69/9b9f0b503c96e59930934148305c273e1c19b3bee557204e0b7630482601/hikari_lightbulb-3.0.1.tar.gz", hash = "sha256:546442df248d0daa8ace12964b55995dc53f7b5ad55a19ba6ba18b2883b321f4", size = 131227, upload-time = "2025-06-09T14:30:14.02Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/29/a201bf7ac8a565921e2aec1693c18451e801ff1c23ccf015175f087666be/hikari_lightbulb-3.0.3.tar.gz", hash = "sha256:cfa7356665aa6df609ec33eef0b2b015ee32281616ba265e66df363a54d240be", size = 131928, upload-time = "2025-07-18T15:57:44.592Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e7/c7/7a060962d60fdd38e3ef7b0bbb969f292704ed67524970587f0d81c8618e/hikari_lightbulb-3.0.1-py3-none-any.whl", hash = "sha256:684b9190029bcbd05b9af8a27e4fabf8129a1771f36950a0ba63fd79c47abb4b", size = 100235, upload-time = "2025-06-09T14:30:12.32Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/34/969f4937e8cada3d18283c713b1aff05b0bd3fd4d77e9248d6a1b7b693ff/hikari_lightbulb-3.0.3-py3-none-any.whl", hash = "sha256:871932c2cd9315f34bb398e2c022516c391d92a06b16199cf342a4b662e69f52", size = 100814, upload-time = "2025-07-18T15:57:41.897Z" },
 ]
 
 [[package]]
