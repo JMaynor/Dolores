@@ -5,13 +5,13 @@ description = "Discord bot named Dolores"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "apprise>=1.9.3",
+    "apprise>=1.9.4",
     "hikari>=2.3.5",
-    "hikari-lightbulb>=3.1.0",
+    "hikari-lightbulb>=3.1.2",
     "hikari-miru>=4.2.0",
     "lavalink>=5.9.0",
-    "openai>=1.97.0",
-    "pydantic-ai>=0.0.29",
+    "openai>=1.99.6",
+    "pydantic-ai>=0.6.2",
     "python-dotenv>=1.1.1",
     "requests>=2.32.4",
     "tenacity>=9.0.0",
