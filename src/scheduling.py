@@ -51,8 +51,8 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
         try:
             response = requests.post(
                 os.environ["NOTION_BASE_URL"]
-                + "databases/"
-                + os.environ["NOTION_DATABASE_ID"]
+                + "data_sources/"
+                + os.environ["NOTION_DATASOURCE_ID"]
                 + "/query",
                 headers={
                     "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
