@@ -27,6 +27,7 @@ AUDIO_REQUIRED_VARS = ["LAVALINK_HOST", "LAVALINK_PORT", "LAVALINK_PASSWORD"]
 # depending on whatever service being used, so can't check for.
 CHAT_REQUIRED_VARS = ["LLM_MODEL"]
 IMAGES_REQUIRED_VARS = ["OPENAI_API_KEY", "IMAGE_MODEL"]
+MISC_REQUIRED_VARS = []
 ROLLING_REQUIRED_VARS = []
 SCHEDULING_REQUIRED_VARS = [
     "NOTION_BASE_URL",
@@ -182,11 +183,13 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     """
     if check_for_required_env_vars(AUDIO_REQUIRED_VARS):
         logger.info("Loading audio module")
-        # await client.load_extensions("audio")
         client.register(music)
     if check_for_required_env_vars(IMAGES_REQUIRED_VARS):
         logger.info("Loading images module")
         await client.load_extensions("images")
+    if check_for_required_env_vars(MISC_REQUIRED_VARS):
+        logger.info("Loading misc module")
+        await client.load_extensions("misc")
     if check_for_required_env_vars(ROLLING_REQUIRED_VARS):
         logger.info("Loading rolling module")
         await client.load_extensions("rolling")

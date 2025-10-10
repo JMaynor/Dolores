@@ -23,7 +23,7 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | Scheduling | NOTION_VERSION | Version of Notion API used for querying. |
 | Scheduling | NOTION_BASE_URL | Base URL of the Notion API, should be |
 | Scheduling | NOTION_DATABASE_ID | ID for database where stream info is kept |
-| Chat | LLM_MODEL | Which LLM model to use. |
+| Chat | LLM_MODEL | Which LLM model to use. Should be formatted as {PROVIDER}:{MODEL}, e.g. openrouter:google/gemini-2.5-pro |
 | Images/Chat | OPENAI_API_KEY | API Key used for generating replies |
 | Images | IMAGE_MODEL | Which image model to use. |
 | Images | IMAGE_STYLE | vivid or natural |

@@ -50,7 +50,7 @@ class chat:
             run = await self.dol_agent.run(
                 user_prompt=message, message_history=list(self.message_history)
             )
-            reply_text = run.data  # Get the primary text response
+            reply_text = run.output  # Get the primary text response
             logger.info(f"Reply generated: {reply_text}")
 
             # Update history with the new messages from this run
@@ -83,7 +83,7 @@ class chat:
                 user_prompt=explanation_prompt,
                 message_history=list(self.message_history),
             )
-            explanation_text = run.data
+            explanation_text = run.output
             logger.info(f"Explanation generated: {explanation_text}")
 
             # Update history with the new messages from this run
