@@ -40,20 +40,21 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
             (requests.exceptions.ConnectionError, requests.exceptions.Timeout)
         ),
     )
-    def get_notion_schedule(self, filter: dict, sorts: list):
+    def get_notion_schedule(self, filter: dict, sorts: list) -> dict | str:
         """
         Generic function that returns a given number of streams from the Notion schedule.
-        Parameters: filter, sorts
-        filters are a dict
-        sorts are a list of dicts
+
+        :param filter: dict representing the filter to apply to the query
+        :type filter: dict
+        :param sorts: list of dicts representing the sorts to apply to the query
+        :type sorts: list
+        :return: JSON response from Notion API
+        :rtype: dict | str
         """
         json_data = {"filter": filter, "sorts": sorts}
         try:
             response = requests.post(
-                os.environ["NOTION_BASE_URL"]
-                + "data_sources/"
-                + os.environ["NOTION_DATASOURCE_ID"]
-                + "/query",
+                f"{os.environ['NOTION_BASE_URL']}data_sources/{os.environ['NOTION_DATASOURCE_ID']}/query",
                 headers={
                     "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
                     "Notion-Version": os.environ["NOTION_VERSION"],
@@ -77,6 +78,9 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
 
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
+        """
+        Function when command is invoked.
+        """
         await ctx.defer()
         filter = {"property": "Date", "date": {"next_week": {}}}
         sorts = [{"property": "Date", "direction": "ascending"}]

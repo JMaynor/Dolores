@@ -27,6 +27,9 @@ class RollDice(
 
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
+        """
+        Function when command is invoked.
+        """
         await ctx.defer()
         final_formatted_rolls = []
         dice_batches_str: str = self.dice_batches
@@ -97,6 +100,9 @@ class SecretRollDice(
 
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
+        """
+        Function when command is invoked.
+        """
         await ctx.defer()
         final_formatted_rolls = []
         dice_batches_str: str = self.dice_batches
@@ -164,6 +170,9 @@ class Choose(
 
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
+        """
+        Function when command is invoked.
+        """
         await ctx.defer()
         choices_str: str = self.choices
         choice_list = choices_str.split()
@@ -181,6 +190,9 @@ class Rolld20(lightbulb.SlashCommand, name="rolld20", description="Rolls a d20."
 
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
+        """
+        Function when command is invoked.
+        """
         await ctx.defer()
         # 1 in million chance to roll a goon.
         if random.randint(1, 1000000) == 1:
@@ -199,6 +211,9 @@ class SecretRolld20(
 
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
+        """
+        Function when command is invoked.
+        """
         await ctx.defer()
         if random.randint(1, 1000000) == 1:
             await ctx.respond("Goon.")

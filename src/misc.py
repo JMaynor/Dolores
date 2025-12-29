@@ -15,4 +15,7 @@ class Bingy(lightbulb.SlashCommand, name="bingy", description="Bingy"):
 
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
+        """
+        Responds with Bingy.
+        """
         await ctx.respond("Bingy")

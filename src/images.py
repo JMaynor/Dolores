@@ -1,5 +1,5 @@
 """
-This module contains the Images cog for generating images
+This module contains the Images cog for generating images.
 """
 
 import asyncio
@@ -25,10 +25,13 @@ async_openai_client = AsyncOpenAI()
 
 class ImageGenerationModal(Modal):
     """
-    Modal for collecting image generation parameters
+    Modal for collecting image generation parameters.
     """
 
     def __init__(self) -> None:
+        """
+        Initialize the modal with input fields.
+        """
         super().__init__()
 
         # Add text input for the prompt
@@ -59,7 +62,7 @@ class ImageGenerationModal(Modal):
 
     async def on_submit(self, ctx: lightbulb.components.ModalContext) -> None:
         """
-        Handle modal submission and generate the image
+        Handle modal submission and generate the image.
         """
         await ctx.defer()
 
@@ -158,7 +161,7 @@ class Images(lightbulb.SlashCommand, name="images", description="Generate images
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         """
-        Open the image generation modal
+        Open the image generation modal.
         """
         modal = ImageGenerationModal()
         custom_id = f"image_gen_{ctx.user.id}_{ctx.interaction.id}"

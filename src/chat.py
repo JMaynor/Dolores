@@ -20,7 +20,10 @@ class chat:
     Commands for generating dialogue.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Initializes the chat agent and message history.
+        """
         self.message_history = deque(maxlen=10)
 
         self.dol_agent = Agent(
@@ -38,13 +41,16 @@ class chat:
 
     async def generate_reply(self, person: str, message: str) -> str:
         """
-        Generates a reply to a given message
+        Generates a reply to a given message.
 
         :param person: The person who sent the message (Note: pydantic_ai doesn't directly use this 'person' param in history yet)
         :param message: The message to reply to
         :return: The generated reply text
         """
         reply_text = ""
+
+        logger.debug(f"Generating reply for: {person}")
+
         try:
             # Pass the current history (list of ModelMessage objects)
             run = await self.dol_agent.run(
@@ -68,14 +74,19 @@ class chat:
 
     async def generate_explanation(self, person: str, message: str) -> str:
         """
-        Generates a simpler more informative explanation to a given message
+        Generates a simpler more informative explanation to a given message.
 
         :param person: The person who sent the message (Note: pydantic_ai doesn't directly use this 'person' param in history yet)
+        :type person: str
         :param message: The message to explain
+        :type message: str
         :return: The generated explanation text
+        :rtype: str
         """
         explanation_text = ""
         explanation_prompt = f"Please explain the following message in a simpler, more informative way, as if for someone who might not understand the context or jargon: '{message}'"
+
+        logger.debug(f"Generating explanation for: {person}")
 
         try:
             # Pass the current history (list of ModelMessage objects)
