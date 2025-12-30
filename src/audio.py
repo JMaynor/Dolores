@@ -61,7 +61,7 @@ class Play(
     @lightbulb.invoke
     async def invoke(self, ctx: lightbulb.Context) -> None:
         """
-        Play a track or add it to queue.
+        Function when command is invoked.
         """
         try:
             # Check if user is in a voice channel and get info

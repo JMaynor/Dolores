@@ -46,9 +46,10 @@ class RollDice(
                 await ctx.respond(
                     f"Invalid format in '{dice_batch}'. Use NdN format, {random.choice(SARCASTIC_NAMES)}."
                 )
-                return  # Stop processing on first error
+                return
 
-            if rolls > 500:  # Check before generating rolls
+            # People don't need to be rolling hundreds of dice at once.
+            if rolls > 500:
                 await ctx.respond(
                     random.choice(
                         ["I ain't rollin all that for you...", "Absolutely not.", "No."]
@@ -59,12 +60,14 @@ class RollDice(
             rolls_result = [str(random.randint(1, limit)) for _ in range(rolls)]
 
             formatted_rolls = f"(d{limit})  {', '.join(rolls_result)}"
-            # Add sum for non-d20 rolls with 3+ dice
+
+            # If rolling a number of dice, there will usually be a need to know
+            # the sum, so add that in for convenience. (E.g. rolling damage or something)
             if limit != 20 and rolls >= 3:
                 try:
                     roll_sum = sum(int(x) for x in rolls_result)
                     formatted_rolls += f"    Sum: {roll_sum}"
-                except ValueError:  # Should not happen if randint works
+                except ValueError:
                     logger.error(
                         f"Error calculating sum for rolls: {rolls_result}. "
                         "This should not happen."
@@ -80,7 +83,6 @@ class RollDice(
             else:
                 await ctx.respond(response)
         else:
-            # This case should ideally be caught by the ValueError check earlier
             await ctx.respond(
                 f"No valid dice batches provided. Format has to be in NdN, {random.choice(SARCASTIC_NAMES)}."
             )
@@ -89,7 +91,7 @@ class RollDice(
 @loader.command
 class SecretRollDice(
     lightbulb.SlashCommand,
-    name="secret_roll",
+    name="sroll",
     description="Rolls dice secretly (DM only).",
 ):
     """
@@ -113,12 +115,16 @@ class SecretRollDice(
                 if rolls <= 0 or limit <= 0:
                     raise ValueError("Number of rolls and limit must be positive.")
             except ValueError:
+                logger.warning(
+                    f"Invalid format in '{dice_batch}'. Expected NdN format."
+                )
                 await ctx.respond(
                     f"Invalid format in '{dice_batch}'. Use NdN format, {random.choice(SARCASTIC_NAMES)}.",
                     flags=hikari.MessageFlag.EPHEMERAL,
                 )
                 return
 
+            # People don't need to be rolling hundreds of dice at once.
             if rolls > 500:
                 await ctx.respond(
                     random.choice(
@@ -131,16 +137,24 @@ class SecretRollDice(
             rolls_result = [str(random.randint(1, limit)) for _ in range(rolls)]
 
             formatted_rolls = f"(d{limit})  {', '.join(rolls_result)}"
+
+            # If rolling a number of dice, there will usually be a need to know
+            # the sum, so add that in for convenience. (E.g. rolling damage or something)
             if limit != 20 and rolls >= 3:
                 try:
                     roll_sum = sum(int(x) for x in rolls_result)
                     formatted_rolls += f"    Sum: {roll_sum}"
                 except ValueError:
+                    logger.error(
+                        f"Error calculating sum for rolls: {rolls_result}. "
+                        "This should not happen."
+                    )
                     pass
             final_formatted_rolls.append(formatted_rolls)
 
         if final_formatted_rolls:
             response = "\n".join(final_formatted_rolls)
+            # Discord message length limit is 2000 characters
             if len(response) > 2000:
                 await ctx.respond(
                     "Result too long to display!", flags=hikari.MessageFlag.EPHEMERAL
@@ -194,7 +208,7 @@ class Rolld20(lightbulb.SlashCommand, name="rolld20", description="Rolls a d20."
         Function when command is invoked.
         """
         await ctx.defer()
-        # 1 in million chance to roll a goon.
+        # 1 in million chance to roll a goon. (inside joke)
         if random.randint(1, 1000000) == 1:
             await ctx.respond("Goon.")
         else:
@@ -203,7 +217,7 @@ class Rolld20(lightbulb.SlashCommand, name="rolld20", description="Rolls a d20."
 
 @loader.command
 class SecretRolld20(
-    lightbulb.SlashCommand, name="secret_rolld20", description="Rolls a d20 secretly."
+    lightbulb.SlashCommand, name="sd20", description="Rolls a d20 secretly."
 ):
     """
     Rolls a d20 secretly (ephemeral).
@@ -215,8 +229,9 @@ class SecretRolld20(
         Function when command is invoked.
         """
         await ctx.defer()
+        # 1 in million chance to roll a goon. (inside joke)
         if random.randint(1, 1000000) == 1:
-            await ctx.respond("Goon.")
+            await ctx.respond("Goon.", flags=hikari.MessageFlag.EPHEMERAL)
         else:
             await ctx.respond(
                 f"(d20)  {random.randint(1, 20)}", flags=hikari.MessageFlag.EPHEMERAL
