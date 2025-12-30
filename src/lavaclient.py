@@ -44,18 +44,18 @@ class MusicClient:
         """
         Initialize the lavalink client and wait for node connection.
         """
+        host = os.getenv("LAVALINK_HOST", "localhost")
+        port = int(os.getenv("LAVALINK_PORT", "2333"))
+        password = os.getenv("LAVALINK_PASSWORD", "youshallnotpass")
+
+        bot_user = self.bot.get_me()
+        if not bot_user:
+            logger.error("Bot user not available yet")
+            return False
+
+        logger.info(f"Initializing lavalink client for {host}:{port}")
+
         try:
-            host = os.getenv("LAVALINK_HOST", "localhost")
-            port = int(os.getenv("LAVALINK_PORT", "2333"))
-            password = os.getenv("LAVALINK_PASSWORD", "youshallnotpass")
-
-            bot_user = self.bot.get_me()
-            if not bot_user:
-                logger.error("Bot user not available yet")
-                return False
-
-            logger.info(f"Initializing lavalink client for {host}:{port}")
-
             self.lavalink = lavalink.Client(user_id=bot_user.id)
             self.lavalink.add_event_hooks(self)
 
@@ -83,13 +83,13 @@ class MusicClient:
                 return False
 
             self.is_initialized = True
-            logger.info(
-                f"Lavalink client initialized successfully. Connected to {host}:{port}"
-            )
         except Exception as e:
             logger.error(f"Failed to initialize lavalink client: {e}")
             return False
         else:
+            logger.info(
+                f"Lavalink client initialized successfully. Connected to {host}:{port}"
+            )
             return True
 
     @lavalink.listener(lavalink.TrackLoadFailedEvent)
@@ -188,7 +188,7 @@ class MusicClient:
             # Set default volume to 100%
             await player.set_volume(100)
 
-            # Initialize queue if not exists
+            # Initialize queue if does not exist
             if guild_id not in self.queues:
                 self.queues[guild_id] = []
         except Exception as e:
@@ -278,10 +278,12 @@ class MusicClient:
 
         # Play the track directly
         try:
-            logger.info(f"Playing track directly. Volume: {player.volume}")
-            logger.info(f"Player connected: {player.is_connected}")
-            logger.info(f"Player channel: {getattr(player, 'channel_id', 'Unknown')}")
-            logger.info(f"Track info: {track.title} - {track.uri}")
+            logger.info(
+                f"Playing track directly. Volume: {player.volume}\n"
+                f"Player connected: {player.is_connected}\n"
+                f"Player channel: {getattr(player, 'channel_id', 'Unknown')}\n"
+                f"Track info: {track.title} - {track.uri}"
+            )
             await player.play(track)
         except Exception as e:
             logger.error(f"Failed to play track: {e}")
@@ -294,11 +296,15 @@ class MusicClient:
         """
         Pause playback.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.set_pause(True)
         except Exception as e:
@@ -311,11 +317,15 @@ class MusicClient:
         """
         Resume playback.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.set_pause(False)
         except Exception as e:
@@ -328,11 +338,15 @@ class MusicClient:
         """
         Stop playback and clear queue.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.stop()
             if guild_id in self.queues:
@@ -347,11 +361,15 @@ class MusicClient:
         """
         Skip the current track.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.stop()
         except Exception as e:
@@ -364,11 +382,15 @@ class MusicClient:
         """
         Set the playback volume (0-100).
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.set_volume(volume)
         except Exception as e:
@@ -381,8 +403,10 @@ class MusicClient:
         """
         Disconnect from voice channel and clean up.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
         try:
             await self.bot.update_voice_state(guild_id, None)
             player = self.lavalink.player_manager.get(guild_id)
@@ -401,8 +425,10 @@ class MusicClient:
         """
         Check if music is currently playing.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
         player = self.lavalink.player_manager.get(guild_id)
         return bool(player and player.is_playing)
 
@@ -410,17 +436,21 @@ class MusicClient:
         """
         Check if music is currently paused.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
         player = self.lavalink.player_manager.get(guild_id)
         return bool(player and player.paused)
 
-    async def get_current_track(self, guild_id: int):
+    async def get_current_track(self, guild_id: int) -> lavalink.AudioTrack | None:
         """
         Get the currently playing track.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return None
+
         player = self.lavalink.player_manager.get(guild_id)
         return player.current if player else None
 

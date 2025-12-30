@@ -18,7 +18,7 @@ def get_app_from_context(ctx: lightbulb.Context) -> hikari.GatewayBot:
     """
     Helper function to get the bot app from context.
     """
-    return cast(hikari.GatewayBot, ctx.client.app)
+    return cast("hikari.GatewayBot", ctx.client.app)
 
 
 def safe_guild_id(ctx: lightbulb.Context) -> int:
@@ -78,18 +78,18 @@ class Play(
                 return
 
             # Initialize if needed
-            if not music_client.is_initialized:
-                if not await music_client.initialize():
-                    await ctx.respond("❌ Failed to initialize music client.")
-                    return
+            if not music_client.is_initialized and not await music_client.initialize():
+                await ctx.respond("❌ Failed to initialize music client.")
+                return
 
             # Connect to voice channel if not already connected
-            if not await music_client.is_playing(guild_id):
-                if not await music_client.connect_to_voice(guild_id, voice_channel):
-                    await ctx.respond("❌ Failed to connect to voice channel.")
-                    return
+            if not await music_client.is_playing(
+                guild_id
+            ) and not await music_client.connect_to_voice(guild_id, voice_channel):
+                await ctx.respond("❌ Failed to connect to voice channel.")
+                return
 
-            await ctx.respond("🔍 Searching for tracks...")  # Search for tracks
+            await ctx.respond("🔍 Searching for tracks...")
             tracks = await music_client.search_tracks(self.query)
             if not tracks:
                 # Check if there's nothing playing and no queue
@@ -135,7 +135,7 @@ class Play(
                 await ctx.respond("❌ Failed to play the track.")
 
         except ValueError as e:
-            await ctx.respond(f"❌ {str(e)}")
+            await ctx.respond(f"❌ {e}")
         except Exception as e:
             logger.error(f"Error in play command: {e}")
             await ctx.respond("❌ An unexpected error occurred.")
