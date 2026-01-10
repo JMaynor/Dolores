@@ -27,10 +27,11 @@ AUDIO_REQUIRED_VARS = ["LAVALINK_HOST", "LAVALINK_PORT", "LAVALINK_PASSWORD"]
 # depending on whatever service being used, so can't check for.
 CHAT_REQUIRED_VARS = ["LLM_MODEL"]
 IMAGES_REQUIRED_VARS = ["OPENAI_API_KEY", "IMAGE_MODEL"]
+MISC_REQUIRED_VARS = []
 ROLLING_REQUIRED_VARS = []
 SCHEDULING_REQUIRED_VARS = [
     "NOTION_BASE_URL",
-    "NOTION_DATABASE_ID",
+    "NOTION_DATASOURCE_ID",
     "NOTION_API_KEY",
     "NOTION_VERSION",
 ]
@@ -58,7 +59,7 @@ def check_for_required_env_vars(vars: list[str]) -> bool:
     return True
 
 
-async def handle_mention(message: hikari.Message):
+async def handle_mention(message: hikari.Message) -> None:
     """
     handle_mention is a coroutine that handles the bot's response to being mentioned
     in a message. It will generate a reply to the message and send it to the channel
@@ -144,22 +145,21 @@ async def on_ready(event: hikari.StartedEvent) -> None:
 
 
 @bot.listen()
-async def on_reaction_add(event: hikari.ReactionAddEvent):
+async def on_reaction_add(event: hikari.ReactionAddEvent) -> None:
     """
     on_reaction_add is a base function for handling when a reaction is added
-    to a message. Currently used to check for question mark reaction
+    to a message. Currently used to check for question mark reaction.
     """
     if event.is_for_emoji("❓") or event.is_for_emoji("❔"):
         await handle_question(event.message_id)
 
 
 @bot.listen()
-async def on_message(event: hikari.MessageCreateEvent):
+async def on_message(event: hikari.MessageCreateEvent) -> None:
     """
     on_message is the base function for handling any message that is sent on the server.
-    There are a couple special cases that are handled here
+    There are a couple special cases that are handled here.
     """
-
     if not event.is_human:
         return
 
@@ -182,11 +182,13 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     """
     if check_for_required_env_vars(AUDIO_REQUIRED_VARS):
         logger.info("Loading audio module")
-        # await client.load_extensions("audio")
         client.register(music)
     if check_for_required_env_vars(IMAGES_REQUIRED_VARS):
         logger.info("Loading images module")
         await client.load_extensions("images")
+    if check_for_required_env_vars(MISC_REQUIRED_VARS):
+        logger.info("Loading misc module")
+        await client.load_extensions("misc")
     if check_for_required_env_vars(ROLLING_REQUIRED_VARS):
         logger.info("Loading rolling module")
         await client.load_extensions("rolling")
@@ -198,32 +200,31 @@ async def on_starting(_: hikari.StartingEvent) -> None:
 
 
 @bot.listen()
-async def on_voice_state_update(event: hikari.VoiceStateUpdateEvent):
+async def on_voice_state_update(event: hikari.VoiceStateUpdateEvent) -> None:
     """
     Handle voice state updates for lavalink integration.
     This is required for lavalink to know about voice connections.
     """
     from src.lavaclient import music_client
 
-    if music_client and music_client.lavalink:
-        if event.state and BOT_USER_ID:
-            lava_data = {
-                "t": "VOICE_STATE_UPDATE",
-                "d": {
-                    "guild_id": str(event.guild_id),
-                    "user_id": str(BOT_USER_ID),
-                    "session_id": event.state.session_id,
-                    "channel_id": str(event.state.channel_id)
-                    if event.state.channel_id
-                    else None,
-                },
-            }
-            logger.debug(f"Voice state update data: {lava_data}")
-            await music_client.lavalink.voice_update_handler(lava_data)
+    if music_client and music_client.lavalink and event.state and BOT_USER_ID:
+        lava_data = {
+            "t": "VOICE_STATE_UPDATE",
+            "d": {
+                "guild_id": str(event.guild_id),
+                "user_id": str(BOT_USER_ID),
+                "session_id": event.state.session_id,
+                "channel_id": str(event.state.channel_id)
+                if event.state.channel_id
+                else None,
+            },
+        }
+        logger.debug(f"Voice state update data: {lava_data}")
+        await music_client.lavalink.voice_update_handler(lava_data)
 
 
 @bot.listen()
-async def on_voice_server_update(event: hikari.VoiceServerUpdateEvent):
+async def on_voice_server_update(event: hikari.VoiceServerUpdateEvent) -> None:
     """
     Handle voice server updates for lavalink integration.
     This is required for lavalink to connect to Discord's voice servers.
@@ -248,8 +249,5 @@ if __name__ == "__main__":
     """
     Main program entry point
     """
-    if check_for_required_env_vars(CHAT_REQUIRED_VARS):
-        chat_inst = chat()
-    else:
-        chat_inst = None
+    chat_inst = chat() if check_for_required_env_vars(CHAT_REQUIRED_VARS) else None
     bot.run()

@@ -31,7 +31,10 @@ class MusicClient:
     A lavalink client that handles music playbook with proper event filtering.
     """
 
-    def __init__(self, bot: hikari.GatewayBot):
+    def __init__(self, bot: hikari.GatewayBot) -> None:
+        """
+        Initialize the MusicClient with the given bot.
+        """
         self.bot = bot
         self.lavalink: lavalink.Client | None = None
         self.queues: dict[int, list[QueueTrack]] = {}
@@ -41,18 +44,18 @@ class MusicClient:
         """
         Initialize the lavalink client and wait for node connection.
         """
+        host = os.getenv("LAVALINK_HOST", "localhost")
+        port = int(os.getenv("LAVALINK_PORT", "2333"))
+        password = os.getenv("LAVALINK_PASSWORD", "youshallnotpass")
+
+        bot_user = self.bot.get_me()
+        if not bot_user:
+            logger.error("Bot user not available yet")
+            return False
+
+        logger.info(f"Initializing lavalink client for {host}:{port}")
+
         try:
-            host = os.getenv("LAVALINK_HOST", "localhost")
-            port = int(os.getenv("LAVALINK_PORT", "2333"))
-            password = os.getenv("LAVALINK_PASSWORD", "youshallnotpass")
-
-            bot_user = self.bot.get_me()
-            if not bot_user:
-                logger.error("Bot user not available yet")
-                return False
-
-            logger.info(f"Initializing lavalink client for {host}:{port}")
-
             self.lavalink = lavalink.Client(user_id=bot_user.id)
             self.lavalink.add_event_hooks(self)
 
@@ -80,14 +83,14 @@ class MusicClient:
                 return False
 
             self.is_initialized = True
+        except Exception as e:
+            logger.error(f"Failed to initialize lavalink client: {e}")
+            return False
+        else:
             logger.info(
                 f"Lavalink client initialized successfully. Connected to {host}:{port}"
             )
             return True
-
-        except Exception as e:
-            logger.error(f"Failed to initialize lavalink client: {e}")
-            return False
 
     @lavalink.listener(lavalink.TrackLoadFailedEvent)
     async def _on_track_load_failed(self, event: lavalink.TrackLoadFailedEvent) -> None:
@@ -114,7 +117,7 @@ class MusicClient:
     @lavalink.listener(lavalink.TrackStartEvent)
     async def _on_track_start(self, event: lavalink.TrackStartEvent) -> None:
         """
-        Handle track start events only
+        Handle track start events only.
         """
         guild_id = int(event.player.guild_id)
         logger.info(f"Track started in guild {guild_id}: {event.track.title}")
@@ -122,7 +125,7 @@ class MusicClient:
     @lavalink.listener(lavalink.TrackEndEvent)
     async def _on_track_end(self, event: lavalink.TrackEndEvent) -> None:
         """
-        Handle track end events only
+        Handle track end events only.
         """
         guild_id = int(event.player.guild_id)
         logger.info(f"Track ended in guild {guild_id}")
@@ -132,7 +135,7 @@ class MusicClient:
     @lavalink.listener(lavalink.TrackExceptionEvent)
     async def _on_track_exception(self, event: lavalink.TrackExceptionEvent) -> None:
         """
-        Handle track exception events only
+        Handle track exception events only.
         """
         guild_id = int(event.player.guild_id)
         logger.error(f"Track exception in guild {guild_id}")
@@ -141,7 +144,7 @@ class MusicClient:
     @lavalink.listener(lavalink.TrackStuckEvent)
     async def _on_track_stuck(self, event: lavalink.TrackStuckEvent) -> None:
         """
-        Handle track stuck events only
+        Handle track stuck events only.
         """
         guild_id = int(event.player.guild_id)
         logger.warning(f"Track stuck in guild {guild_id}, skipping...")
@@ -164,10 +167,11 @@ class MusicClient:
         next_track = self.queues[guild_id].pop(0)
         try:
             await player.play(next_track.track)
-            return True
         except Exception as e:
             logger.error(f"Failed to play next track: {e}")
             return await self._play_next(guild_id)
+        else:
+            return True
 
     async def connect_to_voice(self, guild_id: int, channel_id: int) -> bool:
         """
@@ -184,51 +188,64 @@ class MusicClient:
             # Set default volume to 100%
             await player.set_volume(100)
 
-            # Initialize queue if not exists
+            # Initialize queue if does not exist
             if guild_id not in self.queues:
                 self.queues[guild_id] = []
-            return True
         except Exception as e:
             logger.error(f"Failed to connect to voice channel: {e}")
             return False
+        else:
+            return True
 
-    async def search_tracks(self, query: str):
+    async def search_tracks(self, query: str) -> list[lavalink.AudioTrack] | None:
         """
         Search for tracks.
         """
         if not self.is_initialized or not self.lavalink:
             return None
+
         try:
-            if not (query.startswith("http://") or query.startswith("https://")):
+            if not (query.startswith(("http://", "https://"))):
                 query = f"scsearch:{query}"
             logger.info(f"Searching for tracks with query: {query}")
             results = await self.lavalink.get_tracks(query)
-            if results and results.tracks:
-                logger.info(
-                    f"Found {len(results.tracks)} tracks. First track: {results.tracks[0].title} by {results.tracks[0].author}"
-                )
-                logger.info(f"Track URI: {results.tracks[0].uri}")
-                logger.info(f"Track duration: {results.tracks[0].duration}ms")
-                return results.tracks
-            else:
-                logger.warning(f"No tracks found for query: {query}")
-                return None
         except Exception as e:
             logger.error(f"Failed to search tracks: {e}")
             return None
 
+        if results and results.tracks:
+            logger.info(
+                f"Found {len(results.tracks)} tracks. First track: {results.tracks[0].title} by {results.tracks[0].author}"
+            )
+            logger.info(f"Track URI: {results.tracks[0].uri}")
+            logger.info(f"Track duration: {results.tracks[0].duration}ms")
+            return results.tracks
+
+        logger.warning(f"No tracks found for query: {query}")
+        return None
+
     async def play_track(
-        self, guild_id: int, track, requester_id: int, requester_name: str
+        self,
+        guild_id: int,
+        track: lavalink.AudioTrack,
+        requester_id: int,
+        requester_name: str,
     ) -> bool:
         """
         Play a track or add it to the queue.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
 
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
+        # Initialize guild's queue if not already present
+        if guild_id not in self.queues:
+            self.queues[guild_id] = []
 
         queue_track = QueueTrack(
             track=track,
@@ -237,128 +254,159 @@ class MusicClient:
             added_at=time.time(),
         )
 
-        if guild_id not in self.queues:
-            self.queues[guild_id] = []
-
-        if not player.is_playing:
-            try:
-                max_attempts = 10
-                attempt = 0
-                while not player.is_connected and attempt < max_attempts:
-                    logger.info(
-                        f"Waiting for player to connect... (attempt {attempt + 1}/{max_attempts})"
-                    )
-                    await asyncio.sleep(0.5)
-                    attempt += 1
-                if not player.is_connected:
-                    logger.error(
-                        "Player is not connected to voice channel after waiting."
-                    )
-                    return False
-                logger.info(f"Playing track directly. Volume: {player.volume}")
-                logger.info(f"Player connected: {player.is_connected}")
-                logger.info(
-                    f"Player channel: {getattr(player, 'channel_id', 'Unknown')}"
-                )
-                logger.info(f"Track info: {track.title} - {track.uri}")
-                await player.play(track)
-                logger.info("Track play command sent successfully")
-                return True
-            except Exception as e:
-                logger.error(f"Failed to play track: {e}")
-                return False
-        else:
+        # If a song is already playing, add it to queue
+        if player.is_playing:
             self.queues[guild_id].append(queue_track)
+            return True
+
+        # No song is playing, try connecting to voice channel
+        try:
+            max_attempts = 10
+            attempt = 0
+            while not player.is_connected and attempt < max_attempts:
+                logger.info(
+                    f"Waiting for player to connect... (attempt {attempt + 1}/{max_attempts})"
+                )
+                await asyncio.sleep(0.5)
+                attempt += 1
+            if not player.is_connected:
+                logger.error("Player is not connected to voice channel after waiting.")
+                return False
+        except Exception as e:
+            logger.error(f"Error while waiting for player to connect: {e}")
+            return False
+
+        # Play the track directly
+        try:
+            logger.info(
+                f"Playing track directly. Volume: {player.volume}\n"
+                f"Player connected: {player.is_connected}\n"
+                f"Player channel: {getattr(player, 'channel_id', 'Unknown')}\n"
+                f"Track info: {track.title} - {track.uri}"
+            )
+            await player.play(track)
+        except Exception as e:
+            logger.error(f"Failed to play track: {e}")
+            return False
+        else:
+            logger.info("Track play command sent successfully")
             return True
 
     async def pause(self, guild_id: int) -> bool:
         """
         Pause playback.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.set_pause(True)
-            return True
         except Exception as e:
             logger.error(f"Failed to pause: {e}")
             return False
+        else:
+            return True
 
     async def resume(self, guild_id: int) -> bool:
         """
         Resume playback.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.set_pause(False)
-            return True
         except Exception as e:
             logger.error(f"Failed to resume: {e}")
             return False
+        else:
+            return True
 
     async def stop(self, guild_id: int) -> bool:
         """
         Stop playback and clear queue.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.stop()
             if guild_id in self.queues:
                 self.queues[guild_id].clear()
-            return True
         except Exception as e:
             logger.error(f"Failed to stop: {e}")
             return False
+        else:
+            return True
 
     async def skip(self, guild_id: int) -> bool:
         """
         Skip the current track.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.stop()
-            return True
         except Exception as e:
             logger.error(f"Failed to skip: {e}")
             return False
+        else:
+            return True
 
     async def set_volume(self, guild_id: int, volume: int) -> bool:
         """
         Set the playback volume (0-100).
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
+        # Validate lavalink player
         player = self.lavalink.player_manager.get(guild_id)
         if not player:
             return False
+
         try:
             await player.set_volume(volume)
-            return True
         except Exception as e:
             logger.error(f"Failed to set volume: {e}")
             return False
+        else:
+            return True
 
     async def disconnect_from_voice(self, guild_id: int) -> bool:
         """
         Disconnect from voice channel and clean up.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
         try:
             await self.bot.update_voice_state(guild_id, None)
             player = self.lavalink.player_manager.get(guild_id)
@@ -367,17 +415,20 @@ class MusicClient:
                 await self.lavalink.player_manager.destroy(guild_id)
             if guild_id in self.queues:
                 self.queues[guild_id].clear()
-            return True
         except Exception as e:
             logger.error(f"Failed to disconnect: {e}")
             return False
+        else:
+            return True
 
     async def is_playing(self, guild_id: int) -> bool:
         """
         Check if music is currently playing.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
         player = self.lavalink.player_manager.get(guild_id)
         return bool(player and player.is_playing)
 
@@ -385,17 +436,21 @@ class MusicClient:
         """
         Check if music is currently paused.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return False
+
         player = self.lavalink.player_manager.get(guild_id)
         return bool(player and player.paused)
 
-    async def get_current_track(self, guild_id: int):
+    async def get_current_track(self, guild_id: int) -> lavalink.AudioTrack | None:
         """
         Get the currently playing track.
         """
+        # Validate lavalink client initialization
         if not self.is_initialized or not self.lavalink:
             return None
+
         player = self.lavalink.player_manager.get(guild_id)
         return player.current if player else None
 

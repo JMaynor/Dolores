@@ -1,17 +1,17 @@
 [project]
 name = "dolores"
-version = "2.0"
+version = "2.1"
 description = "Discord bot named Dolores"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "apprise>=1.9.3",
-    "hikari>=2.3.5",
-    "hikari-lightbulb>=3.0.1",
+    "apprise>=1.9.4",
+    "hikari>=2.4.1",
+    "hikari-lightbulb>=3.2.1",
     "hikari-miru>=4.2.0",
     "lavalink>=5.9.0",
-    "openai>=1.95.1",
-    "pydantic-ai>=0.0.29",
+    "openai>=2.1.0",
+    "pydantic-ai>=1.0.17",
     "python-dotenv>=1.1.1",
     "requests>=2.32.4",
     "tenacity>=9.0.0",
