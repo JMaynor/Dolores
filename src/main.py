@@ -160,15 +160,21 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
     on_message is the base function for handling any message that is sent on the server.
     There are a couple special cases that are handled here.
     """
+    # Ignore various non-human messages
     if not event.is_human:
+        return
+    if event.message.content is None:
+        return
+    if "@everyone" in event.message.content:
         return
 
     me = bot.get_me()
 
-    if (
-        me.id in event.message.user_mentions_ids  # type: ignore
-        and "@everyone" not in event.message.content  # type: ignore
-    ):
+    if me is None:
+        logger.warning("Could not determine bot user ID in on_message.")
+        return
+
+    if me.id in event.message.user_mentions_ids:
         logger.info(f"Message: {event.message}")
         await handle_mention(event.message)
         return
@@ -231,6 +237,9 @@ async def on_voice_server_update(event: hikari.VoiceServerUpdateEvent) -> None:
     """
     from src.lavaclient import music_client
 
+    if event.endpoint is None:
+        return
+
     if music_client and music_client.lavalink:
         lava_data = {
             "t": "VOICE_SERVER_UPDATE",
@@ -238,7 +247,7 @@ async def on_voice_server_update(event: hikari.VoiceServerUpdateEvent) -> None:
                 "guild_id": str(event.guild_id),
                 "token": event.token,
                 # Remove "wss://" prefix
-                "endpoint": event.endpoint[6:],  # type: ignore
+                "endpoint": event.endpoint[6:],
             },
         }
         logger.debug(f"Voice server update data: {lava_data}")

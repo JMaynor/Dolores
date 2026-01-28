@@ -28,7 +28,7 @@ class chat:
 
         self.dol_agent = Agent(
             name="Dolores",
-            model=os.environ["LLM_MODEL"],  # type: ignore
+            model=os.environ["LLM_MODEL"],
             system_prompt=LLM_SYSTEM_MESSAGES,
             model_settings={
                 "frequency_penalty": float(os.environ.get("FREQUENCY_PENALTY", 0.0)),
@@ -68,7 +68,7 @@ class chat:
             logger.error(f"Error generating reply: {e}")
             # Log history if error occurs (history contains ModelMessage objects now)
             logger.error(f"Current message history: {list(self.message_history)}")
-            reply_text = "I'm sorry, I encountered an error while generating a reply."
+            reply_text = ""
 
         return reply_text
 
@@ -105,9 +105,7 @@ class chat:
             logger.error(f"Error generating explanation: {e}")
             # Log history if error occurs (history contains ModelMessage objects now)
             logger.error(f"Current message history: {list(self.message_history)}")
-            explanation_text = (
-                "I'm sorry, I encountered an error while generating an explanation."
-            )
+            explanation_text = ""
 
         return explanation_text  # Return the extracted text
 

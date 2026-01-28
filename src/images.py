@@ -100,7 +100,7 @@ class ImageGenerationModal(Modal):
                 style=style,
                 n=1,
                 response_format="url",
-                size=size_input,  # type: ignore
+                size=size_input,
                 user=str(ctx.user.id),
             )
 
