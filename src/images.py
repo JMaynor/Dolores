@@ -4,23 +4,16 @@ This module contains the Images cog for generating images.
 
 import asyncio
 import logging
-import os
 from typing import Literal
 
 import hikari
 import lightbulb
 from lightbulb.components import Modal, TextInput
-from openai import (
-    APIConnectionError,
-    APIError,
-    APIStatusError,
-    AsyncOpenAI,
-    RateLimitError,
-)
+from pydantic_ai import Agent
+from pydantic_ai.messages import BinaryImage
 
 logger = logging.getLogger(__name__)
 loader = lightbulb.Loader()
-async_openai_client = AsyncOpenAI()
 
 
 class ImageGenerationModal(Modal):
@@ -94,48 +87,19 @@ class ImageGenerationModal(Modal):
             size_input = "1792x1024"
 
         try:
-            response = await async_openai_client.images.generate(
-                prompt=prompt,
-                model=os.environ["IMAGE_MODEL"],
-                style=style,
-                n=1,
-                response_format="url",
-                size=size_input,
-                user=str(ctx.user.id),
-            )
+            agent = Agent("openai-responses:gpt-5", output_type=BinaryImage)
 
-            if (
-                not response.data
-                or len(response.data) == 0
-                or not hasattr(response.data[0], "url")
-            ):
-                logger.error("No image data returned from OpenAI API.")
-                await ctx.respond("Sorry, I couldn't generate an image this time.")
-                return
+            result = agent.run_sync()
 
-            image_url = response.data[0].url
-            logger.info(f"Generated image URL: {image_url}")
-
-        except APIConnectionError as e:
-            logger.error(f"Error connecting to the OpenAI API: {e}")
-            await ctx.respond(
-                "I'm sorry, I'm having trouble connecting to the OpenAI API."
-            )
-            return
-        except RateLimitError as e:
-            logger.error(f"Error with the OpenAI API rate limit: {e}")
-            await ctx.respond(
-                "I'm sorry, I've reached my rate limit for now, try again later."
-            )
-            return
-        except (APIStatusError, APIError) as e:
-            logger.error(f"Error with the OpenAI API: {e}")
-            await ctx.respond("I'm sorry, I'm having trouble with the OpenAI API.")
-            return
+            output = result.output
+            assert isinstance(output, BinaryImage)
+            assert output.media_type == "image/png"
+            assert isinstance(output.data, bytes)
+            assert result.response.images == [output]
+            with open("axolotl-openai.png", "wb") as f:
+                f.write(output.data)
         except Exception as e:
-            logger.error(e)
-            await ctx.respond(f"Error generating image: {e}.")
-            return
+            logger.error(f"")
 
         await asyncio.sleep(1)
 
