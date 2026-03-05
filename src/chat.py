@@ -15,7 +15,7 @@ from src.constants import LLM_SYSTEM_MESSAGES, SNARKY_COMMENTS
 logger = logging.getLogger(__name__)
 
 
-class chat:
+class Chat:
     """
     Commands for generating dialogue.
     """
@@ -51,6 +51,8 @@ class chat:
 
         logger.debug(f"Generating reply for: {person}")
 
+        # Is there a way to determine whether the user is asking for an image to be generated?
+
         try:
             # Pass the current history (list of ModelMessage objects)
             run = await self.dol_agent.run(
@@ -71,43 +73,6 @@ class chat:
             reply_text = ""
 
         return reply_text
-
-    async def generate_explanation(self, person: str, message: str) -> str:
-        """
-        Generates a simpler more informative explanation to a given message.
-
-        :param person: The person who sent the message (Note: pydantic_ai doesn't directly use this 'person' param in history yet)
-        :type person: str
-        :param message: The message to explain
-        :type message: str
-        :return: The generated explanation text
-        :rtype: str
-        """
-        explanation_text = ""
-        explanation_prompt = f"Please explain the following message in a simpler, more informative way, as if for someone who might not understand the context or jargon: '{message}'"
-
-        logger.debug(f"Generating explanation for: {person}")
-
-        try:
-            # Pass the current history (list of ModelMessage objects)
-            run = await self.dol_agent.run(
-                user_prompt=explanation_prompt,
-                message_history=list(self.message_history),
-            )
-            explanation_text = run.output
-            logger.info(f"Explanation generated: {explanation_text}")
-
-            # Update history with the new messages from this run
-            new_messages = run.new_messages()
-            self.message_history.extend(new_messages)
-
-        except Exception as e:
-            logger.error(f"Error generating explanation: {e}")
-            # Log history if error occurs (history contains ModelMessage objects now)
-            logger.error(f"Current message history: {list(self.message_history)}")
-            explanation_text = ""
-
-        return explanation_text  # Return the extracted text
 
     async def generate_snarky_comment(self) -> str:
         """

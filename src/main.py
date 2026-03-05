@@ -20,7 +20,7 @@ if env_path.exists():
 
 from src._logger import logger
 from src.audio import music
-from src.chat import chat
+from src.chat import Chat
 
 AUDIO_REQUIRED_VARS = ["LAVALINK_HOST", "LAVALINK_PORT", "LAVALINK_PASSWORD"]
 # Chat also requires an API key, but the var name will be different
@@ -91,35 +91,6 @@ async def handle_mention(message: hikari.Message) -> None:
         await message.respond(reply, reply=message)
 
 
-async def handle_question(message) -> None:
-    """
-    When someone reacts with a question mark to a message, Dolores will attempt
-    to explain the contents of the message in an informative simpler way.
-    Calls generate_explanation in the generation module.
-    """
-    message_content = message.content
-    if message_content is None:
-        return
-
-    if chat_inst is None:
-        return
-
-    # Remove invalid characters from author name
-    author = message.author.display_name
-    if author:
-        author = re.sub(r"[^a-zA-Z0-9_]", "", author)
-        author = author.replace(" ", "_")
-    else:
-        author = "discord_user"  # Fallback to a default name
-
-    logger.info(f"Generating explanation for message: {message_content}")
-
-    explanation = chat_inst.generate_explanation(author, message_content)
-
-    if explanation:
-        await message.respond(explanation, reply=message)
-
-
 # ---------------------------------------------------------------------------
 # Discord Events
 # ---------------------------------------------------------------------------
@@ -142,16 +113,6 @@ async def on_ready(event: hikari.StartedEvent) -> None:
     else:
         logger.warning("Could not determine bot user ID in on_ready.")
     logger.info("Dolores has connected to Discord.")
-
-
-@bot.listen()
-async def on_reaction_add(event: hikari.ReactionAddEvent) -> None:
-    """
-    on_reaction_add is a base function for handling when a reaction is added
-    to a message. Currently used to check for question mark reaction.
-    """
-    if event.is_for_emoji("❓") or event.is_for_emoji("❔"):
-        await handle_question(event.message_id)
 
 
 @bot.listen()
@@ -258,5 +219,5 @@ if __name__ == "__main__":
     """
     Main program entry point
     """
-    chat_inst = chat() if check_for_required_env_vars(CHAT_REQUIRED_VARS) else None
+    chat_inst = Chat() if check_for_required_env_vars(CHAT_REQUIRED_VARS) else None
     bot.run()
