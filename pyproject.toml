@@ -7,10 +7,10 @@ requires-python = ">=3.13"
 dependencies = [
     "hikari>=2.5.0",
     "hikari-lightbulb>=3.2.3",
+    "httpx>=0.28.1",
     "lavalink>=5.9.0",
     "pydantic-ai>=1.62.0",
     "python-dotenv>=1.1.1",
-    "requests>=2.32.4",
     "tenacity>=9.1.4",
 ]
 

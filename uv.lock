@@ -482,10 +482,10 @@ source = { virtual = "." }
 dependencies = [
     { name = "hikari" },
     { name = "hikari-lightbulb" },
+    { name = "httpx" },
     { name = "lavalink" },
     { name = "pydantic-ai" },
     { name = "python-dotenv" },
-    { name = "requests" },
     { name = "tenacity" },
 ]
 
@@ -493,10 +493,10 @@ dependencies = [
 requires-dist = [
     { name = "hikari", specifier = ">=2.5.0" },
     { name = "hikari-lightbulb", specifier = ">=3.2.3" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "lavalink", specifier = ">=5.9.0" },
     { name = "pydantic-ai", specifier = ">=1.62.0" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
-    { name = "requests", specifier = ">=2.32.4" },
     { name = "tenacity", specifier = ">=9.1.4" },
 ]
 

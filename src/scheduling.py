@@ -12,8 +12,8 @@ import random
 from datetime import datetime
 
 import hikari
+import httpx
 import lightbulb
-import requests
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -36,43 +36,41 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=1, min=4, max=10),
-        retry=retry_if_exception_type(
-            (requests.exceptions.ConnectionError, requests.exceptions.Timeout)
-        ),
+        retry=retry_if_exception_type((httpx.ConnectError, httpx.TimeoutException)),
     )
-    def get_notion_schedule(self, filter: dict, sorts: list) -> dict | str:
+    async def get_notion_schedule(self, query_filter: dict, sorts: list) -> dict:
         """
         Generic function that returns a given number of streams from the Notion schedule.
 
-        :param filter: dict representing the filter to apply to the query
-        :type filter: dict
+        :param query_filter: dict representing the filter to apply to the query
+        :type query_filter: dict
         :param sorts: list of dicts representing the sorts to apply to the query
         :type sorts: list
         :return: JSON response from Notion API
-        :rtype: dict | str
+        :rtype: dict
         """
-        json_data = {"filter": filter, "sorts": sorts}
+        json_data = {"filter": query_filter, "sorts": sorts}
         try:
-            response = requests.post(
-                f"{os.environ['NOTION_BASE_URL']}data_sources/{os.environ['NOTION_DATASOURCE_ID']}/query",
-                headers={
-                    "Authorization": "Bearer " + os.environ["NOTION_API_KEY"],
-                    "Notion-Version": os.environ["NOTION_VERSION"],
-                },
-                json=json_data,
-                timeout=30,
-            )
+            async with httpx.AsyncClient(timeout=30) as client:
+                response = await client.post(
+                    f"{os.environ['NOTION_BASE_URL']}data_sources/{os.environ['NOTION_DATASOURCE_ID']}/query",
+                    headers={
+                        "Authorization": f"Bearer {os.environ['NOTION_API_KEY']}",
+                        "Notion-Version": os.environ["NOTION_VERSION"],
+                    },
+                    json=json_data,
+                )
             response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
+        except httpx.HTTPStatusError as e:
             logger.error(
                 f"Error {e.response.status_code}, could not get schedule data: {e}"
             )
-            return ""
-        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            return {}
+        except (httpx.ConnectError, httpx.TimeoutException):
             raise
-        except requests.exceptions.RequestException as e:
+        except httpx.RequestError as e:
             logger.error(f"Error, could not get schedule data: {e}")
-            return ""
+            return {}
 
         return response.json()
 
@@ -82,12 +80,12 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
         Function when command is invoked.
         """
         await ctx.defer()
-        filter = {"property": "Date", "date": {"next_week": {}}}
+        query_filter = {"property": "Date", "date": {"next_week": {}}}
         sorts = [{"property": "Date", "direction": "ascending"}]
 
-        response = self.get_notion_schedule(filter, sorts)
+        response = await self.get_notion_schedule(query_filter, sorts)
 
-        if response == "":
+        if not response:
             await ctx.respond(
                 "Notion's API is giving me an error, so I couldn't get that for you, "
                 + random.choice(SARCASTIC_NAMES)
