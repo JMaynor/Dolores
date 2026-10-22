@@ -12,6 +12,7 @@ import hikari
 import hikari.events.reaction_events
 import lightbulb
 from dotenv import load_dotenv
+from pydantic_ai import BinaryImage
 
 # Check if .env file present, if so load vars from it
 env_path = Path(__file__).resolve().parent.parent / ".env"
@@ -21,12 +22,12 @@ if env_path.exists():
 from src._logger import logger
 from src.audio import music
 from src.chat import Chat
+from src.constants import IMAGE_TRIGGER_PHRASES
 
 AUDIO_REQUIRED_VARS = ["LAVALINK_HOST", "LAVALINK_PORT", "LAVALINK_PASSWORD"]
 # Chat also requires an API key, but the var name will be different
 # depending on whatever service being used, so can't check for.
 CHAT_REQUIRED_VARS = ["LLM_MODEL"]
-IMAGES_REQUIRED_VARS = ["OPENAI_API_KEY", "IMAGE_MODEL"]
 MISC_REQUIRED_VARS = []
 ROLLING_REQUIRED_VARS = []
 SCHEDULING_REQUIRED_VARS = [
@@ -59,6 +60,45 @@ def check_for_required_env_vars(vars: list[str]) -> bool:
     return True
 
 
+async def handle_image_request(message: hikari.Message) -> bool:
+    """
+    Generates an image if the message asks for one, or edits the image if the
+    message is a reply to one of the bot's images. Failures are only logged.
+
+    :param message: The message the bot was mentioned in
+    :type message: hikari.Message
+    :return: True if the message was an image request, False otherwise
+    :rtype: bool
+    """
+    prompt = re.sub(r"<@!?\d+>", "", message.content or "").strip()
+
+    source_image = None
+    ref = message.referenced_message
+    if ref and ref.author and ref.author.id == BOT_USER_ID:
+        attachment = next(
+            (a for a in ref.attachments if (a.media_type or "").startswith("image/")),
+            None,
+        )
+        if attachment:
+            source_image = BinaryImage(
+                data=await attachment.read(), media_type=attachment.media_type
+            )
+
+    if source_image is None and not any(
+        phrase in prompt.lower() for phrase in IMAGE_TRIGGER_PHRASES
+    ):
+        return False
+
+    logger.info(f"Generating image for: {prompt}")
+    image = await chat_inst.generate_image(prompt, source_image)
+    if image is not None:
+        await message.respond(
+            attachment=hikari.Bytes(image.data, f"image.{image.format}"),
+            reply=message,
+        )
+    return True
+
+
 async def handle_mention(message: hikari.Message) -> None:
     """
     handle_mention is a coroutine that handles the bot's response to being mentioned
@@ -70,6 +110,9 @@ async def handle_mention(message: hikari.Message) -> None:
         return
 
     if chat_inst is None:
+        return
+
+    if chat_inst.image_agent is not None and await handle_image_request(message):
         return
 
     message_content = message_content.replace("@Dolores", "Dolores")
@@ -135,7 +178,11 @@ async def on_message(event: hikari.MessageCreateEvent) -> None:
         logger.warning("Could not determine bot user ID in on_message.")
         return
 
-    if me.id in event.message.user_mentions_ids:
+    # Replies to the bot count as mentions, even with reply-ping turned off
+    ref = event.message.referenced_message
+    if me.id in event.message.user_mentions_ids or (
+        ref and ref.author and ref.author.id == me.id
+    ):
         logger.info(f"Message: {event.message}")
         await handle_mention(event.message)
         return
@@ -150,9 +197,6 @@ async def on_starting(_: hikari.StartingEvent) -> None:
     if check_for_required_env_vars(AUDIO_REQUIRED_VARS):
         logger.info("Loading audio module")
         client.register(music)
-    if check_for_required_env_vars(IMAGES_REQUIRED_VARS):
-        logger.info("Loading images module")
-        await client.load_extensions("images")
     if check_for_required_env_vars(MISC_REQUIRED_VARS):
         logger.info("Loading misc module")
         await client.load_extensions("misc")

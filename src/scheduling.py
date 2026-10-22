@@ -12,7 +12,7 @@ import random
 from datetime import datetime
 
 import hikari
-import httpx
+import httpx2
 import lightbulb
 from tenacity import (
     retry,
@@ -36,7 +36,7 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=1, min=4, max=10),
-        retry=retry_if_exception_type((httpx.ConnectError, httpx.TimeoutException)),
+        retry=retry_if_exception_type((httpx2.ConnectError, httpx2.TimeoutException)),
     )
     async def get_notion_schedule(self, query_filter: dict, sorts: list) -> dict:
         """
@@ -51,7 +51,7 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
         """
         json_data = {"filter": query_filter, "sorts": sorts}
         try:
-            async with httpx.AsyncClient(timeout=30) as client:
+            async with httpx2.AsyncClient(timeout=30) as client:
                 response = await client.post(
                     f"{os.environ['NOTION_BASE_URL']}data_sources/{os.environ['NOTION_DATASOURCE_ID']}/query",
                     headers={
@@ -59,16 +59,17 @@ class Schedule(lightbulb.SlashCommand, name="schedule", description="Get the sch
                         "Notion-Version": os.environ["NOTION_VERSION"],
                     },
                     json=json_data,
+                    follow_redirects=True,
                 )
             response.raise_for_status()
-        except httpx.HTTPStatusError as e:
+        except httpx2.HTTPStatusError as e:
             logger.error(
                 f"Error {e.response.status_code}, could not get schedule data: {e}"
             )
             return {}
-        except (httpx.ConnectError, httpx.TimeoutException):
+        except (httpx2.ConnectError, httpx2.TimeoutException):
             raise
-        except httpx.RequestError as e:
+        except httpx2.RequestError as e:
             logger.error(f"Error, could not get schedule data: {e}")
             return {}
 

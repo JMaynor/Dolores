@@ -25,8 +25,7 @@ Env vars can be provided via a `.env` file in the main directory, if desired. Us
 | Scheduling | NOTION_DATABASE_ID | ID for database where stream info is kept |
 | Chat | LLM_MODEL | Which LLM model to use. Should be formatted as {PROVIDER}:{MODEL}, e.g. openrouter:google/gemini-2.5-pro |
 | Images/Chat | OPENAI_API_KEY | API Key used for generating replies |
-| Images | IMAGE_MODEL | Which image model to use. |
-| Images | IMAGE_STYLE | vivid or natural |
+| Images | IMAGE_MODEL | Optional, enables image generation/editing in chat. Must support image output, e.g. openai-responses:gpt-5.2 or google-gla:gemini-2.5-flash-image |
 | Chat | MAX_TOKENS | Max number of tokens generated in LLM chat. |
 | Chat | TEMPERATURE | Float value for temperature of LLM chat response. |
 | Chat | TOP_P | Float value alternative to temperature with LLM chat. |

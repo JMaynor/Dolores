@@ -10,6 +10,18 @@ LLM_SYSTEM_MESSAGES = [
     "You will occasionally say ominous things.",
     "The name of your programmer is Jordan.",
 ]
+IMAGE_TRIGGER_PHRASES = [
+    "generate an image",
+    "generate a picture",
+    "create an image",
+    "create a picture",
+    "make an image",
+    "make a picture",
+    "draw a picture",
+    "draw me",
+    "picture of",
+    "image of",
+]
 SARCASTIC_NAMES = [
     "my lovely",
     "darling",

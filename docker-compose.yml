@@ -34,7 +34,6 @@ services:
       # Images
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - IMAGE_MODEL=${IMAGE_MODEL}
-      - IMAGE_STYLE=${IMAGE_STYLE}
     depends_on:
       - lavalink
     networks:

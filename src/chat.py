@@ -8,7 +8,7 @@ import os
 import random
 from collections import deque
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, BinaryImage
 
 from src.constants import LLM_SYSTEM_MESSAGES, SNARKY_COMMENTS
 
@@ -39,6 +39,39 @@ class Chat:
             },
         )
 
+        # Image generation is optional, only enabled if IMAGE_MODEL is set
+        image_model = os.environ.get("IMAGE_MODEL")
+        self.image_agent = (
+            Agent(name="Dolores", model=image_model, output_type=BinaryImage)
+            if image_model
+            else None
+        )
+
+    async def generate_image(
+        self, prompt: str, source_image: BinaryImage | None = None
+    ) -> BinaryImage | None:
+        """
+        Generates a new image, or edits an existing one if source_image is given.
+
+        :param prompt: Description of the image, or of the edit to make
+        :type prompt: str
+        :param source_image: Previously generated image to edit
+        :type source_image: BinaryImage | None
+        :return: The generated image, or None on failure
+        :rtype: BinaryImage | None
+        """
+        if self.image_agent is None:
+            return None
+
+        user_prompt = [prompt, source_image] if source_image else prompt
+        try:
+            run = await self.image_agent.run(user_prompt=user_prompt)
+        except Exception as e:
+            logger.error(f"Error generating image: {e}")
+            return None
+        else:
+            return run.output
+
     async def generate_reply(self, person: str, message: str) -> str:
         """
         Generates a reply to a given message.
@@ -50,8 +83,6 @@ class Chat:
         reply_text = ""
 
         logger.debug(f"Generating reply for: {person}")
-
-        # Is there a way to determine whether the user is asking for an image to be generated?
 
         try:
             # Pass the current history (list of ModelMessage objects)
